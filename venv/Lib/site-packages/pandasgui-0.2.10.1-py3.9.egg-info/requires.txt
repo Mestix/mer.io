@@ -1,0 +1,13 @@
+pandas
+numpy
+PyQt5
+PyQt5-sip
+PyQtWebEngine
+plotly
+wordcloud
+setuptools
+appdirs
+pynput
+IPython
+pyarrow
+astor
