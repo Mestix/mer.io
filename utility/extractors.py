@@ -1,8 +1,10 @@
+from typing import Dict
+
 from pandas import DataFrame
 
 
-def extract_identifiers(df: DataFrame) -> dict[str, DataFrame]:
-    identifiers: dict[str, DataFrame] = dict(tuple(df.groupby(['EVENT HEADER - IDENTIFIER'])))
+def extract_identifiers(df: DataFrame) -> Dict[str, DataFrame]:
+    identifiers: Dict[str, DataFrame] = dict(tuple(df.groupby(['EVENT HEADER - IDENTIFIER'])))
 
     for df in identifiers.values():
         df.dropna(axis=1, how='all', inplace=True)
