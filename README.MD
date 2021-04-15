@@ -13,5 +13,5 @@ Build can be found in ```/dist``` folder
 After building the application execute ```main.exe``` to run program
 
 ## Run tests
-To run a test script in terminal run ```pytest <filename>```
+To run a test script in terminal run ```pytest <filename>```  
 To run all tests in terminal run ```pytest```
