@@ -6,14 +6,13 @@ from pandas import DataFrame
 import pandas as pd
 
 from models.converter_model import Converter
-from utility.cleaners import clean_datetime_columns, clean_scientific_columns, sort_on_datetime
+from utility.cleaners import clean_datetime_columns, clean_scientific_columns
 from utility.importers import get_all_paths, import_and_transpose_df
 from utility.utility import get_exception
 
 converters: List[Converter] = [
     Converter(name='clean_datetime_columns', func=clean_datetime_columns, active=True),
-    Converter(name='clean_scientific_columns', func=clean_scientific_columns, active=True),
-    Converter(name='sort_on_datetime', func=sort_on_datetime, active=True)
+    Converter(name='clean_scientific_columns', func=clean_scientific_columns, active=False),
 ]
 
 

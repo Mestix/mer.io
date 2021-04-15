@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 from numpy import dtype
 
-from utility.cleaners import clean_duplicate_columns, clean_datetime_columns, clean_scientific_columns, sort_on_datetime
+from utility.cleaners import clean_duplicate_columns, clean_datetime_columns, clean_scientific_columns
 
 
 class CleanerTests(unittest.TestCase):
@@ -48,20 +48,3 @@ class CleanerTests(unittest.TestCase):
         for i, col in enumerate(df.dtypes):
             with self.subTest(col=col):
                 self.assertEqual(asserts[i], col)
-
-    def test_sort_on_datetime(self):
-        df = pd.DataFrame({
-            'EVENT HEADER - DATE': [pd.to_datetime('2020-1-2', format='%Y-%m-%d'), pd.to_datetime('2020-1-1', format='%Y-%m-%d')],
-            'EVENT HEADER - TIME': [pd.to_datetime('00:01:00', format='%H:%M:%S'), pd.to_datetime('00:02:00', format='%H:%M:%S')]
-        })
-
-        df['EVENT HEADER - DATE'] = df['EVENT HEADER - DATE'].dt.date
-        df['EVENT HEADER - TIME'] = df['EVENT HEADER - TIME'].dt.time
-
-        df = sort_on_datetime(df)
-
-        self.assertEqual('2020-01-01', str(df.iloc[0]['EVENT HEADER - DATE']))
-        self.assertEqual('00:02:00', str(df.iloc[0]['EVENT HEADER - TIME']))
-
-        self.assertEqual('2020-01-02', str(df.iloc[1]['EVENT HEADER - DATE']))
-        self.assertEqual('00:01:00', str(df.iloc[1]['EVENT HEADER - TIME']))

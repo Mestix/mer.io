@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QSizePolicy, QFrame, QApplicat
 from models.dataframe_model import DataFrameModel
 
 
-class DataFrameViewer(QWidget):
+class DataframeView(QWidget):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
 
@@ -67,8 +67,7 @@ class DataFrameViewer(QWidget):
 
         # Fix scrollbars forcing a minimum height of the dataView which breaks layout for small number of rows
         self.dataView.verticalScrollBar().setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Ignored))
-        self.dataView.horizontalScrollBar().setSizePolicy(QSizePolicy(QSizePolicy.Ignored,
-                                                                                QSizePolicy.Fixed))
+        self.dataView.horizontalScrollBar().setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed))
 
         # These expand when the window is enlarged instead of having the grid squares spread out
         self.gridLayout.setColumnStretch(4, 1)
@@ -173,7 +172,7 @@ class DataFrameViewer(QWidget):
     def keyPressEvent(self, event):
         # Disabling this and moving hotkeys to main GUI
         if self.dfm.gui is not None:
-            super(DataFrameViewer, self).keyPressEvent(event)
+            super(DataframeView, self).keyPressEvent(event)
 
         QWidget.keyPressEvent(self, event)
         mods = event.modifiers()
@@ -477,7 +476,7 @@ class HeaderView(QTableView):
     Displays the DataFrame index or columns depending on orientation
     """
 
-    def __init__(self, parent: DataFrameViewer, orientation):
+    def __init__(self, parent: DataframeView, orientation):
         super().__init__(parent)
         self.dfm: DataFrameModel = parent.dfm
         self.setProperty('orientation', 'horizontal' if orientation == 1 else 'vertical')  # Used in stylesheet
@@ -899,7 +898,7 @@ class HeaderNamesModel(QtCore.QAbstractTableModel):
 
 
 class HeaderNamesView(QTableView):
-    def __init__(self, parent: DataFrameViewer, orientation):
+    def __init__(self, parent: DataframeView, orientation):
         super().__init__(parent)
         self.dfm: DataFrameModel = parent.dfm
         self.setProperty('orientation', 'horizontal' if orientation == 1 else 'vertical')  # Used in stylesheet
@@ -989,7 +988,7 @@ if __name__ == "__main__":
 
     import seaborn as sns
     iris = sns.load_dataset('iris')
-    dfw = DataFrameViewer(DataFrameModel(iris))
+    dfw = DataframeView(DataFrameModel(iris))
 
     dfw.show()
     app.exec_()
