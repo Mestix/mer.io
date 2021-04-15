@@ -1,3 +1,14 @@
+## 0.3 - 15-4-2021
+### Changed
+- Refactored architecture to MVC
+- Using Signals and Slots
+
+### Added
+#### Classes
+- MerController: Updates view, Manipulates model
+- MerModel: Changes View with Signals
+- MerView: Contains only GUI elements now, Reads properties from Model
+
 ## v0.2 - 06-04-2021
 ### Added
 #### Classes

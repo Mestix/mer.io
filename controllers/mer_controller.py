@@ -10,8 +10,8 @@ from utility.utility import get_exception
 
 class MerController:
     def __init__(self):
-        self.app = QApplication(sys.argv)
-        self.model = MerModel()
+        self.app: QApplication = QApplication(sys.argv)
+        self.model: MerModel = MerModel()
         self.view: MerView = MerView()
         self.init()
 
@@ -29,6 +29,7 @@ class MerController:
 
     def import_file(self):
         self.reset_mer()
+
         dialog = QFileDialog()
         paths, _ = dialog.getOpenFileNames(filter='*.txt *.zip', directory='test_mers')
 
