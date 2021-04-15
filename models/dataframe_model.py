@@ -4,7 +4,6 @@ from typing import Union
 from pandas import DataFrame
 
 from utility.utility import get_exception
-# from views.explorer_view import ExplorerView
 from views.mer_view import MerView
 
 
