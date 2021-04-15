@@ -4,18 +4,18 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QSplitter
 
 from models.dataframe_model import DataFrameModel
-from widgets.mer_filter import MerFilter
-from widgets.mer_viewer import DataFrameViewer
+from views.filter_view import FilterView
+from views.dataframe_view import DataframeView
 
 
-class MerExplorer(QtWidgets.QMainWindow):
+class ExplorerView(QtWidgets.QMainWindow):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
         dfm.explorer = self
         self.dfm: DataFrameModel = dfm
 
-        self.viewer: DataFrameViewer = DataFrameViewer(self.dfm)
-        self.filter: MerFilter = MerFilter(self.dfm)
+        self.viewer: DataframeView = DataframeView(self.dfm)
+        self.filter: FilterView = FilterView(self.dfm)
 
         self.init_ui()
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     import seaborn as sns
     iris = sns.load_dataset('iris')
-    dfe = MerExplorer(DataFrameModel(iris))
+    dfe = ExplorerView(DataFrameModel(iris))
 
     dfe.setGeometry(250, 150, 1500, 750)
     dfe.show()

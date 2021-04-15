@@ -11,7 +11,7 @@ import pandas as pd
 from models.field_model import FilterField, ColumnField
 
 
-class MerFilter(QWidget):
+class FilterView(QWidget):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
 
@@ -125,7 +125,7 @@ class MerFilter(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    dfe = MerFilter(DataFrameModel(pd.DataFrame({'a': [1, 2], 'b': [3, 4]})))
+    dfe = FilterView(DataFrameModel(pd.DataFrame({'a': [1, 2], 'b': [3, 4]})))
     dfe.show()
 
     sys.exit(app.exec_())

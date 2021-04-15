@@ -4,6 +4,7 @@ from typing import Union
 from pandas import DataFrame
 
 from utility.utility import get_exception
+from views.mer_view import MerView
 
 
 @dataclass
@@ -26,8 +27,8 @@ class DataFrameModel:
         self.rename_columns()
         self.set_filters()
 
-        self.viewer: Union['MerViewer', None] = None
-        self.explorer: Union['MerExplorer', None] = None
+        self.viewer: Union[MerView, None] = None
+        self.explorer = None
 
     def rename_columns(self):
         for col_old in self.df.columns:

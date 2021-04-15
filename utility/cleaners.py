@@ -22,7 +22,7 @@ def clean_datetime_columns(df: DataFrame) -> DataFrame:
     columns_to_drop = ['EVENT HEADER - TIME (YY)', 'EVENT HEADER - TIME (MM)', 'EVENT HEADER - TIME (DD)',
                        'EVENT HEADER - TIME (HH)', 'EVENT HEADER - TIME (MM).1', 'EVENT HEADER - TIME (SS)']
 
-    return df.drop(columns_to_drop, axis=1)
+    return df.drop(columns_to_drop, axis=1).sort_values(['EVENT HEADER - DATE', 'EVENT HEADER - TIME'])
 
 
 def clean_scientific_columns(df: DataFrame) -> DataFrame:
@@ -32,6 +32,3 @@ def clean_scientific_columns(df: DataFrame) -> DataFrame:
     df[scientific_columns] = df[scientific_columns].apply(pd.to_numeric, errors='coerce')
     return df
 
-
-def sort_on_datetime(df: DataFrame) -> DataFrame:
-    return df.sort_values(['EVENT HEADER - DATE', 'EVENT HEADER - TIME'])
