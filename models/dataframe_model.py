@@ -4,6 +4,7 @@ from typing import Union
 from pandas import DataFrame
 
 from utility.utility import get_exception
+# from views.explorer_view import ExplorerView
 from views.mer_view import MerView
 
 
@@ -27,8 +28,8 @@ class DataFrameModel:
         self.rename_columns()
         self.set_filters()
 
-        self.viewer: Union[MerView, None] = None
-        self.explorer: Union['ExplorerView', None] = None
+        self.viewer: Union['MerView', None] = None
+        self.explorer = None
 
     def rename_columns(self):
         for col_old in self.df.columns:
@@ -38,7 +39,6 @@ class DataFrameModel:
                 col_new = col_old[i:]
                 self.df = self.df.rename(columns={col_old: col_new})
             except Exception as e:
-                print(get_exception(e))
                 pass
 
         self.df_unfiltered = self.df

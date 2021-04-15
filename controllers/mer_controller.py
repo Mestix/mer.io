@@ -16,8 +16,8 @@ class MerController:
         self.init()
 
     def init(self):
-        self.view.import_signal.connect(self.import_file)
         self.view.tree.selection_changed_signal.connect(self.select_df)
+        self.view.import_signal.connect(self.import_file)
         self.view.confirmed_yes_signal.connect(self.model.mock_tact_scenario)
         self.view.exit_signal.connect(self.exit_program)
 
@@ -46,6 +46,7 @@ class MerController:
     def reset_mer(self):
         self.model.reset_mer()
         self.view.reset_ui()
+        self.view.tree.selection_changed_signal.connect(self.select_df)
 
     def select_df(self, name):
         df = self.model.get_df(name)
@@ -64,7 +65,8 @@ class MerController:
             self.view.tree.addTopLevelItem(QTreeWidgetItem([name, str(shape[1]), str(shape[0])]))
             self.view.tree.setCurrentItem(self.view.tree.topLevelItem(0))
             self.view.tree.itemSelectionChanged.emit()
-            self.view.tree.show()
+
+        self.view.tree.show()
 
         tactical_scenario_text = 'Tactical Scenario: Lat: {0}, Long: {1} '.format(
             convert_degrees_to_coordinate_lat(self.model.tact_lat), convert_degrees_to_coordinate_long(self.model.tact_long))
