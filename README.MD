@@ -14,4 +14,4 @@ After building the application execute ```main.exe``` to run program
 
 ## Run tests
 Tests can be found in ```/tests```  
-To run a test script in terminal run ```python <filename>```
+To run a test script in terminal run ```pytest```
