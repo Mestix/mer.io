@@ -27,7 +27,7 @@ class DataFrameModel:
         self.rename_columns()
         self.set_filters()
 
-        self.viewer: Union['MerView', None] = None
+        self.viewer: Union[MerView, None] = None
         self.explorer = None
 
     def rename_columns(self):
