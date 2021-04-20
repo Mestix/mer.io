@@ -38,7 +38,7 @@ class DataFrameModel:
                 col_new = col_old[i:]
                 self.df = self.df.rename(columns={col_old: col_new})
             except Exception as e:
-                pass
+                print(get_exception(e))
 
         self.df_unfiltered = self.df
 

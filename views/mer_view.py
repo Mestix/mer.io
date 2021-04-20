@@ -88,8 +88,8 @@ class MerView(QMainWindow):
         class MenuItem:
             name: str
             func: callable
+            items: Union[List, None] = None
             shortcut: str = ''
-            items: List = None
 
         menu_bar_items: Dict[str, List[MenuItem]] = {'File': [MenuItem(name='Import',
                                                                        func=self.import_file,
@@ -196,16 +196,12 @@ class MerView(QMainWindow):
             except Exception as e:
                 self.import_failed_dialog('Something went wrong...')
                 print(get_exception(e))
-        else:
-            pass
 
     def export_identifier(self):
         dialog = QFileDialog()
         path, _ = dialog.getSaveFileName(filter="*.xlsx")
         if path:
             self.export_single_signal.emit(path)
-        else:
-            pass
 
     def export_mer(self):
         self.export_mer_signal.emit()
@@ -218,5 +214,3 @@ class MerView(QMainWindow):
                                       QMessageBox.No | QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
             self.exit_signal.emit()
-        else:
-            pass

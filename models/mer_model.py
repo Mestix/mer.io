@@ -44,7 +44,6 @@ class MerModel(QObject):
             self.set_mer_data(df)
         except IndexError:
             self.no_tact_signal.emit('No Tactical Scenario found, do you want to proceed?')
-            pass
 
     def mock_tact_scenario(self):
         self.tact_lat: float = 0

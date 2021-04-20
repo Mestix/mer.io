@@ -29,8 +29,6 @@ class TreeView(QtWidgets.QTreeWidget):
             item = self.selectedItems()[0]
             df_name = item.data(0, Qt.DisplayRole)
             self.selection_changed_signal.emit(df_name)
-        else:
-            pass
 
     def add_tree_item(self, name: str, shape: Tuple[int, int]) -> None:
         self.addTopLevelItem(QTreeWidgetItem([name, str(shape[1]), str(shape[0])]))

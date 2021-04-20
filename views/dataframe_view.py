@@ -47,16 +47,6 @@ class DataframeView(QWidget):
         # Disable scrolling on the headers. Even though the scrollbars are hidden, scrolling by dragging desyncs them
         self.indexHeader.horizontalScrollBar().valueChanged.connect(lambda: None)
 
-        # class CornerWidget(QWidget):
-        #     def __init__(self):
-        #         super().__init__()
-        #         # https://stackoverflow.com/questions/32313469/stylesheet-in-pyside-not-working
-        #         self.setAttribute(QtCore.Qt.WA_StyledBackground)
-
-        # self.corner_widget = CornerWidget()
-        # self.corner_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-        # Add items to grid layout
-        # self.gridLayout.addWidget(self.corner_widget, 0, 0)
         self.gridLayout.addWidget(self.columnHeader, 0, 1, 2, 2)
         self.gridLayout.addWidget(self.columnHeaderNames, 0, 3, 2, 1)
         self.gridLayout.addWidget(self.indexHeader, 2, 0, 2, 2)
@@ -73,10 +63,6 @@ class DataframeView(QWidget):
         self.gridLayout.setColumnStretch(4, 1)
         self.gridLayout.setColumnStretch(4, 1)
         self.gridLayout.setRowStretch(5, 1)
-        #
-        # self.gridLayout.addItem(QSpacerItem(0, 0,
-        #                                               QSizePolicy.Expanding,
-        #                                               QSizePolicy.Expanding), 0, 0, 1, 1, )
 
         self.set_styles()
         self.indexHeader.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Maximum)
@@ -90,11 +76,6 @@ class DataframeView(QWidget):
     def set_styles(self):
         for item in [self.dataView, self.columnHeader, self.indexHeader, self.indexHeaderNames, self.columnHeaderNames]:
             item.setContentsMargins(0, 0, 0, 0)
-            # item.setItemDelegate(NoFocusDelegate())
-
-    def __reduce__(self):
-        # This is so dataclasses.asdict doesn't complain about this being unpicklable
-        return "DataFrameViewer"
 
     def showEvent(self, event: QtGui.QShowEvent):
         """
@@ -223,28 +204,6 @@ class DataframeView(QWidget):
         else:
             threading.Thread(target=lambda df: df.to_clipboard(index=header, header=header), args=(df,)).start()
 
-    # def paste(self):
-    #     df_to_paste = pd.read_clipboard(sep=',|\t', header=None)
-    #
-    #     # Get the bounds using the top left and bottom right selected cells
-    #     indexes = self.dataView.selectionModel().selection().indexes()
-    #     rows = [ix.row() for ix in indexes]
-    #     cols = [ix.column() for ix in indexes]
-    #
-    #     self.dfm.paste_data(min(rows), min(cols), df_to_paste)
-    #
-    #     # Select the range of cells that were pasted
-    #     self.dataView.selectionModel().clearSelection()
-    #     temp = self.dataView.selectionMode()
-    #     self.dataView.setSelectionMode(QAbstractItemView.MultiSelection)
-    #
-    #     for i in range(df_to_paste.shape[0]):
-    #         for j in range(df_to_paste.shape[1]):
-    #             self.dataView.selectionModel().select(self.dataView.model().index(min(rows) + i, min(cols) + j),
-    #                                                   QtCore.QItemSelectionModel.Select)
-    #
-    #     self.dataView.setSelectionMode(temp)
-
 
 # Remove dotted border on cell focus.  https://stackoverflow.com/a/55252650/3620725
 class NoFocusDelegate(QStyledItemDelegate):
@@ -300,9 +259,8 @@ class DataTableModel(QtCore.QAbstractTableModel):
                     return "NaN"
 
             # Float formatting
-            if isinstance(cell, (float, np.floating)):
-                if not role == QtCore.Qt.ToolTipRole:
-                    return "{:.4f}".format(cell)
+            if isinstance(cell, (float, np.floating)) and not role == QtCore.Qt.ToolTipRole:
+                return "{:.4f}".format(cell)
 
             return str(cell)
 
@@ -312,22 +270,6 @@ class DataTableModel(QtCore.QAbstractTableModel):
             cell = self.dfm.df.iloc[row, col]
 
             return str(cell)
-
-    # def flags(self, index):
-    #     if self.parent().dfm.settings.editable:
-    #         return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-    #     else:
-    #         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-
-    # def setData(self, index, value, role=None):
-    #     if role == QtCore.Qt.EditRole:
-    #         row = index.row()
-    #         col = index.column()
-    #         try:
-    #             self.dfm.edit_data(row, col, value)
-    #         except Exception as e:
-    #             return False
-    #         return True
 
 
 class DataTableView(QTableView):
@@ -350,9 +292,6 @@ class DataTableView(QTableView):
         # Link selection to headers
         self.selectionModel().selectionChanged.connect(self.on_selectionChanged)
 
-        # Settings
-        # self.setWordWrap(True)
-        # self.resizeRowsToContents()
         self.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
 
@@ -361,25 +300,25 @@ class DataTableView(QTableView):
         Runs when cells are selected in the main table. This logic highlights the correct cells in the vertical and
         horizontal headers when a data cell is selected
         """
-        columnHeader = self.parent().columnHeader
-        indexHeader = self.parent().indexHeader
+        column_header = self.parent().columnHeader
+        index_header = self.parent().indexHeader
 
         # The two blocks below check what columns or rows are selected in the data table and highlights the
         # corresponding ones in the two headers. The if statements check for focus on headers, because if the user
         # clicks a header that will auto-select all cells in that row or column which will trigger this function
         # and cause and infinite loop
 
-        if not columnHeader.hasFocus():
+        if not column_header.hasFocus():
             selection = self.selectionModel().selection()
-            columnHeader.selectionModel().select(
+            column_header.selectionModel().select(
                 selection,
                 QtCore.QItemSelectionModel.Columns
                 | QtCore.QItemSelectionModel.ClearAndSelect,
             )
 
-        if not indexHeader.hasFocus():
+        if not index_header.hasFocus():
             selection = self.selectionModel().selection()
-            indexHeader.selectionModel().select(
+            index_header.selectionModel().select(
                 selection,
                 QtCore.QItemSelectionModel.Rows
                 | QtCore.QItemSelectionModel.ClearAndSelect,
@@ -389,13 +328,11 @@ class DataTableView(QTableView):
         # Set width and height based on number of columns in model
         # Width
         width = 2 * self.frameWidth()  # Account for border & padding
-        # width += self.verticalScrollBar().width()  # Dark theme has scrollbars always shown
         for i in range(self.model().columnCount()):
             width += self.columnWidth(i)
 
         # Height
         height = 2 * self.frameWidth()  # Account for border & padding
-        # height += self.horizontalScrollBar().height()  # Dark theme has scrollbars always shown
         for i in range(self.model().rowCount()):
             height += self.rowHeight(i)
 
@@ -441,15 +378,6 @@ class HeaderModel(QtCore.QAbstractTableModel):
                 else:
                     return str(self.dfm.df.index[row])
 
-        # if role == QtCore.Qt.DecorationRole:
-        #     if self.dfm.sort_is_ascending:
-        #         icon = QtGui.QIcon(os.path.join(pandasgui.__path__[0], "resources/images/sort-ascending.svg"))
-        #     else:
-        #         icon = QtGui.QIcon(os.path.join(pandasgui.__path__[0], "resources/images/sort-descending.svg"))
-        #
-        #     if col == self.dfm.column_sorted and row == self.rowCount() - 1 and self.orientation == Qt.Horizontal:
-        #         return icon
-
     # The headers of this table will show the level names of the MultiIndex
     def headerData(self, section, orientation, role=None):
         if role in [QtCore.Qt.DisplayRole, QtCore.Qt.ToolTipRole]:
@@ -476,7 +404,6 @@ class HeaderView(QTableView):
     def __init__(self, parent: DataframeView, orientation):
         super().__init__(parent)
         self.dfm: DataFrameModel = parent.dfm
-        self.setProperty('orientation', 'horizontal' if orientation == 1 else 'vertical')  # Used in stylesheet
 
         # Setup
         self.orientation = orientation
@@ -490,14 +417,11 @@ class HeaderView(QTableView):
         # Handled by self.eventFilter()
         self.setMouseTracking(True)
         self.viewport().setMouseTracking(True)
-        self.viewport().installEventFilter(self)
+        if self.orientation == Qt.Horizontal:
+            self.viewport().installEventFilter(self)
 
         # Settings
-        self.setSizePolicy(
-            QSizePolicy(
-                QSizePolicy.Maximum, QSizePolicy.Maximum
-            )
-        )
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum))
         self.setWordWrap(False)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
@@ -509,7 +433,6 @@ class HeaderView(QTableView):
 
         # Link selection to DataTable
         self.selectionModel().selectionChanged.connect(self.on_selectionChanged)
-        self.set_spans()
         self.init_column_sizes()
 
         self.horizontalHeader().hide()
@@ -520,32 +443,6 @@ class HeaderView(QTableView):
         # Set initial size
         self.resize(self.sizeHint())
 
-    # def mouseDoubleClickEvent(self, event):
-    #     point = event.pos()
-    #     ix = self.indexAt(point)
-    #     if event.button() == QtCore.Qt.LeftButton:
-    #         # When a header is clicked, sort the DataFrame by that column
-    #         if self.orientation == Qt.Horizontal:
-    #             self.dfm.sort_column(ix.column())
-    #         else:
-    #             self.on_selectionChanged()
-    #     else:
-    #         super().mouseDoubleClickEvent(event)
-
-    # def mousePressEvent(self, event):
-    #     point = event.pos()
-    #     ix = self.indexAt(point)
-    #
-    #     if event.button() == QtCore.Qt.RightButton \
-    #             and self.orientation == Qt.Horizontal:
-    #         menu = QMenu(self)
-    #         action = QAction("Sort")
-    #         action.triggered.connect(lambda: self.dfm.sort_column(ix.column()))
-    #         menu.addAction(action)
-    #         menu.exec_(self.mapToGlobal(point))
-    #     else:
-    #         super().mousePressEvent(event)
-
     # Header
     def on_selectionChanged(self):
         """
@@ -554,74 +451,38 @@ class HeaderView(QTableView):
         """
         # Check focus so we don't get recursive loop, since headers trigger selection of data cells and vice versa
         if self.hasFocus():
-            dataView = self.parent().dataView
+            data_view = self.parent().dataView
 
             # Set selection mode so selecting one row or column at a time adds to selection each time
-            if (
-                    self.orientation == Qt.Horizontal
-            ):  # This case is for the horizontal header
+            if self.orientation == Qt.Horizontal:  # This case is for the horizontal header
                 # Get the header's selected columns
                 selection = self.selectionModel().selection()
 
                 # Removes the higher levels so that only the lowest level of the header affects the data table selection
                 last_row_ix = self.dfm.df.columns.nlevels - 1
                 last_col_ix = self.model().columnCount() - 1
-                higher_levels = QtCore.QItemSelection(
-                    self.model().index(0, 0),
-                    self.model().index(last_row_ix - 1, last_col_ix),
-                )
+                higher_levels = QtCore.QItemSelection(self.model().index(0, 0), self.model().index(last_row_ix - 1, last_col_ix))
                 selection.merge(higher_levels, QtCore.QItemSelectionModel.Deselect)
 
                 # Select the cells in the data view
-                dataView.selectionModel().select(
-                    selection,
-                    QtCore.QItemSelectionModel.Columns
-                    | QtCore.QItemSelectionModel.ClearAndSelect,
-                )
+                data_view.selectionModel().select(selection, QtCore.QItemSelectionModel.Columns | QtCore.QItemSelectionModel.ClearAndSelect)
             if self.orientation == Qt.Vertical:
                 selection = self.selectionModel().selection()
 
                 last_row_ix = self.model().rowCount() - 1
                 last_col_ix = self.dfm.df.index.nlevels - 1
-                higher_levels = QtCore.QItemSelection(
-                    self.model().index(0, 0),
-                    self.model().index(last_row_ix, last_col_ix - 1),
-                )
+                higher_levels = QtCore.QItemSelection(self.model().index(0, 0), self.model().index(last_row_ix, last_col_ix - 1))
                 selection.merge(higher_levels, QtCore.QItemSelectionModel.Deselect)
 
-                dataView.selectionModel().select(
-                    selection,
-                    QtCore.QItemSelectionModel.Rows
-                    | QtCore.QItemSelectionModel.ClearAndSelect,
-                )
+                data_view.selectionModel().select(selection, QtCore.QItemSelectionModel.Rows | QtCore.QItemSelectionModel.ClearAndSelect)
 
         self.selectAbove()
 
     # Take the current set of selected cells and make it so that any spanning cell above a selected cell is selected too
     # This should happen after every selection change
     def selectAbove(self):
-
         # Disabling this to allow selecting specific cells in headers
         return
-
-        # if self.orientation == Qt.Horizontal:
-        #     if self.dfm.df.columns.nlevels == 1:
-        #         return
-        # else:
-        #     if self.dfm.df.index.nlevels == 1:
-        #         return
-        #
-        # for ix in self.selectedIndexes():
-        #     if self.orientation == Qt.Horizontal:
-        #         # Loop over the rows above this one
-        #         for row in range(ix.row()):
-        #             ix2 = self.model().index(row, ix.column())
-        #             self.setSelection(self.visualRect(ix2), QtCore.QItemSelectionModel.Select)
-        #     else:
-        #         # Loop over the columns left of this one
-        #         for col in range(ix.column()):
-        #             ix2 = self.model().index(ix.row(), col)
-        #             self.setSelection(self.visualRect(ix2), QtCore.QItemSelectionModel.Select)
 
     # Fits columns to contents but with a minimum width and added padding
     def init_column_sizes(self):
@@ -634,133 +495,22 @@ class HeaderView(QTableView):
                 width = self.columnWidth(col)
                 self.setColumnWidth(col, width + padding)
 
-    # This sets spans to group together adjacent cells with the same values
-    def set_spans(self):
-
-        df = self.dfm.df
-        self.clearSpans()
-        # Find spans for horizontal HeaderView
-        if self.orientation == Qt.Horizontal:
-
-            # Find how many levels the MultiIndex has
-            if isinstance(df.columns, pd.MultiIndex):
-                N = len(df.columns[0])
-            else:
-                N = 1
-
-            for level in range(N):  # Iterates over the levels
-                # Find how many segments the MultiIndex has
-                if isinstance(df.columns, pd.MultiIndex):
-                    arr = [df.columns[i][level] for i in range(len(df.columns))]
-                else:
-                    arr = df.columns
-
-                # Holds the starting index of a range of equal values.
-                # None means it is not currently in a range of equal values.
-                match_start = None
-
-                for col in range(1, len(arr)):  # Iterates over cells in row
-                    # Check if cell matches cell to its left
-                    if arr[col] == arr[col - 1]:
-                        if match_start is None:
-                            match_start = col - 1
-                        # If this is the last cell, need to end it
-                        if col == len(arr) - 1:
-                            match_end = col
-                            span_size = match_end - match_start + 1
-                            self.setSpan(level, match_start, 1, span_size)
-                    else:
-                        if match_start is not None:
-                            match_end = col - 1
-                            span_size = match_end - match_start + 1
-                            self.setSpan(level, match_start, 1, span_size)
-                            match_start = None
-
-        # Find spans for vertical HeaderView
-        else:
-            # Find how many levels the MultiIndex has
-            if isinstance(df.index, pd.MultiIndex):
-                N = len(df.index[0])
-            else:
-                N = 1
-
-            for level in range(N):  # Iterates over the levels
-
-                # Find how many segments the MultiIndex has
-                if isinstance(df.index, pd.MultiIndex):
-                    arr = [df.index[i][level] for i in range(len(df.index))]
-                else:
-                    arr = df.index
-
-                # Holds the starting index of a range of equal values.
-                # None means it is not currently in a range of equal values.
-                match_start = None
-
-                for row in range(1, len(arr)):  # Iterates over cells in column
-
-                    # Check if cell matches cell above
-                    if arr[row] == arr[row - 1]:
-                        if match_start is None:
-                            match_start = row - 1
-                        # If this is the last cell, need to end it
-                        if row == len(arr) - 1:
-                            match_end = row
-                            span_size = match_end - match_start + 1
-                            self.setSpan(match_start, level, span_size, 1)
-                    else:
-                        if match_start is not None:
-                            match_end = row - 1
-                            span_size = match_end - match_start + 1
-                            self.setSpan(match_start, level, span_size, 1)
-                            match_start = None
-
     def over_header_edge(self, mouse_position, margin=3):
-
         # Return the index of the column this x position is on the right edge of
-        if self.orientation == Qt.Horizontal:
-            x = mouse_position
-            if self.columnAt(x - margin) != self.columnAt(x + margin):
-                if self.columnAt(x + margin) == 0:
-                    # We're at the left edge of the first column
-                    return None
-                else:
-                    return self.columnAt(x - margin)
-            else:
+        x = mouse_position
+        if self.columnAt(x - margin) != self.columnAt(x + margin):
+            if self.columnAt(x + margin) == 0:
+                # We're at the left edge of the first column
                 return None
-
-        # Return the index of the row this y position is on the top edge of
-        elif self.orientation == Qt.Vertical:
-            y = mouse_position
-            if self.rowAt(y - margin) != self.rowAt(y + margin):
-                if self.rowAt(y + margin) == 0:
-                    # We're at the top edge of the first row
-                    return None
-                else:
-                    return self.rowAt(y - margin)
             else:
-                return None
+                return self.columnAt(x - margin)
+        else:
+            return None
 
-    def eventFilter(self, object: QtCore.QObject, event: QtCore.QEvent):
-
-        # If mouse is on an edge, start the drag resize process
+    def eventFilter(self, obj: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        # start the drag process
         if event.type() == QtCore.QEvent.MouseButtonPress:
-            if self.orientation == Qt.Horizontal:
-                mouse_position = event.pos().x()
-            else:
-                mouse_position = event.pos().y()
-
-            if self.over_header_edge(mouse_position) is not None:
-                self.header_being_resized = self.over_header_edge(mouse_position)
-                self.resize_start_position = mouse_position
-                if self.orientation == Qt.Horizontal:
-                    self.initial_header_size = self.columnWidth(
-                        self.header_being_resized
-                    )
-                elif self.orientation == Qt.Vertical:
-                    self.initial_header_size = self.rowHeight(self.header_being_resized)
-                return True
-            else:
-                self.header_being_resized = None
+            return self.mouse_press(event)
 
         # End the drag process
         if event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -768,72 +518,70 @@ class HeaderView(QTableView):
 
         # Auto size the column that was double clicked
         if event.type() == QtCore.QEvent.MouseButtonDblClick:
-            if self.orientation == Qt.Horizontal:
-                mouse_position = event.pos().x()
-            else:
-                mouse_position = event.pos().y()
-
-            # Find which column or row edge the mouse was over and auto size it
-            if self.over_header_edge(mouse_position) is not None:
-                header_index = self.over_header_edge(mouse_position)
-                if self.orientation == Qt.Horizontal:
-                    self.parent().auto_size_column(header_index)
-                elif self.orientation == Qt.Vertical:
-                    self.parent().auto_size_row(header_index)
-                return True
+            return self.mouse_double_click(event)
 
         # Handle active drag resizing
         if event.type() == QtCore.QEvent.MouseMove:
-            if self.orientation == Qt.Horizontal:
-                mouse_position = event.pos().x()
-            elif self.orientation == Qt.Vertical:
-                mouse_position = event.pos().y()
+            return self.mouse_move(event)
 
-            # If this is None, there is no drag resize happening
-            if self.header_being_resized is not None:
+        # ignore other events
+        return False
 
-                size = self.initial_header_size + (
-                        mouse_position - self.resize_start_position
-                )
-                if size > 10:
-                    if self.orientation == Qt.Horizontal:
-                        self.setColumnWidth(self.header_being_resized, size)
-                        self.parent().dataView.setColumnWidth(self.header_being_resized, size)
-                    if self.orientation == Qt.Vertical:
-                        self.setRowHeight(self.header_being_resized, size)
-                        self.parent().dataView.setRowHeight(self.header_being_resized, size)
+    def mouse_press(self, event: QtCore.QEvent.MouseMove) -> bool:
+        mouse_position = event.pos().x()
 
-                    self.updateGeometry()
-                    self.parent().dataView.updateGeometry()
-                return True
+        if self.over_header_edge(mouse_position) is not None:
+            self.header_being_resized = self.over_header_edge(mouse_position)
+            self.resize_start_position = mouse_position
+            self.initial_header_size = self.columnWidth(self.header_being_resized)
+            return True
+
+        return False
+
+    def mouse_double_click(self, event: QtCore.QEvent.MouseMove) -> bool:
+        mouse_position = event.pos().x()
+
+        if self.over_header_edge(mouse_position) is not None:
+            header_index = self.over_header_edge(mouse_position)
+            self.parent().auto_size_column(header_index)
+            return True
+
+        return False
+
+    def mouse_move(self, event: QtCore.QEvent.MouseMove):
+        mouse_position = event.pos().x()
+
+        # If this is None, there is no drag resize happening
+        if self.header_being_resized is not None:
+            size = self.initial_header_size + (mouse_position - self.resize_start_position)
+            if size > 10:
+                self.setColumnWidth(self.header_being_resized, size)
+                self.parent().dataView.setColumnWidth(self.header_being_resized, size)
+
+                self.updateGeometry()
+                self.parent().dataView.updateGeometry()
+            return True
 
             # Set the cursor shape
-            if self.over_header_edge(mouse_position) is not None:
-                if self.orientation == Qt.Horizontal:
-                    self.viewport().setCursor(QtGui.QCursor(Qt.SplitHCursor))
-                elif self.orientation == Qt.Vertical:
-                    self.viewport().setCursor(QtGui.QCursor(Qt.SplitVCursor))
-            else:
-                self.viewport().setCursor(QtGui.QCursor(Qt.ArrowCursor))
+        if self.over_header_edge(mouse_position) is not None:
+            self.viewport().setCursor(QtGui.QCursor(Qt.SplitHCursor))
+        else:
+            self.viewport().setCursor(QtGui.QCursor(Qt.ArrowCursor))
 
         return False
 
     # Return the size of the header needed to match the corresponding DataTableView
     def sizeHint(self):
-        # Columm headers
+        # Column headers
         if self.orientation == Qt.Horizontal:
-            # Width of DataTableView
             width = self.table.sizeHint().width() + self.verticalHeader().width()
-            # Height
             height = 2 * self.frameWidth()  # Account for border & padding
             for i in range(self.model().rowCount()):
                 height += self.rowHeight(i)
 
         # Index header
         else:
-            # Height of DataTableView
             height = self.table.sizeHint().height() + self.horizontalHeader().height()
-            # Width
             width = 2 * self.frameWidth()  # Account for border & padding
             for i in range(self.model().columnCount()):
                 width += self.columnWidth(i)
@@ -884,15 +632,6 @@ class HeaderNamesModel(QtCore.QAbstractTableModel):
                     val = "index"
                 return str(val)
 
-        # if role == QtCore.Qt.DecorationRole:
-        #     if self.dfm.sort_is_ascending:
-        #         icon = QtGui.QIcon(os.path.join(pandasgui.__path__[0], "resources/images/sort-ascending.svg"))
-        #     else:
-        #         icon = QtGui.QIcon(os.path.join(pandasgui.__path__[0], "resources/images/sort-descending.svg"))
-        #
-        #     if col == self.dfm.index_sorted and self.orientation == Qt.Vertical:
-        #         return icon
-
 
 class HeaderNamesView(QTableView):
     def __init__(self, parent: DataframeView, orientation):
@@ -919,15 +658,6 @@ class HeaderNamesView(QTableView):
         font.setBold(True)
         self.setFont(font)
         self.init_size()
-
-    def mouseDoubleClickEvent(self, event):
-        point = event.pos()
-        ix = self.indexAt(point)
-        if event.button() == QtCore.Qt.LeftButton:
-            if self.orientation == Qt.Vertical:
-                self.dfm.sort_index(ix.column())
-        else:
-            super().mouseDoubleClickEvent(event)
 
     def init_size(self):
         # Match vertical header name widths to vertical header
