@@ -1,4 +1,5 @@
 import os
+import typing
 from typing import List
 
 import pandas as pd
@@ -68,13 +69,13 @@ def get_paths_from_zip(path: str) -> List[str]:
     return list(txt_files)
 
 
-def find_txt_files(path: str) -> List[str]:
+def find_txt_files(path: str) -> typing.Generator:
     for root, dirs, files in os.walk(path):
         for file in fnmatch.filter(files, '*.txt'):
             yield os.path.join(root, file)
 
 
-def remove_tempdir_contents():
+def remove_tempdir_contents() -> None:
     for root, dirs, files in os.walk('temp'):
         for f in files:
             os.unlink(os.path.join(root, f))

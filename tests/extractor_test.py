@@ -3,9 +3,11 @@ import pandas as pd
 
 from utility.extractors import extract_tactical_scenario, extract_identifiers
 
+event_header = 'EVENT HEADER - IDENTIFIER'
+
 
 class ExtractTacticalScenarioTests(unittest.TestCase):
-    df = pd.DataFrame({'EVENT HEADER - IDENTIFIER': ['TACTICAL_SCENARIO', 'SOME OTHER COLUMN'],
+    df = pd.DataFrame({event_header: ['TACTICAL_SCENARIO', 'SOME OTHER COLUMN'],
                        'TACT SCENARIO - GRID CENTER LAT': [11.111, 22.222],
                        'TACT SCENARIO - GRID CENTER LONG': [-1.1111, -2.2222]})
 
@@ -22,7 +24,7 @@ class ExtractTacticalScenarioTests(unittest.TestCase):
 
     def test_extract_tactical_scenario_not_present(self):
         df = self.df.copy()
-        df = df.set_index('EVENT HEADER - IDENTIFIER').drop(['TACTICAL_SCENARIO'])
+        df = df.set_index(event_header).drop(['TACTICAL_SCENARIO'])
 
         with self.assertRaises(KeyError) as err:
             extract_tactical_scenario(df)
@@ -31,7 +33,7 @@ class ExtractTacticalScenarioTests(unittest.TestCase):
 
 
 class ExtractIdentifierTests(unittest.TestCase):
-    test_df = pd.DataFrame({'EVENT HEADER - IDENTIFIER': ['SCENARIO_1', 'SCENARIO_2', 'SCENARIO_3'],
+    test_df = pd.DataFrame({event_header: ['SCENARIO_1', 'SCENARIO_2', 'SCENARIO_3'],
                             'TEST_COL_1': ['TEST_VALUE_1', 'TEST_VALUE_2', 'TEST_VALUE_3'],
                             'TEST_COL_2': ['TEST_VALUE_1', 'TEST_VALUE_2', 'TEST_VALUE_3']})
 

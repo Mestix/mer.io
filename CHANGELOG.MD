@@ -1,3 +1,14 @@
+## 0.4 - 15-4-2021
+### Added
+- (func) Export single identifier with data to excel
+- (func) Select destination folder for export
+- (func) Give a name for export file
+- (Class) ImportState enum
+
+### Removed
+- Removed different import signals from MerController  
+  Replaced them for one import signal with an Enum ImportState
+
 ## 0.3 - 15-4-2021
 ### Changed
 - Refactored architecture to MVC

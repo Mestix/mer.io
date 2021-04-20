@@ -1,17 +1,23 @@
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, List, Dict, Tuple
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, QWidget, \
-    QProgressBar, QDialog, QMainWindow, QAction, QMessageBox
+    QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QFileDialog, QMenuBar, QMenu
 
+from utility.utility import get_exception
 from views.tree_view import TreeView
 
 
 class MerView(QMainWindow):
-    import_signal: pyqtSignal = pyqtSignal()
-    confirmed_yes_signal: pyqtSignal = pyqtSignal()
+    import_signal: pyqtSignal = pyqtSignal(list)
+
+    export_single_signal: pyqtSignal = pyqtSignal(str)
+    export_mer_signal: pyqtSignal = pyqtSignal()
+
+    continue_without_tact_signal: pyqtSignal = pyqtSignal()
+
     exit_signal: pyqtSignal = pyqtSignal()
 
     def __init__(self):
@@ -19,7 +25,6 @@ class MerView(QMainWindow):
         self.splitter: Union[QSplitter, None] = None
         self.stacked_dfs: Union[QStackedWidget, None] = None
         self.tree: Union[TreeView, None] = None
-        self.background_label: Union[QLabel, None] = None
 
         self.status_bar: Union[QStatusBar, None] = None
         self.status_bar_filename: Union[QWidget, None] = None
@@ -27,17 +32,15 @@ class MerView(QMainWindow):
 
         self.progress_bar: Union[QProgressBar, None] = None
         self.progress_window: Union[QDialog, None] = None
-        self.progress_window_label: Union[str, None] = None
+        self.progress_window_label: Union[QLabel, None] = None
 
         self.init_ui()
 
     def init_ui(self):
-        self.splitter = QSplitter(self)
-        self.tree = TreeView()
-        self.tree.hide()
+        self.splitter: QSplitter = QSplitter(self)
+        self.tree: TreeView = TreeView()
 
-        self.stacked_dfs = QStackedWidget()
-        self.status_bar = self.statusBar()
+        self.stacked_dfs: QStackedWidget = QStackedWidget()
 
         self.splitter.addWidget(self.tree)
         self.splitter.addWidget(self.stacked_dfs)
@@ -45,6 +48,8 @@ class MerView(QMainWindow):
         self.splitter.setCollapsible(1, False)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
+
+        self.status_bar: QStatusBar = self.statusBar()
 
         nav_width = self.tree.sizeHint().width()
         self.splitter.setSizes([nav_width, self.width() - nav_width])
@@ -56,24 +61,16 @@ class MerView(QMainWindow):
 
         self.setGeometry(250, 150, 1500, 750)
 
-        self.background_label = QLabel('Nothing to see here...', self)
-        self.background_label.setStyleSheet("QLabel { color : gray; }")
-        self.background_label.adjustSize()
-        self.set_background_lbl_to_centre()
-
         self.setWindowTitle('MER.io')
         self.setWindowIcon(QIcon('../assets/copter_icon.png'))
 
     def reset_ui(self):
-        self.tree = TreeView()
         self.tree.hide()
-        self.stacked_dfs = QStackedWidget()
+        self.tree: TreeView = TreeView()
+        self.stacked_dfs: QStackedWidget = QStackedWidget()
 
-        self.progress_window_label.setText('')
-        self.progress_window_label.adjustSize()
-        self.background_label.show()
-        self.set_status_bar_right_widget('')
-        self.set_status_bar_left_widget('')
+        self.set_progress_text('')
+        self.set_mer_info(('', ''))
 
         self.splitter.replaceWidget(0, self.tree)
         self.splitter.replaceWidget(1, self.stacked_dfs)
@@ -82,32 +79,56 @@ class MerView(QMainWindow):
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
 
+        self.menuBar().children()[1].children()[1].children()[0].setEnabled(False)
+
     def create_menu_bar(self):
-        menu_bar = self.menuBar()
+        menu_bar: QMenuBar = self.menuBar()
 
         @dataclass
         class MenuItem:
             name: str
             func: callable
+            items: Union[List, None] = None
             shortcut: str = ''
 
-        menu_bar_items = {'File': [MenuItem(name='Import',
-                                            func=self.import_file,
-                                            shortcut='Ctrl+O'),
-                                   MenuItem(name='Exit',
-                                            func=self.exit_program,
-                                            shortcut='Ctrl+Q')
-            ,
-                                   ]}
+        menu_bar_items: Dict[str, List[MenuItem]] = {'File': [MenuItem(name='Import',
+                                                                       func=self.import_file,
+                                                                       shortcut='Ctrl+O'),
+                                                              MenuItem(name='Export',
+                                                                       func=self.import_file,
+                                                                       shortcut='Ctrl+O',
+                                                                       items=[
+                                                                           MenuItem(
+                                                                               name='Selected identifier',
+                                                                               func=self.export_identifier,
+                                                                           ),
+                                                                           MenuItem(
+                                                                               name='Complete MER',
+                                                                               func=self.export_mer,
+                                                                           )
+                                                                       ]),
+                                                              MenuItem(name='Exit',
+                                                                       func=self.exit_program,
+                                                                       shortcut='Ctrl+Q'),
+                                                              ]}
 
         for name in menu_bar_items:
-            menu = menu_bar.addMenu(name)
+            menu: QMenu = menu_bar.addMenu(name)
 
             for item in menu_bar_items[name]:
-                action = QAction(item.name, self)
-                action.setShortcut(item.shortcut)
-                action.triggered.connect(item.func)
-                menu.addAction(action)
+                if item.items:
+                    submenu: QMenu = menu.addMenu(item.name)
+                    for i in item.items:
+                        action: QAction = QAction(i.name, self)
+                        action.triggered.connect(i.func)
+                        submenu.addAction(action)
+                else:
+                    action: QAction = QAction(item.name, self)
+                    action.setShortcut(item.shortcut)
+                    action.triggered.connect(item.func)
+                    menu.addAction(action)
+
+        self.menuBar().children()[1].children()[1].children()[0].setEnabled(False)
 
     def create_progress_window(self):
         self.progress_window: QDialog = QDialog()
@@ -125,61 +146,71 @@ class MerView(QMainWindow):
         self.progress_bar.move(15, 40)
         self.progress_bar.setRange(0, 0)
 
-    def toggle_progress(self, show):
+    def toggle_progress(self, show: bool):
         if show:
             self.progress_window.show()
         else:
             self.progress_window.hide()
 
-    def set_background_lbl_to_centre(self):
-        self.background_label.show()
-        width = round((self.width() - self.background_label.width()) / 2)
-        height = round((self.height() - self.background_label.height()) / 2)
-        self.background_label.move(width, height)
-
-    def set_status_bar_left_widget(self, text):
+    def set_tact_scenario(self, text: str):
         if self.status_bar_tactical_scenario is not None:
             self.status_bar.removeWidget(self.status_bar_tactical_scenario)
 
         self.status_bar_tactical_scenario = QLabel(text)
         self.status_bar.addPermanentWidget(self.status_bar_tactical_scenario)
 
-    def set_status_bar_right_widget(self, text):
+    def set_filename(self, text: str):
         if self.status_bar_filename is not None:
             self.status_bar.removeWidget(self.status_bar_filename)
 
         self.status_bar_filename = QLabel(text)
         self.status_bar.addWidget(self.status_bar_filename)
 
-    def show_confirm_dialog(self, txt):
+    def import_failed_dialog(self, txt: str):
         QMessageBox.warning(self, 'Error', txt, QMessageBox.Ok)
         self.reset_ui()
 
-    def show_yesno_dialog(self, txt):
+    def no_tact_dialog(self, txt: str):
         confirm = QMessageBox.warning(self, 'Warning', txt,
                                       QMessageBox.No | QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
-            self.background_label.hide()
-            self.confirmed_yes_signal.emit()
+            self.continue_without_tact_signal.emit()
         else:
             self.reset_ui()
 
-    def set_progress_text(self, txt):
+    def set_progress_text(self, txt: str):
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
 
-    def set_mer_info(self, info):
-        self.set_status_bar_right_widget(info[0])
-        self.set_status_bar_left_widget(info[1])
+    def set_mer_info(self, info: Tuple):
+        self.set_filename(info[0])
+        self.set_tact_scenario(info[1])
 
     def import_file(self):
-        self.import_signal.emit()
+        dialog = QFileDialog()
+        paths, _ = dialog.getOpenFileNames(filter='*.txt *.zip', directory='../test_mers')
+
+        if len(paths) > 0:
+            try:
+                self.import_signal.emit(paths)
+            except Exception as e:
+                self.import_failed_dialog('Something went wrong...')
+                print(get_exception(e))
+
+    def export_identifier(self):
+        dialog = QFileDialog()
+        path, _ = dialog.getSaveFileName(filter="*.xlsx")
+        if path:
+            self.export_single_signal.emit(path)
+
+    def export_mer(self):
+        self.export_mer_signal.emit()
+
+    def enable_export_menu(self):
+        self.menuBar().children()[1].children()[1].children()[0].setEnabled(True)
 
     def exit_program(self):
         confirm = QMessageBox.warning(self, 'Warning', 'Close program?',
                                       QMessageBox.No | QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
             self.exit_signal.emit()
-        else:
-            pass
-
