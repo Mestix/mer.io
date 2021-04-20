@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import Union, List, Dict, Tuple
 
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -10,11 +11,15 @@ from utility.utility import get_exception
 from views.tree_view import TreeView
 
 
+class ExportKind(Enum):
+    SINGLE = 0
+    COMPLETE = 1
+
+
 class MerView(QMainWindow):
     import_signal: pyqtSignal = pyqtSignal(list)
 
-    export_single_signal: pyqtSignal = pyqtSignal(str)
-    export_mer_signal: pyqtSignal = pyqtSignal()
+    export_signal: pyqtSignal = pyqtSignal(ExportKind, str)
 
     continue_without_tact_signal: pyqtSignal = pyqtSignal()
 
@@ -69,7 +74,7 @@ class MerView(QMainWindow):
         self.tree: TreeView = TreeView()
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
-        self.set_progress_text('')
+        self.import_busy_txt('')
         self.set_mer_info(('', ''))
 
         self.splitter.replaceWidget(0, self.tree)
@@ -178,7 +183,7 @@ class MerView(QMainWindow):
         else:
             self.reset_ui()
 
-    def set_progress_text(self, txt: str):
+    def import_busy_txt(self, txt: str):
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
 
@@ -201,10 +206,13 @@ class MerView(QMainWindow):
         dialog = QFileDialog()
         path, _ = dialog.getSaveFileName(filter="*.xlsx")
         if path:
-            self.export_single_signal.emit(path)
+            self.export_signal.emit(ExportKind.SINGLE, path)
 
     def export_mer(self):
-        self.export_mer_signal.emit()
+        dialog = QFileDialog()
+        path, _ = dialog.getSaveFileName(filter="*.xlsx")
+        if path:
+            self.export_signal.emit(ExportKind.COMPLETE, path)
 
     def enable_export_menu(self):
         self.menuBar().children()[1].children()[1].children()[0].setEnabled(True)

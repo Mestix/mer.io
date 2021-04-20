@@ -4,7 +4,7 @@ from typing import List
 from PyQt5.QtWidgets import QApplication
 
 from models.mer_model import MerModel, ImportState
-from views.mer_view import MerView
+from views.mer_view import MerView, ExportKind
 from utility.converters import convert_degrees_to_coordinate_lat, convert_degrees_to_coordinate_long
 
 
@@ -17,7 +17,7 @@ class MerController:
 
     def init(self) -> None:
         self.view.import_signal.connect(self.import_file)
-        self.view.export_single_signal.connect(self.export_single_df)
+        self.view.export_signal.connect(self.export_mer)
 
         self.view.continue_without_tact_signal.connect(self.model.mock_tact_scenario)
         self.view.exit_signal.connect(self.exit_program)
@@ -33,8 +33,11 @@ class MerController:
             self.reset_mer()
         self.model.import_from_paths(paths)
 
-    def export_single_df(self, path: str) -> None:
-        self.model.export_single_df(path)
+    def export_mer(self, kind: ExportKind, path: str) -> None:
+        if kind is ExportKind.SINGLE:
+            self.model.export_single(path)
+        else:
+            self.model.export_complete(path)
 
     def handle_import_signal(self, state: ImportState, txt: str) -> None:
         if state is ImportState.SUCCESS:
@@ -42,7 +45,7 @@ class MerController:
         elif state is ImportState.FAILED:
             self.view.import_failed_dialog(txt)
         else:
-            self.view.set_progress_text(txt)
+            self.view.import_busy_txt(txt)
 
     def reset_mer(self) -> None:
         self.model.reset_mer()

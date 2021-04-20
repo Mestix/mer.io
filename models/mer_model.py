@@ -14,9 +14,9 @@ from utility.utility import get_exception
 
 
 class ImportState(Enum):
-    SUCCESS = 1
-    FAILED = 2
-    BUSY = 3
+    SUCCESS = 0
+    FAILED = 1
+    BUSY = 2
 
 
 class MerModel(QObject):
@@ -92,9 +92,24 @@ class MerModel(QObject):
         self.import_task.task_busy.connect(self.on_task_busy)
         self.start_task()
 
-    def export_single_df(self, path: str) -> None:
+    def export_single(self, path: str) -> None:
         try:
             threading.Thread(target=self.selected_df.df.to_excel, args=(path, )).start()
+        except Exception as e:
+            print(get_exception(e))
+
+    def export_complete(self, path) -> None:
+        try:
+            import pandas as pd
+            writer = pd.ExcelWriter(path)
+
+            for key, dfm in self.mer_data.items():
+                dfm.df.to_excel(writer, key)
+
+            writer.save()
+            threading.Thread(target=writer.save).start()
+            print('DataFrame is written successfully to Excel Sheet.')
+
         except Exception as e:
             print(get_exception(e))
 
