@@ -19,7 +19,7 @@ class ExplorerView(QtWidgets.QMainWindow):
 
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         splitter: QSplitter = QSplitter(self)
 
         splitter.addWidget(self.viewer)

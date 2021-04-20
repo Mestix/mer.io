@@ -47,16 +47,16 @@ class DataframeView(QWidget):
         # Disable scrolling on the headers. Even though the scrollbars are hidden, scrolling by dragging desyncs them
         self.indexHeader.horizontalScrollBar().valueChanged.connect(lambda: None)
 
-        class CornerWidget(QWidget):
-            def __init__(self):
-                super().__init__()
-                # https://stackoverflow.com/questions/32313469/stylesheet-in-pyside-not-working
-                self.setAttribute(QtCore.Qt.WA_StyledBackground)
+        # class CornerWidget(QWidget):
+        #     def __init__(self):
+        #         super().__init__()
+        #         # https://stackoverflow.com/questions/32313469/stylesheet-in-pyside-not-working
+        #         self.setAttribute(QtCore.Qt.WA_StyledBackground)
 
-        self.corner_widget = CornerWidget()
-        self.corner_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
+        # self.corner_widget = CornerWidget()
+        # self.corner_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         # Add items to grid layout
-        self.gridLayout.addWidget(self.corner_widget, 0, 0)
+        # self.gridLayout.addWidget(self.corner_widget, 0, 0)
         self.gridLayout.addWidget(self.columnHeader, 0, 1, 2, 2)
         self.gridLayout.addWidget(self.columnHeaderNames, 0, 3, 2, 1)
         self.gridLayout.addWidget(self.indexHeader, 2, 0, 2, 2)
@@ -70,6 +70,7 @@ class DataframeView(QWidget):
         self.dataView.horizontalScrollBar().setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed))
 
         # These expand when the window is enlarged instead of having the grid squares spread out
+        self.gridLayout.setColumnStretch(4, 1)
         self.gridLayout.setColumnStretch(4, 1)
         self.gridLayout.setRowStretch(5, 1)
         #
@@ -117,7 +118,7 @@ class DataframeView(QWidget):
 
         # Iterate over the column's rows and check the width of each to determine the max width for the column
         # Only check the first N rows for performance. If there is larger content in cells below it will be cut off
-        N = 100
+        N = 15
         for i in range(self.dataView.model().rowCount())[:N]:
             mi = self.dataView.model().index(i, column_index)
             text = self.dataView.model().data(mi)
@@ -149,7 +150,7 @@ class DataframeView(QWidget):
 
         # Iterate over the row's columns and check the width of each to determine the max height for the row
         # Only check the first N columns for performance.
-        N = 100
+        N = 15
         for i in range(min(N, self.dataView.model().columnCount())):
             mi = self.dataView.model().index(row_index, i)
             cell_width = self.columnHeader.columnWidth(i)
@@ -170,10 +171,6 @@ class DataframeView(QWidget):
         self.indexHeader.updateGeometry()
 
     def keyPressEvent(self, event):
-        # Disabling this and moving hotkeys to main GUI
-        if self.dfm.gui is not None:
-            super(DataframeView, self).keyPressEvent(event)
-
         QWidget.keyPressEvent(self, event)
         mods = event.modifiers()
 
@@ -297,8 +294,8 @@ class DataTableModel(QtCore.QAbstractTableModel):
             if type(cell_is_na) == bool and cell_is_na:
                 if role == QtCore.Qt.DisplayRole:
                     return "●"
-                elif role == QtCore.Qt.EditRole:
-                    return ""
+                # elif role == QtCore.Qt.EditRole:
+                #     return ""
                 elif role == QtCore.Qt.ToolTipRole:
                     return "NaN"
 
