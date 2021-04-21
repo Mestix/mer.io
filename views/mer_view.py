@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import Union, List, Dict, Tuple
 
 from PyQt5.QtCore import pyqtSignal, Qt
@@ -7,22 +6,14 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, QWidget, \
     QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QFileDialog, QMenuBar, QMenu
 
-from utility.utility import get_exception
+from utility.utility import get_exception, get_path
 from views.tree_view import TreeView
-
-
-class ExportKind(Enum):
-    SINGLE = 0
-    COMPLETE = 1
 
 
 class MerView(QMainWindow):
     import_signal: pyqtSignal = pyqtSignal(list)
-
-    export_signal: pyqtSignal = pyqtSignal(ExportKind, str)
-
+    export_signal: pyqtSignal = pyqtSignal(str)
     continue_without_tact_signal: pyqtSignal = pyqtSignal()
-
     exit_signal: pyqtSignal = pyqtSignal()
 
     def __init__(self):
@@ -56,8 +47,7 @@ class MerView(QMainWindow):
 
         self.status_bar: QStatusBar = self.statusBar()
 
-        nav_width = self.tree.sizeHint().width()
-        self.splitter.setSizes([nav_width, self.width() - nav_width])
+        self.splitter.setSizes([300, 1000])
         self.splitter.setContentsMargins(10, 10, 10, 10)
         self.setCentralWidget(self.splitter)
 
@@ -84,7 +74,7 @@ class MerView(QMainWindow):
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
 
-        self.menuBar().children()[1].children()[1].children()[0].setEnabled(False)
+        self.menuBar().children()[1].actions()[1].setEnabled(False)
 
     def create_menu_bar(self):
         menu_bar: QMenuBar = self.menuBar()
@@ -93,47 +83,29 @@ class MerView(QMainWindow):
         class MenuItem:
             name: str
             func: callable
-            items: Union[List, None] = None
-            shortcut: str = ''
+            shortcut: str
 
         menu_bar_items: Dict[str, List[MenuItem]] = {'File': [MenuItem(name='Import',
                                                                        func=self.import_file,
                                                                        shortcut='Ctrl+O'),
                                                               MenuItem(name='Export',
-                                                                       func=self.import_file,
-                                                                       shortcut='Ctrl+O',
-                                                                       items=[
-                                                                           MenuItem(
-                                                                               name='Selected identifier',
-                                                                               func=self.export_identifier,
-                                                                           ),
-                                                                           MenuItem(
-                                                                               name='Complete MER',
-                                                                               func=self.export_mer,
-                                                                           )
-                                                                       ]),
+                                                                       func=self.export,
+                                                                       shortcut='Ctrl+E'),
                                                               MenuItem(name='Exit',
                                                                        func=self.exit_program,
-                                                                       shortcut='Ctrl+Q'),
+                                                                       shortcut='Ctrl+Q')
                                                               ]}
 
         for name in menu_bar_items:
             menu: QMenu = menu_bar.addMenu(name)
 
             for item in menu_bar_items[name]:
-                if item.items:
-                    submenu: QMenu = menu.addMenu(item.name)
-                    for i in item.items:
-                        action: QAction = QAction(i.name, self)
-                        action.triggered.connect(i.func)
-                        submenu.addAction(action)
-                else:
-                    action: QAction = QAction(item.name, self)
-                    action.setShortcut(item.shortcut)
-                    action.triggered.connect(item.func)
-                    menu.addAction(action)
+                action: QAction = QAction(item.name, self)
+                action.setShortcut(item.shortcut)
+                action.triggered.connect(item.func)
+                menu.addAction(action)
 
-        self.menuBar().children()[1].children()[1].children()[0].setEnabled(False)
+        self.menuBar().children()[1].actions()[1].setEnabled(False)
 
     def create_progress_window(self):
         self.progress_window: QDialog = QDialog()
@@ -171,9 +143,8 @@ class MerView(QMainWindow):
         self.status_bar_filename = QLabel(text)
         self.status_bar.addWidget(self.status_bar_filename)
 
-    def import_failed_dialog(self, txt: str):
+    def error_dialog(self, txt: str):
         QMessageBox.warning(self, 'Error', txt, QMessageBox.Ok)
-        self.reset_ui()
 
     def no_tact_dialog(self, txt: str):
         confirm = QMessageBox.warning(self, 'Warning', txt,
@@ -199,23 +170,16 @@ class MerView(QMainWindow):
             try:
                 self.import_signal.emit(paths)
             except Exception as e:
-                self.import_failed_dialog('Something went wrong...')
+                self.error_dialog('Something went wrong...')
                 print(get_exception(e))
 
-    def export_identifier(self):
-        dialog = QFileDialog()
-        path, _ = dialog.getSaveFileName(filter="*.xlsx")
+    def export(self):
+        path = get_path()
         if path:
-            self.export_signal.emit(ExportKind.SINGLE, path)
-
-    def export_mer(self):
-        dialog = QFileDialog()
-        path, _ = dialog.getSaveFileName(filter="*.xlsx")
-        if path:
-            self.export_signal.emit(ExportKind.COMPLETE, path)
+            self.export_signal.emit(path)
 
     def enable_export_menu(self):
-        self.menuBar().children()[1].children()[1].children()[0].setEnabled(True)
+        self.menuBar().children()[1].actions()[1].setEnabled(True)
 
     def exit_program(self):
         confirm = QMessageBox.warning(self, 'Warning', 'Close program?',

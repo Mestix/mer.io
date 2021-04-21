@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, List
 
 from pandas import DataFrame
 
@@ -9,8 +9,8 @@ from views.mer_view import MerView
 
 @dataclass
 class Filter:
-    name: str
-    expr: str = ''
+    name: str = str()
+    expr: str = str()
     filter_enabled: bool = False
     column_enabled: bool = True
 
@@ -22,7 +22,7 @@ class DataFrameModel:
         self.df: DataFrame = df
         self.df_unfiltered: DataFrame = df
 
-        self.filters: dict[str, Filter] = {}
+        self.filters: dict[str, Filter] = dict()
 
         self.rename_columns()
         self.set_filters()
@@ -30,46 +30,46 @@ class DataFrameModel:
         self.viewer: Union[MerView, None] = None
         self.explorer = None
 
-    def rename_columns(self):
+    def rename_columns(self) -> None:
         for col_old in self.df.columns:
             try:
-                search = ' - '
+                search: str = ' - '
                 i = col_old.index(search) + len(search)
-                col_new = col_old[i:]
+                col_new: str = col_old[i:]
                 self.df = self.df.rename(columns={col_old: col_new})
-            except Exception as e:
-                print(get_exception(e))
+            except Exception:
+                pass
 
         self.df_unfiltered = self.df
 
-    def set_filters(self):
+    def set_filters(self) -> None:
         for name in list(self.df_unfiltered.columns):
             self.filters[name] = Filter(name=name)
 
-    def add_filter(self, name: str, expr: str, enabled: bool = True):
+    def add_filter(self, name: str, expr: str, enabled: bool = True) -> None:
         self.filters[name].expr = expr
         self.filters[name].filter_enabled = enabled
 
-    def remove_filter(self, name: str):
+    def remove_filter(self, name: str) -> None:
         self.filters[name].expr = ''
         self.filters[name].filter_enabled = False
 
-    def reset_filters(self):
+    def reset_filters(self) -> None:
         for key in self.filters:
             self.filters[key].expr = ''
             self.filters[key].filter_enabled = False
 
         self.apply_filters()
 
-    def filters_empty(self):
+    def filters_empty(self) -> bool:
         for key in self.filters:
             if self.filters[key].filter_enabled is True:
                 return False
 
         return True
 
-    def apply_filters(self):
-        df = self.df_unfiltered.copy()
+    def apply_filters(self) -> None:
+        df: DataFrame = self.df_unfiltered.copy()
 
         for name, f in self.filters.items():
             if f.filter_enabled:
@@ -81,13 +81,13 @@ class DataFrameModel:
         self.df = df[self.get_active_columns()]
         self.update()
 
-    def add_column(self, name):
+    def add_column(self, name: str) -> None:
         self.filters[name].column_enabled = True
 
-    def remove_column(self, name):
+    def remove_column(self, name: str) -> None:
         self.filters[name].column_enabled = False
 
-    def get_active_columns(self):
+    def get_active_columns(self) -> List[str]:
         columns = []
 
         for key in self.filters:
@@ -96,7 +96,7 @@ class DataFrameModel:
 
         return columns
 
-    def update(self):
+    def update(self) -> None:
         if self.viewer is not None:
             for model in [self.viewer.dataView.model(),
                           self.viewer.columnHeader.model(),

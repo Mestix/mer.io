@@ -4,7 +4,7 @@ import pandas as pd
 from pandas import DataFrame
 
 
-def clean_duplicate_columns(columns: List[str]) -> List[str]:
+def clean_duplicate_columns(columns: pd.Index) -> List[str]:
     return [x[1] if x[1] not in columns[:x[0]] else f"{x[1]}.{list(columns[:x[0]]).count(x[1])}" for x in
             enumerate(columns)]
 

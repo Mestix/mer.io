@@ -1,36 +1,98 @@
-from typing import Tuple
+import typing
 
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, pyqtSignal, QAbstractItemModel, QSortFilterProxyModel, QModelIndex
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QTreeView, QAbstractItemView, QCheckBox
 
-from utility.utility import get_exception
 
-
-class TreeView(QtWidgets.QTreeWidget):
+class TreeView(QWidget):
     selection_changed_signal: pyqtSignal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-        self.setHeaderLabels(['Identifier', 'Cols', 'Rows'])
-        self.setColumnWidth(0, 180)
-        self.setColumnWidth(1, 35)
-        self.setColumnWidth(2, 35)
+        self.tree: QTreeView = QTreeView()
+        self.tree.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tree.clicked.connect(self.select_item)
+        self.model = QStandardItemModel(self.tree)
 
+        self.proxy_model = QSortFilterProxyModel(self.tree)
+        self.proxy_model.setSourceModel(self.model)
+
+        self.tree.setModel(self.proxy_model)
+
+        self.init_ui()
         self.hide()
 
-    def sizeHint(self) -> QtCore.QSize:
-        return QtCore.QSize(300, 500)
+    def init_ui(self):
+        select_all_box: QCheckBox = QCheckBox('Select All')
+        select_all_box.stateChanged.connect(self.select_box_checked)
 
-    def selectionChanged(self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection) -> None:
-        super().selectionChanged(selected, deselected)
+        searchbar: QLineEdit = QLineEdit('')
+        searchbar.setPlaceholderText('Search')
+        searchbar.textChanged.connect(self.on_search)
 
-        if len(self.selectedItems()) > 0:
-            item = self.selectedItems()[0]
-            df_name = item.data(0, Qt.DisplayRole)
-            self.selection_changed_signal.emit(df_name)
+        layout: QVBoxLayout = QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(select_all_box)
+        layout.addWidget(self.tree)
+        layout.addWidget(searchbar)
 
-    def add_tree_item(self, name: str, shape: Tuple[int, int]) -> None:
-        self.addTopLevelItem(QTreeWidgetItem([name, str(shape[1]), str(shape[0])]))
-        self.setCurrentItem(self.topLevelItem(0))
-        self.itemSelectionChanged.emit()
+        self.setLayout(layout)
+
+    def select_item(self, index: QModelIndex) -> None:
+        name: str = self.tree.model().data(index)
+        self.selection_changed_signal.emit(name)
+
+    def on_search(self, text):
+        self.proxy_model.setFilterRegExp(text.upper())
+
+    def add_tree_item(self, name: str) -> None:
+        item: QStandardItem = QStandardItem(name)
+        item.setCheckable(True)
+        item.setCheckState(Qt.Unchecked)
+        self.model.appendRow(item)
+
+    def selected_items(self) -> typing.Generator:
+        root: QAbstractItemModel = self.get_root()
+        item_count: int = self.get_item_count()
+
+        for i in range(item_count):
+            item: QStandardItem = root.child(i)
+            if item.checkState() == Qt.Checked:
+                yield item.text()
+
+    def get_root(self) -> QAbstractItemModel:
+        return self.tree.model().sourceModel().invisibleRootItem()
+
+    def get_item_count(self) -> int:
+        return self.get_root().rowCount()
+
+    def select_box_checked(self, state: Qt.CheckState):
+        if state == Qt.Checked:
+            self.select_all()
+        else:
+            self.deselect_all()
+
+    def select_all(self) -> None:
+        root: QAbstractItemModel = self.get_root()
+        item_count: int = self.get_item_count()
+
+        for i in range(item_count):
+            item: QStandardItem = root.child(i)
+            item.setCheckState(Qt.Checked)
+
+    def deselect_all(self) -> None:
+        root: QAbstractItemModel = self.get_root()
+        item_count: int = self.get_item_count()
+
+        for i in range(item_count):
+            item: QStandardItem = root.child(i)
+            item.setCheckState(Qt.Unchecked)
+
+    def filter_list(self, txt: str) -> None:
+        self.proxy_model.setFilterRegExp(QtCore.QRegExp(txt, Qt.CaseInsensitive, QtCore.QRegExp.FixedString))
+
+
+

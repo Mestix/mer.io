@@ -1,26 +1,25 @@
-## 0.4 - 15-4-2021
+## 0.3 - 21-4-2021
 ### Added
-- (func) Export single identifier with data to excel
+- (func) Add checkboxes to Identifier tree for selecting Identifiers for export  
+- (func) Add a Select All Checkbox above Identifier tree for selecting and deselecting all Identifiers at once    
+- (func) Export selected identifiers with data to excel
 - (func) Select destination folder for export
 - (func) Give a name for export file
 - (Class) ImportState enum
+- (Class) MerController: Updates view, Manipulates model
+- (Class) MerModel: Changes View with Signals
+- (Class) MerView: Contains only GUI elements now, Reads properties from Model
 
-### Removed
-- Removed different import signals from MerController  
-  Replaced them for one import signal with an Enum ImportState
-
-## 0.3 - 15-4-2021
 ### Changed
+- (func) Changed Toggle buttons in Filter form to Checkbox
+- (Misc) Moved all Mer/DataFrame creation func to Thread
 - Refactored architecture to MVC
 - Using Signals and Slots
 
 ### Removed
+- Removed different import signals from MerController  
+  Replaced them for one import signal with an Enum ImportState  
 - (Class) MerKeeper
-
-### Added
-- (Class) MerController: Updates view, Manipulates model
-- (Class) MerModel: Changes View with Signals
-- (Class) MerView: Contains only GUI elements now, Reads properties from Model
 
 ## v0.2 - 06-04-2021
 ### Added

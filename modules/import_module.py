@@ -1,23 +1,18 @@
-from typing import List
+from typing import List, Dict
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
 from pandas import DataFrame
 import pandas as pd
 
-from models.converter_model import Converter
-from utility.cleaners import clean_datetime_columns, clean_scientific_columns
+from models.dataframe_model import DataFrameModel
+from utility.extractors import create_identifier_dict, create_mer_dict, apply_converters
 from utility.importers import get_all_paths, import_and_transpose_df
 from utility.utility import get_exception
 
-converters: List[Converter] = [
-    Converter(name='clean_datetime_columns', func=clean_datetime_columns, active=True),
-    Converter(name='clean_scientific_columns', func=clean_scientific_columns, active=False),
-]
-
 
 class ImportModule(QtCore.QThread):
-    task_finished: pyqtSignal = pyqtSignal(DataFrame)
+    task_finished: pyqtSignal = pyqtSignal(object)
     task_failed: pyqtSignal = pyqtSignal()
     task_busy: pyqtSignal = pyqtSignal(str)
 
@@ -42,17 +37,13 @@ class ImportModule(QtCore.QThread):
                 print(get_exception(e))
 
         if len(dfs) > 0:
+            self.task_busy.emit('Converting data...')
             df: DataFrame = pd.concat(dfs, sort=False, ignore_index=True)
-            self.apply_converters(df)
+            converted_df: DataFrame = apply_converters(df)
+            identifier_dict: Dict[str, DataFrame] = create_identifier_dict(converted_df)
+            mer_data: Dict[str, DataFrameModel] = create_mer_dict(identifier_dict)
+            self.task_finished.emit(mer_data)
         else:
             self.task_failed.emit()
 
-    def apply_converters(self, df: DataFrame) -> None:
-        self.task_busy.emit('Converting data...')
 
-        new_data: DataFrame = df.copy()
-        for converter in converters:
-            if converter.active:
-                new_data = converter.convert(new_data)
-
-        self.task_finished.emit(new_data)

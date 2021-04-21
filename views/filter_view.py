@@ -2,8 +2,8 @@ import sys
 from typing import List, Union
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFormLayout, QVBoxLayout, QScrollArea, QWidget,\
-    QPushButton, QApplication, QTabWidget, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QFormLayout, QVBoxLayout, QScrollArea, QWidget, \
+    QPushButton, QApplication, QTabWidget, QListWidget, QListWidgetItem, QHBoxLayout, QCheckBox
 
 from models.dataframe_model import DataFrameModel
 import pandas as pd
@@ -17,11 +17,11 @@ class FilterView(QWidget):
 
         dfm.filter = self
         self.dfm: DataFrameModel = dfm
-        self.filter_fields: List[FilterField] = []
-        self.column_fields: List[ColumnField] = []
+        self.filter_fields: List[FilterField] = list()
+        self.column_fields: List[ColumnField] = list()
         self.column_list: QListWidget = QListWidget()
         self.filter_form: Union[QFormLayout, None] = None
-        self.all_cols_off: bool = False
+        self.select_all_box: Union[QCheckBox, None] = None
 
         self.set_fields()
 
@@ -32,8 +32,8 @@ class FilterView(QWidget):
         filter_tab: QWidget = QWidget()
         column_tab: QWidget = QWidget()
 
-        tabs.addTab(filter_tab, 'Filters')
         tabs.addTab(column_tab, 'Columns')
+        tabs.addTab(filter_tab, 'Filters')
 
         reset_button: QPushButton = QPushButton('Reset Filters', filter_tab)
         reset_button.clicked.connect(self.reset_filters)
@@ -50,13 +50,14 @@ class FilterView(QWidget):
         filter_content.addWidget(reset_button)
         filter_content.addWidget(filter_scroll)
 
-        toggle_cols_button: QPushButton = QPushButton('Toggle Columns')
-        toggle_cols_button.clicked.connect(self.toggle_columns)
+        self.select_all_box: QCheckBox = QCheckBox('Select All')
+        self.select_all_box.setCheckState(Qt.Checked)
+        self.select_all_box.stateChanged.connect(self.select_box_checked)
 
-        column_content: QVBoxLayout = QVBoxLayout()
-        column_content.addWidget(toggle_cols_button)
-        column_content.addWidget(self.column_list)
-        column_tab.setLayout(column_content)
+        column_layout: QVBoxLayout = QVBoxLayout()
+        column_layout.addWidget(self.select_all_box)
+        column_layout.addWidget(self.column_list)
+        column_tab.setLayout(column_layout)
 
         self.column_list.itemClicked.connect(self.set_column)
 
@@ -89,19 +90,23 @@ class FilterView(QWidget):
         for f in self.filter_fields:
             f.reset_field()
 
-    def toggle_columns(self) -> None:
-        all_off: bool = self.all_cols_off
-
-        if all_off:
-            for i in range(self.column_list.count()):
-                self.column_list.item(i).setCheckState(Qt.Checked)
-                self.set_column(self.column_list.item(i))
-            self.all_cols_off = False
+    def select_box_checked(self, state: Qt.CheckState):
+        if state == Qt.Checked:
+            self.select_all_cols()
         else:
-            for i in range(self.column_list.count()):
-                self.column_list.item(i).setCheckState(Qt.Unchecked)
-                self.set_column(self.column_list.item(i))
-            self.all_cols_off = True
+            self.deselect_all_cols()
+
+    def deselect_all_cols(self) -> None:
+        for i in range(self.column_list.count()):
+            item: QListWidgetItem = self.column_list.item(i)
+            item.setCheckState(Qt.Unchecked)
+            self.set_column(item)
+
+    def select_all_cols(self) -> None:
+        for i in range(self.column_list.count()):
+            item: QListWidgetItem = self.column_list.item(i)
+            item.setCheckState(Qt.Checked)
+            self.set_column(item)
 
     def set_column(self, item: QListWidgetItem) -> None:
         name: str = item.text()
@@ -111,6 +116,27 @@ class FilterView(QWidget):
             self.dfm.remove_column(name)
 
         self.dfm.apply_filters()
+        self.check_all_checked()
+
+    def check_all_checked(self) -> None:
+        if self.get_all_checked():
+            self.select_all_box.setCheckState(Qt.Checked)
+        elif self.get_all_unchecked():
+            self.select_all_box.setCheckState(Qt.Unchecked)
+
+    def get_all_checked(self) -> bool:
+        for i in range(self.column_list.count()):
+            if self.column_list.item(i).checkState() == Qt.Unchecked:
+                return False
+
+        return True
+
+    def get_all_unchecked(self) -> bool:
+        for i in range(self.column_list.count()):
+            if self.column_list.item(i).checkState() == Qt.Checked:
+                return False
+
+        return True
 
     def set_filter(self, f: FilterField) -> None:
         expr: str = f.field.text()
