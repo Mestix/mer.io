@@ -28,7 +28,7 @@ def clean_datetime_columns(df: DataFrame) -> DataFrame:
 def clean_scientific_columns(df: DataFrame) -> DataFrame:
     df = df.copy()
     scientific_columns = df.columns[
-        df.stack().str.contains('^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
+        df.stack().str.contains(r'^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
     df[scientific_columns] = df[scientific_columns].apply(pd.to_numeric, errors='coerce')
     return df
 
