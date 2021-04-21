@@ -4,7 +4,7 @@ import pandas as pd
 from pandas import DataFrame
 
 
-def clean_duplicate_columns(columns: List[str]) -> List[str]:
+def clean_duplicate_columns(columns: pd.Index) -> List[str]:
     return [x[1] if x[1] not in columns[:x[0]] else f"{x[1]}.{list(columns[:x[0]]).count(x[1])}" for x in
             enumerate(columns)]
 
@@ -28,7 +28,7 @@ def clean_datetime_columns(df: DataFrame) -> DataFrame:
 def clean_scientific_columns(df: DataFrame) -> DataFrame:
     df = df.copy()
     scientific_columns = df.columns[
-        df.stack().str.contains('^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
+        df.stack().str.contains(r'^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
     df[scientific_columns] = df[scientific_columns].apply(pd.to_numeric, errors='coerce')
     return df
 

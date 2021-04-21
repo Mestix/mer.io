@@ -1,15 +1,12 @@
 import unittest
 import pandas as pd
 
-from utility.extractors import extract_tactical_scenario, extract_identifiers
-
-event_header = 'EVENT HEADER - IDENTIFIER'
+from utility.extractors import extract_tactical_scenario, create_identifier_dict
 
 
 class ExtractTacticalScenarioTests(unittest.TestCase):
-    df = pd.DataFrame({event_header: ['TACTICAL_SCENARIO', 'SOME OTHER COLUMN'],
-                       'TACT SCENARIO - GRID CENTER LAT': [11.111, 22.222],
-                       'TACT SCENARIO - GRID CENTER LONG': [-1.1111, -2.2222]})
+    df = pd.DataFrame({'GRID CENTER LAT': [11.111, 22.222],
+                       'GRID CENTER LONG': [-1.1111, -2.2222]})
 
     def test_extract_tactical_scenario(self):
         """
@@ -22,18 +19,9 @@ class ExtractTacticalScenarioTests(unittest.TestCase):
         self.assertEqual(11.111, lat)
         self.assertEqual(-1.1111, long)
 
-    def test_extract_tactical_scenario_not_present(self):
-        df = self.df.copy()
-        df = df.set_index(event_header).drop(['TACTICAL_SCENARIO'])
-
-        with self.assertRaises(KeyError) as err:
-            extract_tactical_scenario(df)
-
-        self.assertEqual("'No Tactical Scenario found in this MER'", str(err.exception))
-
 
 class ExtractIdentifierTests(unittest.TestCase):
-    test_df = pd.DataFrame({event_header: ['SCENARIO_1', 'SCENARIO_2', 'SCENARIO_3'],
+    test_df = pd.DataFrame({'EVENT HEADER - IDENTIFIER': ['SCENARIO_1', 'SCENARIO_2', 'SCENARIO_3'],
                             'TEST_COL_1': ['TEST_VALUE_1', 'TEST_VALUE_2', 'TEST_VALUE_3'],
                             'TEST_COL_2': ['TEST_VALUE_1', 'TEST_VALUE_2', 'TEST_VALUE_3']})
 
@@ -41,7 +29,7 @@ class ExtractIdentifierTests(unittest.TestCase):
         """
         Should correctly create a separate dataframe for every unique identifier type
         """
-        df_dict = extract_identifiers(self.test_df)
+        df_dict = create_identifier_dict(self.test_df)
 
         self.assertEqual(list(df_dict.keys()), ['SCENARIO_1', 'SCENARIO_2', 'SCENARIO_3'])
         for key, value in df_dict.items():

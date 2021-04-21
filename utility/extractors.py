@@ -1,9 +1,17 @@
-from typing import Dict
-
+from typing import Dict, List
 from pandas import DataFrame
 
+from models.converter_model import Converter
+from models.dataframe_model import DataFrameModel
+from utility.cleaners import clean_datetime_columns, clean_scientific_columns
 
-def extract_identifiers(df: DataFrame) -> Dict[str, DataFrame]:
+converters: List[Converter] = [
+    Converter(name='clean_datetime_columns', func=clean_datetime_columns, active=True),
+    Converter(name='clean_scientific_columns', func=clean_scientific_columns, active=False),
+]
+
+
+def create_identifier_dict(df: DataFrame) -> Dict[str, DataFrame]:
     identifiers: Dict[str, DataFrame] = dict(tuple(df.groupby(['EVENT HEADER - IDENTIFIER'])))
 
     for df in identifiers.values():
@@ -12,14 +20,27 @@ def extract_identifiers(df: DataFrame) -> Dict[str, DataFrame]:
     return identifiers
 
 
-def extract_tactical_scenario(df: DataFrame) -> [float, float]:
-    try:
-        tact_lat = float(df[df['EVENT HEADER - IDENTIFIER'] == 'TACTICAL_SCENARIO'].iloc[0]['TACT SCENARIO - GRID '
-                                                                                            'CENTER LAT'])
-        tact_long = float(df[df['EVENT HEADER - IDENTIFIER'] == 'TACTICAL_SCENARIO'].iloc[0]['TACT SCENARIO - GRID '
-                                                                                             'CENTER LONG'])
-        return tact_lat, tact_long
-    except KeyError:
-        raise KeyError('No Tactical Scenario found in this MER')
+def create_mer_dict(df_dict: Dict[str, DataFrame]) -> Dict[str, DataFrameModel]:
+    mer_data: Dict[str, DataFrameModel] = dict()
+    for name, df in df_dict.items():
+        idf: DataFrameModel = DataFrameModel(df.copy(), name)
+        mer_data[name] = idf
 
+    return mer_data
+
+
+def extract_tactical_scenario(df: DataFrame) -> [float, float]:
+    df = df.copy()
+    tact_lat = float(df['GRID CENTER LAT'].iloc[0])
+    tact_long = float(df['GRID CENTER LONG'].iloc[0])
+    return tact_lat, tact_long
+
+
+def apply_converters(df: DataFrame) -> DataFrame:
+    new_data: DataFrame = df.copy()
+    for converter in converters:
+        if converter.active:
+            new_data = converter.convert(new_data)
+
+    return new_data
 
