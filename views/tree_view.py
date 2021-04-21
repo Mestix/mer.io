@@ -14,7 +14,9 @@ class TreeView(QWidget):
         self.tree: QTreeView = QTreeView()
         self.tree.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tree.clicked.connect(self.select_item)
-        self.model = QStandardItemModel(self.tree)
+
+        self.model: QStandardItemModel = QStandardItemModel(self.tree)
+        self.model.setHorizontalHeaderLabels(['Identifiers'])
 
         self.proxy_model = QSortFilterProxyModel(self.tree)
         self.proxy_model.setSourceModel(self.model)
@@ -25,6 +27,8 @@ class TreeView(QWidget):
         self.hide()
 
     def init_ui(self):
+        self.tree.setAlternatingRowColors(True)
+
         select_all_box: QCheckBox = QCheckBox('Select All')
         select_all_box.stateChanged.connect(self.select_box_checked)
 
