@@ -57,7 +57,7 @@ class MerView(QMainWindow):
         self.setGeometry(250, 150, 1500, 750)
 
         self.setWindowTitle('MER.io')
-        self.setWindowIcon(QIcon('../assets/copter_icon.png'))
+        self.setWindowIcon(QIcon('./assets/copter_icon.png'))
 
     def reset_ui(self):
         self.tree.hide()
@@ -111,7 +111,6 @@ class MerView(QMainWindow):
         self.progress_window: QDialog = QDialog()
         self.progress_window.setWindowModality(Qt.ApplicationModal)
         self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
-        self.progress_bar.setWindowIcon(QIcon('../assets/copter_icon.png'))
         self.progress_window.resize(400, 100)
         self.progress_window.setFixedSize(self.progress_window.size())
         self.progress_window.setWindowFlag(Qt.WindowContextHelpButtonHint, False)

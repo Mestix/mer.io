@@ -76,7 +76,7 @@ class FilterView(QWidget):
 
     def create_column_list(self) -> None:
         for f in self.column_fields:
-            item = QListWidgetItem(f.name)
+            item: QListWidgetItem = QListWidgetItem(f.name)
             item.setCheckState(Qt.Checked)
             self.column_list.addItem(item)
 
