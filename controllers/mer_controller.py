@@ -86,7 +86,3 @@ class MerController:
         self.view.show()
         return self.app.exec_()
 
-
-if __name__ == '__main__':
-    controller = MerController()
-    sys.exit(controller.run())
