@@ -1,7 +1,6 @@
 import os
-import typing
 from enum import Enum
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Generator
 
 from PyQt5.QtCore import pyqtSignal, QObject
 from pandas import DataFrame
@@ -69,7 +68,7 @@ class MerModel(QObject):
         self.import_task.task_busy.connect(self.on_task_busy)
         self.start_task()
 
-    def export(self, path: str, selected_items: typing.Generator) -> None:
+    def export(self, path: str, selected_items: Generator) -> None:
         import pandas as pd
         writer: pd.ExcelWriter = pd.ExcelWriter(path)
 

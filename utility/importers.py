@@ -1,6 +1,5 @@
 import os
-import typing
-from typing import List
+from typing import List, Generator
 
 import pandas as pd
 from pandas import DataFrame
@@ -69,7 +68,7 @@ def get_paths_from_zip(path: str) -> List[str]:
     return list(txt_files)
 
 
-def find_txt_files(path: str) -> typing.Generator:
+def find_txt_files(path: str) -> Generator:
     for root, dirs, files in os.walk(path):
         for file in fnmatch.filter(files, '*.txt'):
             yield os.path.join(root, file)

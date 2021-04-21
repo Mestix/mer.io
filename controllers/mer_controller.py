@@ -1,7 +1,6 @@
 import sys
 import threading
-import typing
-from typing import List
+from typing import List, Generator
 
 from PyQt5.QtWidgets import QApplication
 
@@ -26,7 +25,6 @@ class MerController:
 
         self.view.tree.selection_changed_signal.connect(self.select_df)
 
-        # self.model.progress_signal.connect(self.view.toggle_progress)
         self.model.import_signal.connect(self.handle_import_signal)
         self.model.no_tact_signal.connect(self.view.no_tact_dialog)
 
@@ -38,7 +36,7 @@ class MerController:
         self.model.import_from_paths(paths)
 
     def export(self, path: str) -> None:
-        selected_items: typing.Generator = self.view.tree.selected_items()
+        selected_items: Generator = self.view.tree.selected_items()
         if len(list(selected_items)) > 0:
             threading.Thread(target=self.model.export, args=(path, self.view.tree.selected_items())).start()
         else:

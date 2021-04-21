@@ -119,19 +119,19 @@ class FilterView(QWidget):
         self.check_all_checked()
 
     def check_all_checked(self) -> None:
-        if self.get_all_checked():
+        if self.is_all_checked():
             self.select_all_box.setCheckState(Qt.Checked)
-        elif self.get_all_unchecked():
+        elif self.is_all_unchecked():
             self.select_all_box.setCheckState(Qt.Unchecked)
 
-    def get_all_checked(self) -> bool:
+    def is_all_checked(self) -> bool:
         for i in range(self.column_list.count()):
             if self.column_list.item(i).checkState() == Qt.Unchecked:
                 return False
 
         return True
 
-    def get_all_unchecked(self) -> bool:
+    def is_all_unchecked(self) -> bool:
         for i in range(self.column_list.count()):
             if self.column_list.item(i).checkState() == Qt.Checked:
                 return False
