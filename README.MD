@@ -9,9 +9,10 @@
 
 ## Run commands
 - Open command prompt in project folder (Windows) or terminal (PyCharm)
+- Run command
 
 ## Install packages
-- ```pip install <package_name>```
+- Run ```pip install <package_name>```
 
 ## Run application from source
 - Go to project folder, open command line and run ```python main.py```
@@ -19,8 +20,8 @@
 - Or Open project in PyCharm, select ```main.py``` and press play (run)
 
 ## Build application
-- ```pyinstaller.exe --onedir --windowed --icon=assets/app_icon.ico main.py```  
-- ```The output directory and ALL ITS CONTENTS will be REMOVED! Continue? (y/N)``` Press y
+- Run ```pyinstaller.exe --onedir --windowed --icon=assets/app_icon.ico main.py```  
+- On ```The output directory and ALL ITS CONTENTS will be REMOVED! Continue? (y/N)``` Press y
 - Build can be found in ```/dist``` folder
 
 ## Run application as executable

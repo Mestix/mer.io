@@ -3,20 +3,14 @@ from typing import Union, List
 
 from pandas import DataFrame
 
+from models.filter_model import Filter
 from utility.utility import get_exception
 from views.mer_view import MerView
 
 
 @dataclass
-class Filter:
-    name: str = str()
-    expr: str = str()
-    filter_enabled: bool = False
-    column_enabled: bool = True
-
-
 class DataFrameModel:
-    def __init__(self, df, name='Untitled'):
+    def __init__(self, df: DataFrame, name='Untitled'):
         df = df.copy()
         self.name: str = name
         self.df: DataFrame = df

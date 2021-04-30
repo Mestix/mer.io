@@ -11,6 +11,7 @@ class TreeView(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.hide()
         self.tree: QTreeView = QTreeView()
         self.tree.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tree.clicked.connect(self.select_item)
@@ -24,7 +25,6 @@ class TreeView(QWidget):
         self.tree.setModel(self.proxy_model)
 
         self.init_ui()
-        self.hide()
 
     def init_ui(self):
         self.tree.setAlternatingRowColors(True)
@@ -73,7 +73,7 @@ class TreeView(QWidget):
     def get_item_count(self) -> int:
         return self.get_root().rowCount()
 
-    def select_box_checked(self, state: Qt.CheckState):
+    def select_box_checked(self, state: Qt.CheckState) -> None:
         if state == Qt.Checked:
             self.select_all()
         else:

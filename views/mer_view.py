@@ -6,7 +6,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, QWidget, \
     QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QFileDialog, QMenuBar, QMenu
 
-from utility.utility import get_exception, get_path
+from utility.utility import save_file, open_file
 from views.tree_view import TreeView
 
 
@@ -60,12 +60,13 @@ class MerView(QMainWindow):
         self.setWindowIcon(QIcon('./assets/copter_icon.png'))
 
     def reset_ui(self):
+        self.toggle_progress(False)
         self.tree.hide()
         self.tree: TreeView = TreeView()
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
-        self.import_busy_txt('')
-        self.set_mer_info(('', ''))
+        self.import_busy('')
+        self.import_success('', '')
 
         self.splitter.replaceWidget(0, self.tree)
         self.splitter.replaceWidget(1, self.stacked_dfs)
@@ -86,10 +87,10 @@ class MerView(QMainWindow):
             shortcut: str
 
         menu_bar_items: Dict[str, List[MenuItem]] = {'File': [MenuItem(name='Import',
-                                                                       func=self.import_file,
+                                                                       func=self.start_import,
                                                                        shortcut='Ctrl+O'),
                                                               MenuItem(name='Export',
-                                                                       func=self.export,
+                                                                       func=self.start_export,
                                                                        shortcut='Ctrl+E'),
                                                               MenuItem(name='Exit',
                                                                        func=self.exit_program,
@@ -135,6 +136,13 @@ class MerView(QMainWindow):
         self.status_bar_tactical_scenario = QLabel(text)
         self.status_bar.addPermanentWidget(self.status_bar_tactical_scenario)
 
+    def add_widget(self, df):
+        from views.explorer_view import ExplorerView
+        df.explorer = ExplorerView(df)
+
+        self.stacked_dfs.addWidget(df.explorer)
+        self.tree.add_tree_item(df.name)
+
     def set_filename(self, text: str):
         if self.status_bar_filename is not None:
             self.status_bar.removeWidget(self.status_bar_filename)
@@ -142,38 +150,36 @@ class MerView(QMainWindow):
         self.status_bar_filename = QLabel(text)
         self.status_bar.addWidget(self.status_bar_filename)
 
-    def error_dialog(self, txt: str):
-        QMessageBox.warning(self, 'Error', txt, QMessageBox.Ok)
+    def import_no_tact(self):
+        confirm: QMessageBox = QMessageBox.warning(self, 'Warning', 'No Tactical Scenario found, continue?', QMessageBox.No | QMessageBox.Yes)
 
-    def no_tact_dialog(self, txt: str):
-        confirm = QMessageBox.warning(self, 'Warning', txt,
-                                      QMessageBox.No | QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
             self.continue_without_tact_signal.emit()
         else:
             self.reset_ui()
 
-    def import_busy_txt(self, txt: str):
+    def import_busy(self, txt: str):
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
 
-    def set_mer_info(self, info: Tuple):
-        self.set_filename(info[0])
-        self.set_tact_scenario(info[1])
+    def import_success(self, tact: str, names: str):
+        self.set_filename(tact)
+        self.set_tact_scenario(names)
 
-    def import_file(self):
-        dialog = QFileDialog()
-        paths, _ = dialog.getOpenFileNames(filter='*.txt *.zip', directory='../test_mers')
+        self.enable_export_menu()
+        self.toggle_progress(False)
+        self.tree.show()
 
+    def import_failed(self, txt: str):
+        QMessageBox.warning(self, 'Error', txt, QMessageBox.Ok)
+
+    def start_import(self):
+        paths: List[str] = open_file()
         if len(paths) > 0:
-            try:
-                self.import_signal.emit(paths)
-            except Exception as e:
-                self.error_dialog('Something went wrong...')
-                print(get_exception(e))
+            self.import_signal.emit(paths)
 
-    def export(self):
-        path = get_path()
+    def start_export(self):
+        path: str = save_file()
         if path:
             self.export_signal.emit(path)
 
