@@ -32,10 +32,10 @@ class PositionConverter(IConverter):
         pos_cols = self.get_position_cols()
 
         for index, row in pos_cols.iterrows():
-            x_pos = row['X'].iloc[0]
-            y_pos = row['Y'].iloc[0]
+            x_pos = row['X']
+            y_pos = row['Y']
             df_to_convert[[x_pos, y_pos]] = df_to_convert[[x_pos, y_pos]].apply(
-                lambda pos, x=x_pos, y=y_pos: convert_yards_to_coordinates(pos[x], pos[y], tact_lat, tact_long) 
+                lambda pos, x=x_pos, y=y_pos: convert_yards_to_coordinates(pos[x], pos[y], tact_lat, tact_long)
                 if pd.notnull(pos).any() else x, axis=1).apply(pd.Series)
 
         return df_to_convert
