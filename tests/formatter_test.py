@@ -1,6 +1,6 @@
 import unittest
 
-from utility.converters import convert_degrees_to_coordinate_long, convert_degrees_to_coordinate_lat, format_minutes, \
+from utility.formatters import format_degrees_to_coordinate_long, format_degrees_to_coordinate_lat, format_minutes, \
     format_degrees_long, format_degrees_lat
 
 
@@ -10,14 +10,14 @@ class DegreesToCoordinatesTests(unittest.TestCase):
         """
         Should correctly convert lat degrees to lat coordinates
         """
-        lat_coordinate = convert_degrees_to_coordinate_lat(11.111)
+        lat_coordinate = format_degrees_to_coordinate_lat(11.111)
         self.assertEqual("N 11° 06.66'", lat_coordinate)
 
     def test_long(self):
         """
         Should correctly convert long degrees to long coordinates
         """
-        long_coordinate = convert_degrees_to_coordinate_long(-1.1111)
+        long_coordinate = format_degrees_to_coordinate_long(-1.1111)
         self.assertEqual("W 001° 06.67'", long_coordinate)
 
     def test_format_minute(self):

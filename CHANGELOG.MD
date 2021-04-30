@@ -1,3 +1,16 @@
+## 0.3.2 - 30-4-2021
+### Added
+- (class) ConvertModule: for separating import and convert functionality
+- (class) IImporter: interface for expanding import formats
+- (class) BinaryImporter: Empty class for holding future Binary import functionality
+- (class) TextImporter: Import a mer text import and convert it to an intern DataFrame Model without any data conversions
+- Added a few custom Exceptions
+
+## 0.3.1 - 30-4-2021
+### Added
+- (class) IConverter: interface for expanding converters
+- (class) PositionConverter: Converts positions in yards to coordinates 
+
 ## 0.3 - 21-4-2021
 ### Added
 - (func) Add checkboxes to Identifier tree for selecting Identifiers for export  

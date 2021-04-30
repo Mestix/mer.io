@@ -1,14 +1,7 @@
-from typing import Dict, List
+from typing import Dict
 from pandas import DataFrame
 
-from models.converter_model import Converter
 from models.dataframe_model import DataFrameModel
-from utility.cleaners import clean_datetime_columns, clean_scientific_columns
-
-converters: List[Converter] = [
-    Converter(name='clean_datetime_columns', func=clean_datetime_columns, active=True),
-    Converter(name='clean_scientific_columns', func=clean_scientific_columns, active=False),
-]
 
 
 def create_identifier_dict(df: DataFrame) -> Dict[str, DataFrame]:
@@ -28,19 +21,4 @@ def create_mer_dict(df_dict: Dict[str, DataFrame]) -> Dict[str, DataFrameModel]:
 
     return mer_data
 
-
-def extract_tactical_scenario(df: DataFrame) -> [float, float]:
-    df = df.copy()
-    tact_lat = float(df['GRID CENTER LAT'].iloc[0])
-    tact_long = float(df['GRID CENTER LONG'].iloc[0])
-    return tact_lat, tact_long
-
-
-def apply_converters(df: DataFrame) -> DataFrame:
-    new_data: DataFrame = df.copy()
-    for converter in converters:
-        if converter.active:
-            new_data = converter.convert(new_data)
-
-    return new_data
 

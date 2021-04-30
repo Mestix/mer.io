@@ -2,19 +2,22 @@ import unittest
 import pandas as pd
 from numpy import dtype
 
-from utility.cleaners import clean_duplicate_columns, clean_datetime_columns, clean_scientific_columns
+from importers.text_importer import TextImporter
 
 
-class CleanerTests(unittest.TestCase):
+class TextImporterTests(unittest.TestCase):
+
+    importer = TextImporter()
 
     def test_clean_duplicate_columns(self):
         """
         Should rename duplicate columns with + '.i'
         """
 
-        columns = clean_duplicate_columns(['test_col1', 'test_col2', 'test_col2', 'test_col2', 'test_col3', 'test_col3'])
-        self.assertEqual(['test_col1', 'test_col2', 'test_col2.1', 'test_col2.2', 'test_col3', 'test_col3.1'],
-                         columns)
+        columns = self.importer.rename_duplicate_columns(
+            pd.Index(['test_col1', 'test_col2', 'test_col2', 'test_col2', 'test_col3', 'test_col3']))
+
+        self.assertEqual(['test_col1', 'test_col2', 'test_col2.1', 'test_col2.2', 'test_col3', 'test_col3.1'], columns)
 
     def test_clean_datetime_columns(self):
         df = pd.DataFrame({
@@ -26,7 +29,7 @@ class CleanerTests(unittest.TestCase):
             'EVENT HEADER - TIME (SS)': [],
         })
 
-        df = clean_datetime_columns(df)
+        df = self.importer.clean_datetime_columns(df)
         self.assertEqual(['EVENT HEADER - DATE', 'EVENT HEADER - TIME'], list(df.columns))
 
     def test_clean_scientific_columns(self):
@@ -41,7 +44,7 @@ class CleanerTests(unittest.TestCase):
             with self.subTest(col=col):
                 self.assertEqual(dtype('object'), col)
 
-        df = clean_scientific_columns(df)
+        df = self.importer.clean_scientific_columns(df)
 
         asserts = [dtype('float64'), dtype('float64'), dtype('object'), dtype('object')]
 
