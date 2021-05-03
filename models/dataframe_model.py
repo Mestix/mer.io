@@ -13,8 +13,8 @@ class DataFrameModel:
     def __init__(self, df: DataFrame, name='Untitled'):
         df = df.copy()
         self.name: str = name
-        self.df: DataFrame = df
-        self.df_unfiltered: DataFrame = df
+        self.df: Union[DataFrame, None] = None
+        self._df_unfiltered: DataFrame = df
 
         self.filters: dict[str, Filter] = dict()
 
@@ -24,17 +24,24 @@ class DataFrameModel:
         self.viewer: Union[MerView, None] = None
         self.explorer = None
 
+    @property
+    def df_unfiltered(self):
+        return self._df_unfiltered
+
+    @df_unfiltered.setter
+    def df_unfiltered(self, value):
+        self._df_unfiltered = value
+        self.df = value
+
     def rename_columns(self) -> None:
-        for col_old in self.df.columns:
+        for col_old in self.df_unfiltered.columns:
             try:
                 search: str = ' - '
                 i = col_old.index(search) + len(search)
                 col_new: str = col_old[i:]
-                self.df = self.df.rename(columns={col_old: col_new})
+                self.df_unfiltered = self.df_unfiltered.rename(columns={col_old: col_new})
             except Exception:
                 pass
-
-        self.df_unfiltered = self.df
 
     def set_filters(self) -> None:
         for name in list(self.df_unfiltered.columns):

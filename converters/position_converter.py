@@ -1,10 +1,11 @@
-from typing import Union
+from typing import Union, List, Dict
 
 import pandas as pd
 from pandas import DataFrame
 import re
 import numpy as np
 
+from exceptions import ConversionFailedException
 from interfaces.converter_interface import IConverter
 from utility.formulas import convert_yards_to_coordinates
 from utility.utility import get_exception
@@ -14,34 +15,42 @@ class PositionConverter(IConverter):
     def __init__(self):
         super().__init__()
         self.scientific_columns: Union[pd.Index, None] = None
+        self.df: Union[DataFrame, None] = None
 
     def convert(self, df: DataFrame, **kwargs) -> DataFrame:
         try:
-            return self.converter_func(df, kwargs['tactical_scenario'])
+            self.df = df.copy()
+            self.scientific_columns = self.get_scientific_cols()
+            return self.converter_func(**kwargs)
         except Exception as e:
-            print(get_exception(e))
+            print('PositionConverter.convert: ' + get_exception(e))
             return df
 
-    def converter_func(self, df: DataFrame, tact_scenario) -> DataFrame:
-        df_to_convert: DataFrame = df.copy()
-        tact_lat = tact_scenario['tact_lat']
-        tact_long = tact_scenario['tact_long']
-
-        self.set_scientific_cols(df_to_convert)
+    def converter_func(self, **kwargs) -> DataFrame:
+        df_to_convert: DataFrame = self.df.copy()
+        tact_scenario: Dict[str, DataFrame] = kwargs['tact_scenario']
 
         pos_cols = self.get_position_cols()
 
-        for index, row in pos_cols.iterrows():
-            x_pos = row['X']
-            y_pos = row['Y']
-            df_to_convert[[x_pos, y_pos]] = df_to_convert[[x_pos, y_pos]].apply(
-                lambda pos, x=x_pos, y=y_pos: convert_yards_to_coordinates(pos[x], pos[y], tact_lat, tact_long)
-                if pd.notnull(pos).any() else x, axis=1).apply(pd.Series)
+        for index, pos in pos_cols.iterrows():
+            x_pos = pos['X']
+            y_pos = pos['Y']
+
+            if x_pos.replace('X', 'Y') != y_pos:
+                raise ConversionFailedException('X and Y Columns do not match!')
+
+            df_to_convert[[x_pos, y_pos]] = df_to_convert[[x_pos, y_pos, 'REFERENCE']].apply(
+                lambda row, x=x_pos, y=y_pos: convert_yards_to_coordinates(
+                    row[x],
+                    row[y],
+                    tact_scenario[tact_scenario['REFERENCE'] == row['REFERENCE']]['GRID CENTER LAT'].iloc[0],
+                    tact_scenario[tact_scenario['REFERENCE'] == row['REFERENCE']]['GRID CENTER LONG'].iloc[0])
+                if pd.notnull(row).any() else x, axis=1).apply(pd.Series)
 
         return df_to_convert
 
-    def set_scientific_cols(self, df: DataFrame) -> None:
-        self.scientific_columns = df.select_dtypes(include=np.number).columns.tolist()
+    def get_scientific_cols(self) -> List[str]:
+        return self.df.select_dtypes(include=np.number).columns.tolist()
 
     def get_position_cols(self):
         regex_x = re.compile(r'\b(X)')

@@ -1,3 +1,18 @@
+## 0.3.3 - 3-5-2021
+### Added
+- Added Setter for DataFrameModel df_unfiltered which now automatically changes df as well
+- Added a REFERENCE column to DataFrame for recognizing to which Mer a column belongs (for adding multiple mers)
+
+### Changed
+- Moved tactical scenario verification and mocking to Mer Controller
+- PositionConverter now converts data based on the Tactical Scenario from which mer the data belongs to  
+  (previously it was just picking the first occurrence of a tactical scenario)
+
+### Removed
+- Removed continue_without_tact_scenario signal from MerView
+- Removed tactical scenario and names property from MerModel
+- Removed filenames from statusbar in MerView
+
 ## 0.3.2 - 30-4-2021
 ### Added
 - (class) ConvertModule: for separating import and convert functionality

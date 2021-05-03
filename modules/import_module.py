@@ -47,8 +47,15 @@ class ImportModule(QtCore.QThread):
 
         try:
             df: DataFrame = pd.concat(dfs, sort=False, ignore_index=True)
+            unique_refs: List[str] = df['REFERENCE'].unique()
             mer_data: Dict[str, DataFrameModel] = create_mer_dict(create_identifier_dict(df.copy()))
-            self.task_finished.emit(mer_data)
+
+            data = dict({
+                'mer_data': mer_data,
+                'unique_refs': unique_refs
+            })
+
+            self.task_finished.emit(data)
         except Exception as e:
             print(get_exception(e))
             self.task_failed.emit('No data found')

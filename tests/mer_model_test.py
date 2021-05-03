@@ -20,6 +20,6 @@ class MerModelTests(unittest.TestCase):
         Should correctly extract first occurrence of tactical scenario from dataframe
         """
 
-        self.assertEqual(11.111, self.mer_model.tactical_scenario['tact_lat'])
-        self.assertEqual(-1.1111, self.mer_model.tactical_scenario['tact_long'])
+        self.assertEqual(11.111, self.mer_model.tactical_scenarios['tact_lat'])
+        self.assertEqual(-1.1111, self.mer_model.tactical_scenarios['tact_long'])
 

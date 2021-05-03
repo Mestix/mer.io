@@ -1,13 +1,11 @@
-import os
 import sys
 import threading
 from typing import List, Generator, Union, Dict
 
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 from pandas import DataFrame
 import pandas as pd
 
-from exceptions import NoTactScenarioFoundException
 from models.dataframe_model import DataFrameModel
 from models.mer_model import MerModel
 from modules.convert_module import ConvertModule
@@ -22,16 +20,15 @@ class MerController:
         self.app: QApplication = QApplication(sys.argv)
         self.model: MerModel = MerModel()
         self.view: MerView = MerView()
+
         self.importer: Union[ImportModule, None] = None
         self.converter: Union[ConvertModule, None] = None
-        self.unconverted_data = dict()
 
         self.init()
 
     def init(self) -> None:
         self.view.import_signal.connect(self.import_file)
         self.view.export_signal.connect(self.export)
-        self.view.continue_without_tact_signal.connect(self.continue_without_tact)
         self.view.tree.selection_changed_signal.connect(self.select_df)
         self.view.exit_signal.connect(self.exit_program)
 
@@ -46,7 +43,6 @@ class MerController:
         self.importer.task_failed.connect(self.on_task_failed)
         self.importer.task_busy.connect(self.view.import_busy)
 
-        self.model.names = ', '.join(map(os.path.basename, paths))
         self.start_task()
 
     def start_task(self) -> None:
@@ -56,41 +52,70 @@ class MerController:
         self.view.toggle_progress(False)
         self.view.import_failed(txt)
 
-    def on_import_success(self, mer_data: Dict[str, DataFrameModel]) -> None:
-        self.unconverted_data = mer_data
-        try:
-            self.model.set_tactical_scenario(mer_data)
+    def on_import_success(self, _import: Dict) -> None:
+        self.model.mer_data = _import['mer_data']
+
+        _continue = self.verify_tact_scenarios(_import['unique_refs'], _import['mer_data'])
+
+        if _continue:
             self.convert_data()
-        except NoTactScenarioFoundException:
-            self.view.import_no_tact()
-        except Exception as e:
-            print(get_exception(e))
+        else:
+            self.reset_mer()
+
+    def verify_tact_scenarios(self, unique_refs: List[str], mer_data: Dict[str, DataFrameModel]):
+        if 'TACTICAL_SCENARIO' not in mer_data or len(unique_refs) > mer_data['TACTICAL_SCENARIO'].df_unfiltered['REFERENCE'].nunique():
+            confirm: QMessageBox = QMessageBox.warning(self.view, 'Warning',
+                                                       'No Tactical Scenario found, continue?',
+                                                       QMessageBox.No | QMessageBox.Yes)
+
+            if confirm == QMessageBox.Yes:
+                self.mock_tactical_scenario(mer_data, unique_refs)
+                return True
+            else:
+                return False
+        return True
+
+    def mock_tactical_scenario(self, mer_data: Dict[str, DataFrameModel], unique_refs: List[str]):
+        if 'TACTICAL_SCENARIO' not in mer_data:
+            mer_data['TACTICAL_SCENARIO'] = DataFrameModel(DataFrame(), 'TACTICAL_SCENARIO')
+        for ref in unique_refs:
+            tact_scenario: DataFrame = mer_data['TACTICAL_SCENARIO'].df_unfiltered
+            if not tact_scenario[tact_scenario['REFERENCE'] == ref].any().any():
+                mer_data['TACTICAL_SCENARIO'].df_unfiltered = mer_data['TACTICAL_SCENARIO'].df_unfiltered.append(
+                    pd.DataFrame({
+                        'GRID CENTER LAT': [0],
+                        'GRID CENTER LONG': [0],
+                        'REFERENCE': [ref]
+                    }), ignore_index=True)
 
     def convert_data(self):
-        self.converter = ConvertModule(self.unconverted_data, self.model.tactical_scenario)
+        self.converter = ConvertModule(self.model.mer_data)
         self.converter.task_finished.connect(self.on_convert_success)
         self.converter.task_failed.connect(self.on_task_failed)
         self.converter.task_busy.connect(self.view.import_busy)
         self.converter.start()
 
     def on_convert_success(self, converted_data):
-        self.model.init_mer(converted_data)
-        self.set_mer_view()
+        self.model.mer_data = converted_data
 
-    def continue_without_tact(self):
-        self.model.mock_tact_scenario()
-        self.convert_data()
+        try:
+            self.set_mer_view(converted_data)
+        except Exception as e:
+            print('MerController.on_convert_success: ' + get_exception(e))
 
-    def set_mer_view(self):
+    def set_mer_view(self, converted_data: Dict[str, DataFrameModel]):
         dfs = self.model.mer_data
         for name, idf in dfs.items():
             self.view.add_widget(idf)
 
-        tactical_scenario_text = 'Tactical Scenario: Lat: {0}, Long: {1} '.format(
-            format_degrees_to_coordinate_lat(self.model.tactical_scenario['tact_lat']),
-            format_degrees_to_coordinate_long(self.model.tactical_scenario['tact_long']))
+        tact_scenario_txt = 'Tactical Scenarios:'
 
-        self.view.import_success(tactical_scenario_text, self.model.names)
+        for index, row in converted_data['TACTICAL_SCENARIO'].df_unfiltered.iterrows():
+            tact_lat: str = format_degrees_to_coordinate_lat(row['GRID CENTER LAT'])
+            tact_long: str = format_degrees_to_coordinate_long(row['GRID CENTER LAT'])
+            tact_scenario_txt += ' {0}: Lat {1}, Long {2}'.format(row['REFERENCE'], tact_lat, tact_long)
+
+        self.view.import_success(tact_scenario_txt)
 
     def export(self, path: str) -> None:
         selected_items: Generator = self.view.tree.selected_items()

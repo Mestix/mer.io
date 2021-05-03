@@ -1,3 +1,5 @@
+import os
+
 from interfaces.importer_interface import IImporter
 from typing import List
 
@@ -11,6 +13,8 @@ class TextImporter(IImporter):
 
         for step in [self.transpose_df, self.clean_datetime_columns, self.clean_scientific_columns]:
             df: DataFrame = step(df)
+
+        df['REFERENCE'] = os.path.basename(path)[0:8]
 
         return df
 
