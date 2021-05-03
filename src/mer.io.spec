@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['src\\main.py'],
+a = Analysis(['main.py'],
              pathex=['C:\\Users\\Melissa Landwerd\\PycharmProjects\\mer.io'],
              binaries=[],
              datas=[],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False , icon='src\\assets\\app_icon.ico')
+          console=False , icon='assets\\app_icon.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
