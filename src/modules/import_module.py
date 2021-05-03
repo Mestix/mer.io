@@ -5,12 +5,12 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from pandas import DataFrame
 import pandas as pd
 
-from exceptions import NoValidMerImportTypeException
-from importers.binary_importer import BinaryImporter
-from importers.text_importer import TextImporter
-from models.dataframe_model import DataFrameModel
-from utility.extractors import create_identifier_dict, create_mer_dict
-from utility.utility import get_exception, get_all_paths
+from src.exceptions import NoValidMerImportTypeException
+from src.importers.binary_importer import BinaryImporter
+from src.importers.text_importer import TextImporter
+from src.models.dataframe_model import DataFrameModel
+from src.utility.extractors import create_identifier_dict, create_mer_dict
+from src.utility.utility import get_exception, get_all_paths
 
 
 class ImportModule(QtCore.QThread):

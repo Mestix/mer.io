@@ -1,11 +1,38 @@
-# Editors
-.idea/
+/temp/
+/assets/test_mers/
 
 # PyInstaller
 *.manifest
-*.spec
 
-/test_mers/
-/build/
-/venv/
-/temp/
+# Editors
+.idea/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+

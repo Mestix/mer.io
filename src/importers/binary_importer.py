@@ -1,6 +1,6 @@
 from pandas import DataFrame
 
-from interfaces.importer_interface import IImporter
+from src.interfaces.importer_interface import IImporter
 
 
 class BinaryImporter(IImporter):

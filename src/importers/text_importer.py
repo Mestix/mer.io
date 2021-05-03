@@ -1,6 +1,6 @@
 import os
 
-from interfaces.importer_interface import IImporter
+from src.interfaces.importer_interface import IImporter
 
 import pandas as pd
 from pandas import DataFrame

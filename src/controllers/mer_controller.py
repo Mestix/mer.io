@@ -6,12 +6,12 @@ from PyQt5.QtWidgets import QApplication, QMessageBox
 from pandas import DataFrame
 import pandas as pd
 
-from models.dataframe_model import DataFrameModel
-from models.mer_model import MerModel
-from modules.convert_module import ConvertModule
-from modules.import_module import ImportModule
-from utility.utility import get_exception
-from views.mer_view import MerView
+from src.models.dataframe_model import DataFrameModel
+from src.models.mer_model import MerModel
+from src.modules.convert_module import ConvertModule
+from src.modules.import_module import ImportModule
+from src.utility.utility import get_exception
+from src.views.mer_view import MerView
 
 
 class MerController:

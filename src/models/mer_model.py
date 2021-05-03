@@ -3,7 +3,7 @@ from typing import Union, Dict
 
 from pandas import DataFrame
 
-from models.dataframe_model import DataFrameModel
+from src.models.dataframe_model import DataFrameModel
 
 
 @dataclass

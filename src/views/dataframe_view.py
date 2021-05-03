@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QGridLayout, QSizePolicy, QFrame, QApplication, QAbstractItemView, QTableView, \
     QStyledItemDelegate, QStyleOptionViewItem, QStyle
 
-from models.dataframe_model import DataFrameModel
+from src.models.dataframe_model import DataFrameModel
 
 
 class DataframeView(QWidget):

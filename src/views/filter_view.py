@@ -3,12 +3,12 @@ from typing import List, Union
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFormLayout, QVBoxLayout, QScrollArea, QWidget, \
-    QPushButton, QApplication, QTabWidget, QListWidget, QListWidgetItem, QHBoxLayout, QCheckBox
+    QPushButton, QApplication, QTabWidget, QListWidget, QListWidgetItem, QCheckBox
 
-from models.dataframe_model import DataFrameModel
+from src.models.dataframe_model import DataFrameModel
 import pandas as pd
 
-from models.field_model import FilterField, ColumnField
+from src.models.field_model import FilterField, ColumnField
 
 
 class FilterView(QWidget):

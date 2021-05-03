@@ -1,7 +1,7 @@
 from typing import Dict
 from pandas import DataFrame
 
-from models.dataframe_model import DataFrameModel
+from src.models.dataframe_model import DataFrameModel
 
 
 def create_identifier_dict(df: DataFrame) -> Dict[str, DataFrame]:

@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from utility.extractors import create_identifier_dict
+from src.utility.extractors import create_identifier_dict
 
 
 class CreateIdentifierTests(unittest.TestCase):

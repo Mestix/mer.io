@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 from numpy import dtype
 
-from importers.text_importer import clean_datetime_columns, clean_scientific_columns, rename_duplicate_columns
+from src.importers.text_importer import clean_datetime_columns, clean_scientific_columns, rename_duplicate_columns
 
 import numpy as np
 

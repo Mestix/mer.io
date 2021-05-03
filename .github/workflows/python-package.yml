@@ -40,6 +40,12 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
-    - name: Build
-      run: |
-        pyinstaller.exe --onedir --windowed --noconfirm --icon=assets/app_icon.ico main.py
+    - name: Package Application
+        uses: JackMcKew/pyinstaller-action-windows@main
+        with:
+          path: src
+
+          - uses: actions/upload-artifact@v2
+            with:
+              name: name-of-artifact
+              path: src/dist/windows

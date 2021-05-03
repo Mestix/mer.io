@@ -1,13 +1,13 @@
 from dataclasses import dataclass
-from typing import Union, List, Dict, Tuple
+from typing import Union, List, Dict
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, QWidget, \
-    QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QFileDialog, QMenuBar, QMenu
+    QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu
 
-from utility.utility import save_file, open_file
-from views.tree_view import TreeView
+from src.utility.utility import save_file, open_file
+from src.views.tree_view import TreeView
 
 
 class MerView(QMainWindow):
@@ -136,7 +136,7 @@ class MerView(QMainWindow):
         self.status_bar.addWidget(self.status_bar_tactical_scenario)
 
     def add_widget(self, df):
-        from views.explorer_view import ExplorerView
+        from src.views.explorer_view import ExplorerView
         df.explorer = ExplorerView(df)
 
         self.stacked_dfs.addWidget(df.explorer)

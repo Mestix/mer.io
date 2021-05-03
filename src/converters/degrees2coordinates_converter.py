@@ -5,10 +5,10 @@ from pandas import DataFrame
 import re
 import numpy as np
 
-from exceptions import ConversionFailedException
-from interfaces.converter_interface import IConverter
-from utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long
-from utility.utility import get_exception
+from src.exceptions import ConversionFailedException
+from src.interfaces.converter_interface import IConverter
+from src.utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long
+from src.utility.utility import get_exception
 
 
 class DegreesToCoordinatesConverter(IConverter):

@@ -3,9 +3,9 @@ from typing import Union, List
 
 from pandas import DataFrame
 
-from models.filter_model import Filter
-from utility.utility import get_exception
-from views.mer_view import MerView
+from src.models.filter_model import Filter
+from src.utility.utility import get_exception
+from src.views.mer_view import MerView
 
 
 @dataclass

@@ -3,9 +3,9 @@ import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QSplitter
 
-from models.dataframe_model import DataFrameModel
-from views.filter_view import FilterView
-from views.dataframe_view import DataframeView
+from src.models.dataframe_model import DataFrameModel
+from src.views.filter_view import FilterView
+from src.views.dataframe_view import DataframeView
 
 
 class ExplorerView(QtWidgets.QMainWindow):

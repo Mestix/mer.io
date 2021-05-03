@@ -5,11 +5,11 @@ from pandas import DataFrame
 import numpy as np
 import re
 
-from exceptions import ConversionFailedException
-from interfaces.converter_interface import IConverter
-from utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long
-from utility.formulas import convert_yards_to_degrees
-from utility.utility import get_exception
+from src.exceptions import ConversionFailedException
+from src.interfaces.converter_interface import IConverter
+from src.utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long
+from src.utility.formulas import convert_yards_to_degrees
+from src.utility.utility import get_exception
 
 
 class YardsToCoordinatesConverter(IConverter):
