@@ -20,7 +20,7 @@
 - Or Open project in PyCharm, select ```main.py``` and press play (run)
 
 ## Build application
-- Run ```pyinstaller.exe --onedir --windowed --noconfirm --icon=src/assets/app_icon.ico src/main.py```  
+- Run ```pyinstaller.exe --name mer.io --onedir --windowed --noconfirm --icon=src/assets/app_icon.ico src/main.py```  
 - Build can be found in ```/dist``` folder
 
 ## Run application as executable

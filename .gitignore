@@ -36,3 +36,5 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+/build/
+/dist/
