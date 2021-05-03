@@ -20,8 +20,7 @@
 - Or Open project in PyCharm, select ```main.py``` and press play (run)
 
 ## Build application
-- Run ```pyinstaller.exe --onedir --windowed --icon=assets/app_icon.ico main.py```  
-- On ```The output directory and ALL ITS CONTENTS will be REMOVED! Continue? (y/N)``` Press y
+- Run ```pyinstaller.exe --onedir --windowed --noconfirm --icon=assets/app_icon.ico main.py```  
 - Build can be found in ```/dist``` folder
 
 ## Run application as executable
