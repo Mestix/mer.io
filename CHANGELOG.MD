@@ -5,10 +5,7 @@
 
 ### Changed
 - Changed PositionConverter to YardsToCoordinatesConverter
-- Changed the order of conversions. Now all Converter convert sequentially
-- 
-
-### Removed
+- Changed the order of conversions. Now all Converters convert sequentially
 
 ## 0.3.3 - 3-5-2021
 ### Added
