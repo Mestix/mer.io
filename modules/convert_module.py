@@ -4,8 +4,11 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
 from pandas import DataFrame
 
-from converters.position_converter import IConverter, PositionConverter
+from converters.degrees2coordinates_converter import DegreesToCoordinatesConverter
+from converters.yards2coordinates_converter import IConverter, YardsToCoordinatesConverter
+from models.dataframe_model import DataFrameModel
 from utility.utility import get_exception
+import numpy as np
 
 
 class ConvertModule(QtCore.QThread):
@@ -13,38 +16,39 @@ class ConvertModule(QtCore.QThread):
     task_failed: pyqtSignal = pyqtSignal(str)
     task_busy: pyqtSignal = pyqtSignal(str)
 
-    def __init__(self, data, tactical_scenario: Dict[str, float]):
+    def __init__(self, data):
         QThread.__init__(self)
-        self.data = data
-        self.tactical_scenario: Dict[str, float] = tactical_scenario
+        self.data: Dict[str, DataFrameModel] = data
         self.converters: List[IConverter] = list()
 
-        self.add_converter(PositionConverter())
+        self.add_converter(YardsToCoordinatesConverter())
+        self.add_converter(DegreesToCoordinatesConverter())
 
     def run(self) -> None:
         try:
             self.convert_data()
         except Exception as e:
-            print(get_exception(e))
+            print('ConvertModule.run: ' + get_exception(e))
 
-    def convert_data(self):
+    def convert_data(self) -> None:
         self.task_busy.emit('Converting data...')
 
         data = self.data.copy()
-        for key, dfm in data.items():
-            converted_df: DataFrame = self.convert(dfm.df_unfiltered)
-            data[key].df_unfiltered = converted_df
-            data[key].df = converted_df
-
-        return self.task_finished.emit(data)
-
-    def convert(self, df: DataFrame) -> DataFrame:
-        df: DataFrame = df.copy()
+        tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].df_unfiltered
 
         for converter in self.converters:
-            df: DataFrame = converter.convert(df, tactical_scenario=self.tactical_scenario)
+            for key, dfm in data.items():
+                scientific_cols: List[str] = dfm.df_unfiltered.select_dtypes(include=np.number).columns.tolist()
 
-        return df
+                converted_df: DataFrame = converter.convert(
+                    dfm.df_unfiltered,
+                    tact_scenario=tact_scenario,
+                    scientific_cols=scientific_cols
+                    )
+                data[key].df_unfiltered = converted_df
+                data[key].df = converted_df
 
-    def add_converter(self, c: IConverter):
+        self.task_finished.emit(data)
+
+    def add_converter(self, c: IConverter) -> None:
         self.converters.append(c)

@@ -25,7 +25,10 @@ class ImportModule(QtCore.QThread):
         self.binary_importer = BinaryImporter()
 
     def run(self) -> None:
-        self.import_from_paths(self.paths)
+        try:
+            self.import_from_paths(self.paths)
+        except Exception as e:
+            print('ImportModule.run: ' + get_exception(e))
 
     def import_from_paths(self, paths) -> None:
         self.task_busy.emit('Importing files...')
@@ -38,18 +41,24 @@ class ImportModule(QtCore.QThread):
                 if path.endswith('.txt'):
                     dfs.append(self.text_importer.run(path))
                 elif path.endswith('.mer'):
+                    # Not implemented yet
                     dfs.append(self.binary_importer.run(path))
                 else:
                     raise NoValidMerImportTypeException
             except Exception as e:
                 all_paths.remove(path)
-                print(get_exception(e))
+                print('ImportModule.import_from_paths: ' + get_exception(e))
 
         try:
             df: DataFrame = pd.concat(dfs, sort=False, ignore_index=True)
             mer_data: Dict[str, DataFrameModel] = create_mer_dict(create_identifier_dict(df.copy()))
-            self.task_finished.emit(mer_data)
+            unique_refs: List[str] = df['REFERENCE'].unique()
+
+            self.task_finished.emit(dict({
+                'mer_data': mer_data,
+                'unique_refs': unique_refs
+            }))
         except Exception as e:
-            print(get_exception(e))
+            print('ImportModule.import_from_paths: ' + get_exception(e))
             self.task_failed.emit('No data found')
 

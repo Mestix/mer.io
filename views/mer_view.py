@@ -13,7 +13,6 @@ from views.tree_view import TreeView
 class MerView(QMainWindow):
     import_signal: pyqtSignal = pyqtSignal(list)
     export_signal: pyqtSignal = pyqtSignal(str)
-    continue_without_tact_signal: pyqtSignal = pyqtSignal()
     exit_signal: pyqtSignal = pyqtSignal()
 
     def __init__(self):
@@ -23,7 +22,6 @@ class MerView(QMainWindow):
         self.tree: Union[TreeView, None] = None
 
         self.status_bar: Union[QStatusBar, None] = None
-        self.status_bar_filename: Union[QWidget, None] = None
         self.status_bar_tactical_scenario: Union[QWidget, None] = None
 
         self.progress_bar: Union[QProgressBar, None] = None
@@ -66,7 +64,8 @@ class MerView(QMainWindow):
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
         self.import_busy('')
-        self.import_success('', '')
+        self.set_tact_scenario('')
+        self.enable_export_menu()
 
         self.splitter.replaceWidget(0, self.tree)
         self.splitter.replaceWidget(1, self.stacked_dfs)
@@ -134,7 +133,7 @@ class MerView(QMainWindow):
             self.status_bar.removeWidget(self.status_bar_tactical_scenario)
 
         self.status_bar_tactical_scenario = QLabel(text)
-        self.status_bar.addPermanentWidget(self.status_bar_tactical_scenario)
+        self.status_bar.addWidget(self.status_bar_tactical_scenario)
 
     def add_widget(self, df):
         from views.explorer_view import ExplorerView
@@ -143,28 +142,12 @@ class MerView(QMainWindow):
         self.stacked_dfs.addWidget(df.explorer)
         self.tree.add_tree_item(df.name)
 
-    def set_filename(self, text: str):
-        if self.status_bar_filename is not None:
-            self.status_bar.removeWidget(self.status_bar_filename)
-
-        self.status_bar_filename = QLabel(text)
-        self.status_bar.addWidget(self.status_bar_filename)
-
-    def import_no_tact(self):
-        confirm: QMessageBox = QMessageBox.warning(self, 'Warning', 'No Tactical Scenario found, continue?', QMessageBox.No | QMessageBox.Yes)
-
-        if confirm == QMessageBox.Yes:
-            self.continue_without_tact_signal.emit()
-        else:
-            self.reset_ui()
-
     def import_busy(self, txt: str):
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
 
-    def import_success(self, tact: str, names: str):
-        self.set_filename(tact)
-        self.set_tact_scenario(names)
+    def import_success(self, tact: str):
+        self.set_tact_scenario(tact)
 
         self.enable_export_menu()
         self.toggle_progress(False)
