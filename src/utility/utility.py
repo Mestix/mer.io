@@ -19,7 +19,7 @@ def save_file() -> str:
 
 def open_file() -> List[str]:
     dialog = QFileDialog()
-    paths, _ = dialog.getOpenFileNames(filter='*.txt *.zip', directory='./test_mers')
+    paths, _ = dialog.getOpenFileNames(filter='*.txt *.zip')
 
     return paths
 

@@ -1,6 +1,6 @@
 import unittest
 
-from src.utility.formatters import format_degrees_to_coordinate_long, format_degrees_to_coordinate_lat, format_minutes, \
+from src.utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long, format_minutes, \
     format_degrees_long, format_degrees_lat
 
 
