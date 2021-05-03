@@ -43,7 +43,11 @@ jobs:
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
         path: src
+    - uses: papeloto/action-zip@v1
+      with:
+        files: dist/mer.io
+        dest: mer.io.zip
     - uses: actions/upload-artifact@v2
       with:
         name: mer.io
-        path: dist
+        path: mer.io.zip
