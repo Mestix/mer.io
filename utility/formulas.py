@@ -1,16 +1,9 @@
 import math
-import numpy as np
-
-from utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long
-from utility.utility import get_exception
 
 
 def pos_neg(num):
     if num >= 0:
-        if num == 0:
-            return 0
-        else:
-            return 1
+        return 0 if num == 0 else 1
     else:
         return -1
 
@@ -43,10 +36,3 @@ def convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
     return lat_deg, long_deg
 
 
-def convert_yards_to_coordinates(lat_yards, long_yards, tact_lat_deg, tact_long_deg):
-    try:
-        degrees = convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
-        return format_degrees_to_coordinate_lat(degrees[0]), format_degrees_to_coordinate_long(degrees[1])
-    except Exception as e:
-        print(get_exception(e))
-        return np.nan, np.nan

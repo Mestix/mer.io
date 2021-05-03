@@ -1,3 +1,15 @@
+## 0.3.4 - 3-5-2021
+### Added
+- (class) YardsToCoordinatesConverter: Converts yards to Degrees (non-converted positions)
+- (class) DegreesToCoordinatesConverter: Converts degrees to coordinates (half-converted positions)
+
+### Changed
+- Changed PositionConverter to YardsToCoordinatesConverter
+- Changed the order of conversions. Now all Converter convert sequentially
+- 
+
+### Removed
+
 ## 0.3.3 - 3-5-2021
 ### Added
 - Added Setter for DataFrameModel df_unfiltered which now automatically changes df as well

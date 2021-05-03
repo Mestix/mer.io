@@ -12,7 +12,6 @@ from modules.convert_module import ConvertModule
 from modules.import_module import ImportModule
 from utility.utility import get_exception
 from views.mer_view import MerView
-from utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long
 
 
 class MerController:
@@ -57,63 +56,60 @@ class MerController:
 
         _continue = self.verify_tact_scenarios(_import['unique_refs'], _import['mer_data'])
 
-        if _continue:
-            self.convert_data()
-        else:
-            self.reset_mer()
+        self.convert_data() if _continue else self.reset_mer()
 
-    def verify_tact_scenarios(self, unique_refs: List[str], mer_data: Dict[str, DataFrameModel]):
-        if 'TACTICAL_SCENARIO' not in mer_data or len(unique_refs) > mer_data['TACTICAL_SCENARIO'].df_unfiltered['REFERENCE'].nunique():
+    def verify_tact_scenarios(self, unique_refs: List[str], mer_data: Dict[str, DataFrameModel]) -> bool:
+        if 'TACTICAL_SCENARIO' not in mer_data \
+                or len(unique_refs) > mer_data['TACTICAL_SCENARIO'].df_unfiltered['REFERENCE'].nunique():
+
             confirm: QMessageBox = QMessageBox.warning(self.view, 'Warning',
                                                        'No Tactical Scenario found, continue?',
                                                        QMessageBox.No | QMessageBox.Yes)
-
             if confirm == QMessageBox.Yes:
-                self.mock_tactical_scenario(mer_data, unique_refs)
+                if 'TACTICAL_SCENARIO' not in mer_data:
+                    mer_data['TACTICAL_SCENARIO'] = DataFrameModel(DataFrame(), 'TACTICAL_SCENARIO')
+                for ref in unique_refs:
+                    tact_scenario: DataFrame = mer_data['TACTICAL_SCENARIO'].df_unfiltered
+                    if not tact_scenario[tact_scenario['REFERENCE'] == ref].any().any():
+                        mer_data['TACTICAL_SCENARIO'].df_unfiltered = \
+                            mer_data['TACTICAL_SCENARIO'].df_unfiltered.append(
+                            pd.DataFrame({
+                                'GRID CENTER LAT': [0],
+                                'GRID CENTER LONG': [0],
+                                'REFERENCE': [ref]
+                            }), ignore_index=True)
                 return True
             else:
                 return False
         return True
 
-    def mock_tactical_scenario(self, mer_data: Dict[str, DataFrameModel], unique_refs: List[str]):
-        if 'TACTICAL_SCENARIO' not in mer_data:
-            mer_data['TACTICAL_SCENARIO'] = DataFrameModel(DataFrame(), 'TACTICAL_SCENARIO')
-        for ref in unique_refs:
-            tact_scenario: DataFrame = mer_data['TACTICAL_SCENARIO'].df_unfiltered
-            if not tact_scenario[tact_scenario['REFERENCE'] == ref].any().any():
-                mer_data['TACTICAL_SCENARIO'].df_unfiltered = mer_data['TACTICAL_SCENARIO'].df_unfiltered.append(
-                    pd.DataFrame({
-                        'GRID CENTER LAT': [0],
-                        'GRID CENTER LONG': [0],
-                        'REFERENCE': [ref]
-                    }), ignore_index=True)
-
-    def convert_data(self):
+    def convert_data(self) -> None:
         self.converter = ConvertModule(self.model.mer_data)
         self.converter.task_finished.connect(self.on_convert_success)
         self.converter.task_failed.connect(self.on_task_failed)
         self.converter.task_busy.connect(self.view.import_busy)
         self.converter.start()
 
-    def on_convert_success(self, converted_data):
+    def on_convert_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
         self.model.mer_data = converted_data
-
         try:
             self.set_mer_view(converted_data)
         except Exception as e:
             print('MerController.on_convert_success: ' + get_exception(e))
 
-    def set_mer_view(self, converted_data: Dict[str, DataFrameModel]):
-        dfs = self.model.mer_data
-        for name, idf in dfs.items():
+    def set_mer_view(self, converted_data: Dict[str, DataFrameModel]) -> None:
+        for name, idf in self.model.mer_data.items():
             self.view.add_widget(idf)
 
         tact_scenario_txt = 'Tactical Scenarios:'
 
         for index, row in converted_data['TACTICAL_SCENARIO'].df_unfiltered.iterrows():
-            tact_lat: str = format_degrees_to_coordinate_lat(row['GRID CENTER LAT'])
-            tact_long: str = format_degrees_to_coordinate_long(row['GRID CENTER LAT'])
-            tact_scenario_txt += ' {0}: Lat {1}, Long {2}'.format(row['REFERENCE'], tact_lat, tact_long)
+            tact_scenario_txt += \
+                ' {0}: Lat {1}, Long {2}'.format(
+                    row['REFERENCE'],
+                    row['GRID CENTER LAT'],
+                    row['GRID CENTER LAT']
+                )
 
         self.view.import_success(tact_scenario_txt)
 
@@ -139,8 +135,7 @@ class MerController:
         self.view.tree.selection_changed_signal.connect(self.select_df)
 
     def select_df(self, name: str) -> None:
-        df = self.model.get_df(name)
-        self.model.selected_df = df
+        df: DataFrameModel = self.model.select_df(name)
         self.view.stacked_dfs.setCurrentWidget(df.explorer)
 
     def exit_program(self) -> None:
