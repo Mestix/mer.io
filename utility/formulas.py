@@ -29,7 +29,7 @@ def convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
     x_y = x / y
 
     a = 6378137.000
-    e = 0.08181919084176
+    e = 0.08181919084262
 
     alpha = math.atan(x_y)
     rho = a * math.sqrt(1 - ((e * e) * math.sin(tact_lat_rad) * math.sin(tact_lat_rad)))
