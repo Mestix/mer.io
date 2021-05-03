@@ -6,7 +6,6 @@
 *.spec
 
 /test_mers/
-/dist/
 /build/
 /venv/
 /temp/
