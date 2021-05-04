@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMessageBox
 from pandas import DataFrame
 import pandas as pd
 
+from src.importers.bulk_importer import BulkImporter
 from src.models.dataframe_model import DataFrameModel
 from src.models.mer_model import MerModel
 from src.modules.convert_module import ConvertModule
@@ -24,6 +25,8 @@ class MerController:
         self.importer: Union[ImportModule, None] = None
         self.converter: Union[ConvertModule, None] = None
 
+        self.bulk_importer: BulkImporter = BulkImporter()
+
         self.init()
 
     def init(self) -> None:
@@ -32,6 +35,9 @@ class MerController:
         self.view.export_signal.connect(self.export)
         self.view.tree.selection_changed_signal.connect(self.select_df)
         self.view.exit_signal.connect(self.exit_program)
+
+        self.bulk_importer.import_busy.connect(self.view.import_busy)
+        self.bulk_importer.import_failed.connect(self.view.import_busy)
 
     def import_file(self, paths: List[str]) -> None:
         if self.model.has_mer():
@@ -47,41 +53,7 @@ class MerController:
         self.start_task()
 
     def import_bulk(self, info: BulkSettings):
-        paths = list(get_files_from_folder(info.src))
-        self.info = info
-
-        self.importer = ImportModule(paths, info.skip)
-        self.importer.task_finished.connect(self.on_bulk_import_success)
-        self.importer.task_failed.connect(self.on_task_failed)
-        self.importer.task_busy.connect(self.view.import_busy)
-
-        self.start_task()
-
-    def on_bulk_import_success(self, _import: Dict):
-        print('bulk success')
-        mer_data: Dict[str, DataFrameModel] = _import['mer_data']
-
-        if not self.info.skip:
-            mock_tact_scenario(mer_data, _import['unique_refs'])
-
-        self.converter = ConvertModule(mer_data)
-        self.converter.task_finished.connect(self.on_bulk_convert_success)
-        self.converter.task_failed.connect(self.on_task_failed)
-        self.converter.task_busy.connect(self.view.import_busy)
-        self.converter.start()
-
-    def on_bulk_convert_success(self, mer_data: Dict):
-        print('convert success')
-        try:
-            writer: pd.ExcelWriter = pd.ExcelWriter(self.info.dst)
-
-            dfm: DataFrameModel
-            for key, dfm in mer_data.items():
-                dfm.df.to_excel(writer, dfm.name)
-
-            writer.save()
-        except Exception as e:
-            print(get_exception(e))
+        self.bulk_importer.import_and_convert(list(get_files_from_folder(info.src)), info)
 
     def start_task(self) -> None:
         self.importer.start()

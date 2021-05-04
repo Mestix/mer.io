@@ -41,7 +41,6 @@ def get_all_paths(paths: List[str]) -> List[str]:
 
 def get_paths_from_zip(path: str) -> List[str]:
     dir_path = 'temp'
-
     remove_tempdir_contents()
 
     with zipfile.ZipFile(path, 'r') as zip_ref:
