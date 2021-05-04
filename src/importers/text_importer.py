@@ -1,5 +1,7 @@
 import os
+from typing import Union
 
+from src.exceptions import NoTactScenarioFoundException
 from src.interfaces.importer_interface import IImporter
 
 import pandas as pd
@@ -7,8 +9,15 @@ from pandas import DataFrame
 
 
 class TextImporter(IImporter):
-    def run(self, path: str) -> DataFrame:
-        df: DataFrame = import_file(path)
+    def __init__(self, skip_tact: bool):
+        super(TextImporter, self).__init__()
+        self.skip_tact: bool = skip_tact
+
+    def run(self, path: str) -> Union[DataFrame, None]:
+        try:
+            df: DataFrame = import_file(path, self.skip_tact)
+        except NoTactScenarioFoundException:
+            return None
 
         for step in [transpose_df, clean_datetime_columns, clean_scientific_columns]:
             df: DataFrame = step(df)
@@ -18,7 +27,7 @@ class TextImporter(IImporter):
         return df
 
 
-def import_file(csv: str) -> DataFrame:
+def import_file(csv: str, skip_tact: bool) -> DataFrame:
     df: DataFrame = pd.read_csv(csv, sep=':', names=['NAME', 'VALUE'], header=None, engine='python').apply(
         lambda x: x.str.strip())
 
@@ -26,6 +35,9 @@ def import_file(csv: str) -> DataFrame:
     df['EVENT NUMBER'] = df[df['NAME'].str.contains('EVENT NUMBER')]['VALUE']
     df['EVENT NUMBER'] = df['EVENT NUMBER'].fillna(method='ffill')
     df['EVENT NUMBER'] = pd.to_numeric(df["EVENT NUMBER"])
+
+    if skip_tact and 'TACTICAL_SCENARIO' not in list(df['VALUE'].unique()):
+        raise NoTactScenarioFoundException()
 
     return df.set_index('NAME')
 

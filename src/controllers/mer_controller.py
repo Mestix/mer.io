@@ -10,7 +10,8 @@ from src.models.dataframe_model import DataFrameModel
 from src.models.mer_model import MerModel
 from src.modules.convert_module import ConvertModule
 from src.modules.import_module import ImportModule
-from src.utility.utility import get_exception
+from src.utility.utility import get_exception, get_files_from_folder
+from src.views.bulk_export_dlg import BulkSettings
 from src.views.mer_view import MerView
 
 
@@ -27,6 +28,7 @@ class MerController:
 
     def init(self) -> None:
         self.view.import_signal.connect(self.import_file)
+        self.view.bulk_import_signal.connect(self.import_bulk)
         self.view.export_signal.connect(self.export)
         self.view.tree.selection_changed_signal.connect(self.select_df)
         self.view.exit_signal.connect(self.exit_program)
@@ -43,6 +45,43 @@ class MerController:
         self.importer.task_busy.connect(self.view.import_busy)
 
         self.start_task()
+
+    def import_bulk(self, info: BulkSettings):
+        paths = list(get_files_from_folder(info.src))
+        self.info = info
+
+        self.importer = ImportModule(paths, info.skip)
+        self.importer.task_finished.connect(self.on_bulk_import_success)
+        self.importer.task_failed.connect(self.on_task_failed)
+        self.importer.task_busy.connect(self.view.import_busy)
+
+        self.start_task()
+
+    def on_bulk_import_success(self, _import: Dict):
+        print('bulk success')
+        mer_data: Dict[str, DataFrameModel] = _import['mer_data']
+
+        if not self.info.skip:
+            mock_tact_scenario(mer_data, _import['unique_refs'])
+
+        self.converter = ConvertModule(mer_data)
+        self.converter.task_finished.connect(self.on_bulk_convert_success)
+        self.converter.task_failed.connect(self.on_task_failed)
+        self.converter.task_busy.connect(self.view.import_busy)
+        self.converter.start()
+
+    def on_bulk_convert_success(self, mer_data: Dict):
+        print('convert success')
+        try:
+            writer: pd.ExcelWriter = pd.ExcelWriter(self.info.dst)
+
+            dfm: DataFrameModel
+            for key, dfm in mer_data.items():
+                dfm.df.to_excel(writer, dfm.name)
+
+            writer.save()
+        except Exception as e:
+            print(get_exception(e))
 
     def start_task(self) -> None:
         self.importer.start()
@@ -66,18 +105,10 @@ class MerController:
                                                        'No Tactical Scenario found, continue?',
                                                        QMessageBox.No | QMessageBox.Yes)
             if confirm == QMessageBox.Yes:
-                if 'TACTICAL_SCENARIO' not in mer_data:
-                    mer_data['TACTICAL_SCENARIO'] = DataFrameModel(DataFrame(), 'TACTICAL_SCENARIO')
-                for ref in unique_refs:
-                    tact_scenario: DataFrame = mer_data['TACTICAL_SCENARIO'].df_unfiltered
-                    if not tact_scenario[tact_scenario['REFERENCE'] == ref].any().any():
-                        mer_data['TACTICAL_SCENARIO'].df_unfiltered = \
-                            mer_data['TACTICAL_SCENARIO'].df_unfiltered.append(
-                            pd.DataFrame({
-                                'GRID CENTER LAT': [0],
-                                'GRID CENTER LONG': [0],
-                                'REFERENCE': [ref]
-                            }), ignore_index=True)
+                try:
+                    self.model.mer_data = mock_tact_scenario(mer_data, unique_refs)
+                except Exception as e:
+                    print(get_exception(e))
                 return True
             else:
                 return False
@@ -144,3 +175,20 @@ class MerController:
     def run(self) -> int:
         self.view.show()
         return self.app.exec_()
+
+
+def mock_tact_scenario(mer_data: Dict[str, DataFrameModel], unique_refs: List[str]) -> Dict[str, DataFrameModel]:
+    if 'TACTICAL_SCENARIO' not in mer_data:
+        mer_data['TACTICAL_SCENARIO'] = DataFrameModel(DataFrame({'REFERENCE': []}), 'TACTICAL_SCENARIO')
+    for ref in unique_refs:
+        tact_scenario: DataFrame = mer_data['TACTICAL_SCENARIO'].df_unfiltered
+        if ref not in list(tact_scenario['REFERENCE'].unique()):
+            mer_data['TACTICAL_SCENARIO'].df_unfiltered = \
+                mer_data['TACTICAL_SCENARIO'].df_unfiltered.append(
+                    pd.DataFrame({
+                        'GRID CENTER LAT': [0],
+                        'GRID CENTER LONG': [0],
+                        'REFERENCE': [ref]
+                    }), ignore_index=True)
+
+    return mer_data

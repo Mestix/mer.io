@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, QWidg
     QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu
 
 from src.environment import environment
-from src.utility.utility import save_file, open_file
+from src.utility.utility import save_file, open_file, get_exception
+from src.views.bulk_export_dlg import BulkExportDialog
 from src.views.tree_view import TreeView
 
 
@@ -15,6 +16,7 @@ class MerView(QMainWindow):
     import_signal: pyqtSignal = pyqtSignal(list)
     export_signal: pyqtSignal = pyqtSignal(str)
     exit_signal: pyqtSignal = pyqtSignal()
+    bulk_import_signal: pyqtSignal = pyqtSignal(object)
 
     def __init__(self):
         super().__init__()
@@ -84,7 +86,7 @@ class MerView(QMainWindow):
         class MenuItem:
             name: str
             func: callable
-            shortcut: str
+            shortcut: str = ''
 
         menu_bar_items: Dict[str, List[MenuItem]] = {'File': [MenuItem(name='Import',
                                                                        func=self.start_import,
@@ -95,7 +97,11 @@ class MerView(QMainWindow):
                                                               MenuItem(name='Exit',
                                                                        func=self.exit_program,
                                                                        shortcut='Ctrl+Q')
-                                                              ]}
+                                                              ],
+                                                     'Admin': [MenuItem(name='Bulk export',
+                                                                        func=self.bulk_export),
+                                                               ]
+                                                     }
 
         for name in menu_bar_items:
             menu: QMenu = menu_bar.addMenu(name)
@@ -166,6 +172,12 @@ class MerView(QMainWindow):
         path: str = save_file()
         if path:
             self.export_signal.emit(path)
+
+    def bulk_export(self):
+        bulk_export_dialog: BulkExportDialog = BulkExportDialog(self)
+
+        if bulk_export_dialog.exec() == QDialog.Accepted:
+            self.bulk_import_signal.emit(bulk_export_dialog.get_info())
 
     def enable_export_menu(self):
         self.menuBar().children()[1].actions()[1].setEnabled(True)

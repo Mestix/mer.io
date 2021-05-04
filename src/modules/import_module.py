@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -18,10 +18,10 @@ class ImportModule(QtCore.QThread):
     task_failed: pyqtSignal = pyqtSignal(str)
     task_busy: pyqtSignal = pyqtSignal(str)
 
-    def __init__(self, paths):
+    def __init__(self, paths, skip_tact: bool = False):
         QThread.__init__(self)
         self.paths: List[str] = paths
-        self.text_importer = TextImporter()
+        self.text_importer = TextImporter(skip_tact)
         self.binary_importer = BinaryImporter()
 
     def run(self) -> None:
@@ -39,7 +39,9 @@ class ImportModule(QtCore.QThread):
         for path in all_paths:
             try:
                 if path.endswith('.txt'):
-                    dfs.append(self.text_importer.run(path))
+                    df: Union[DataFrame, None] = self.text_importer.run(path)
+                    if df is not None:
+                        dfs.append(df)
                 elif path.endswith('.mer'):
                     # Not implemented yet
                     dfs.append(self.binary_importer.run(path))
