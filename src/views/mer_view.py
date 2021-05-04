@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, QWidg
     QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu
 
 from src.environment import environment
-from src.utility.utility import save_file, open_file, get_exception
+from src.utility.utility import save_file, open_file
 from src.views.bulk_export_dlg import BulkExportDialog
 from src.views.tree_view import TreeView
 
@@ -115,7 +115,7 @@ class MerView(QMainWindow):
         self.menuBar().children()[1].actions()[1].setEnabled(False)
 
     def create_progress_window(self):
-        self.progress_window: QDialog = QDialog()
+        self.progress_window: QDialog = QDialog(self)
         self.progress_window.setWindowModality(Qt.ApplicationModal)
         self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
         self.progress_window.resize(400, 100)
@@ -140,7 +140,7 @@ class MerView(QMainWindow):
             self.status_bar.removeWidget(self.status_bar_tactical_scenario)
 
         self.status_bar_tactical_scenario = QLabel(text)
-        self.status_bar.addWidget(self.status_bar_tactical_scenario)
+        self.status_bar.addPermanentWidget(self.status_bar_tactical_scenario)
 
     def add_widget(self, df):
         from src.views.explorer_view import ExplorerView
@@ -152,6 +152,7 @@ class MerView(QMainWindow):
     def import_busy(self, txt: str):
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
+        self.status_bar.showMessage(txt)
 
     def import_success(self, tact: str):
         self.set_tact_scenario(tact)

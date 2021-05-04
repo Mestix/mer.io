@@ -7,12 +7,14 @@ from src.modules.convert_module import ConvertModule
 from src.modules.export_module import ExportModule
 from src.modules.import_module import ImportModule
 from src.utility.extractors import mock_tact_scenario
+from src.utility.utility import get_files_from_folder
 from src.views.bulk_export_dlg import BulkSettings
 
 
 class BulkHandler(QObject):
     task_busy: pyqtSignal = pyqtSignal(str)
     task_failed: pyqtSignal = pyqtSignal(str)
+    export_finished: pyqtSignal = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -21,10 +23,11 @@ class BulkHandler(QObject):
         self.exporter: Union[ExportModule, None] = None
         self.info: Union[BulkSettings, None] = None
 
-    def import_and_convert(self, paths: List[str], info: BulkSettings):
+    def import_and_convert(self, info: BulkSettings):
         print('Bulk Export start...')
 
-        self.info = info
+        paths: List[str] = list(get_files_from_folder(info.src))
+        self.info: BulkSettings = info
         self.importer = ImportModule(paths, info.skip)
         self.importer.task_finished.connect(self.on_bulk_import_success)
         self.importer.task_failed.connect(self.on_task_failed)
@@ -55,6 +58,8 @@ class BulkHandler(QObject):
         self.exporter.start()
 
     def on_export_finished(self):
+        self.export_finished.emit()
+        self.task_busy.emit('Export finished')
         print('Export finished')
 
     def on_export_failed(self):

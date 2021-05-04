@@ -50,6 +50,7 @@ class FileHandler(QObject):
 
     def on_convert_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
         self.task_finished.emit(converted_data)
+        self.task_busy.emit('Import finished')
 
     def on_task_busy(self, txt):
         self.task_busy.emit(txt)
@@ -61,11 +62,13 @@ class FileHandler(QObject):
         print('Start export...')
         self.exporter: ExportModule = ExportModule(data, dst)
         self.exporter.task_finished.connect(self.on_export_finished)
+        self.exporter.task_busy.connect(self.on_task_busy)
         self.exporter.task_failed.connect(self.on_task_failed)
         self.exporter.start()
 
     def on_export_finished(self):
         print('Export finished')
+        self.task_busy.emit('Export finished')
 
     def verify_tact_scenarios(self, unique_refs: List[str], mer_data: Dict[str, DataFrameModel]) -> bool:
         if 'TACTICAL_SCENARIO' not in mer_data \

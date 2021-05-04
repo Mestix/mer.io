@@ -35,6 +35,7 @@ class MerController(QObject):
 
         self.bulk_handler.task_busy.connect(self.view.import_busy)
         self.bulk_handler.task_failed.connect(self.on_task_failed)
+        self.bulk_handler.export_finished.connect(self.on_bulk_export_finished)
 
         self.file_handler.task_busy.connect(self.view.import_busy)
         self.file_handler.task_finished.connect(self.on_task_success)
@@ -47,7 +48,7 @@ class MerController(QObject):
         self.file_handler.import_and_convert(paths)
 
     def import_bulk(self, info: BulkSettings):
-        self.bulk_handler.import_and_convert(list(get_files_from_folder(info.src)), info)
+        self.bulk_handler.import_and_convert(info)
 
     def export(self, path: str) -> None:
         selected_items: List[str] = list(self.view.tree.selected_items())
@@ -70,6 +71,9 @@ class MerController(QObject):
     def on_task_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
         self.model.mer_data = converted_data
         self.set_mer_view(converted_data)
+
+    def on_bulk_export_finished(self):
+        self.view.status_bar.clearMessage()
 
     def set_mer_view(self, converted_data: Dict[str, DataFrameModel]) -> None:
         for name, idf in self.model.mer_data.items():

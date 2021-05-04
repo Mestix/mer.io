@@ -27,6 +27,7 @@ class ExportModule(QtCore.QThread):
             self.task_failed.emit()
 
     def export(self) -> None:
+        self.task_busy.emit('Exporting mer...')
         df: DataFrameModel
         for name, dfm in self.data.items():
             dfm.df.to_excel(self.writer, name)
