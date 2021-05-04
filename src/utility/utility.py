@@ -71,3 +71,4 @@ def remove_tempdir_contents() -> None:
         for d in dirs:
             shutil.rmtree(os.path.join(root, d))
 
+

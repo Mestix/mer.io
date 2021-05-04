@@ -82,7 +82,7 @@ class BulkExportDialog(QDialog):
             self.src_dir.setText(file)
 
     def select_dst_dir(self):
-        path, _ = QFileDialog().getSaveFileName(self.parent, 'Select destination file')
+        path, _ = QFileDialog().getSaveFileName(self.parent, 'Select destination file', filter='*.xlsx')
         if path:
             self.dst_dir.setText(path)
 
@@ -97,7 +97,7 @@ class BulkExportDialog(QDialog):
     def get_info(self) -> BulkSettings:
         return BulkSettings(
             src=self.src_dir.text(),
-            dst=self.dst_dir.text() + str(self.format_box.currentText()),
+            dst=self.dst_dir.text(),
             preset=str(self.preset_box.currentText()),
             skip=self.skip_checkbox.checkState()
         )
