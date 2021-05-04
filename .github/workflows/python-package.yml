@@ -43,7 +43,7 @@ jobs:
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
         path: src
-        spec: spec/mer.io_v0.3.4.spec
+        spec: mer.io_v0.3.4.spec
     - name: Zip Build
       uses: papeloto/action-zip@v1
       with:
