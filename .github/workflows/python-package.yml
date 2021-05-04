@@ -48,7 +48,8 @@ jobs:
       with:
         files: ${{ github.workspace }}/src/dist/mer.io_v0.3.4
         dest: mer.io.zip
-    - uses: actions/upload-artifact@v1
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v1
       with:
         name: mer.io
         path: mer.io.zip
