@@ -2,6 +2,7 @@
 ### Added
 - (class) YardsToCoordinatesConverter: Converts yards to Degrees (non-converted positions)
 - (class) DegreesToCoordinatesConverter: Converts degrees to coordinates (half-converted positions)
+- Version number to window title
 
 ### Changed
 - Changed PositionConverter to YardsToCoordinatesConverter

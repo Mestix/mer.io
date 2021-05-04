@@ -38,4 +38,18 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        python -m pytest src/tests/
+    - name: Package Application
+      uses: JackMcKew/pyinstaller-action-windows@main
+      with:
+        path: src
+    - name: Zip Build
+      uses: papeloto/action-zip@v1
+      with:
+        files: dist/mer.io_v0.3.4
+        dest: mer.io.zip
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: mer.io
+        path: mer.io.zip
