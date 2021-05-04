@@ -6,6 +6,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, QWidget, \
     QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu
 
+from src.environment import environment
 from src.utility.utility import save_file, open_file
 from src.views.tree_view import TreeView
 
@@ -54,7 +55,7 @@ class MerView(QMainWindow):
 
         self.setGeometry(250, 150, 1500, 750)
 
-        self.setWindowTitle('MER.io')
+        self.setWindowTitle('MER.io v{0}'.format(environment['version']))
         self.setWindowIcon(QIcon('./assets/copter_icon.png'))
 
     def reset_ui(self):
