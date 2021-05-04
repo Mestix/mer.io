@@ -29,9 +29,6 @@ class FileHandler(QObject):
         self.importer.task_failed.connect(self.on_task_failed)
         self.importer.task_busy.connect(self.on_task_busy)
 
-        self.start_task()
-
-    def start_task(self) -> None:
         self.importer.start()
 
     def on_import_success(self, _import: Dict) -> None:
@@ -39,7 +36,10 @@ class FileHandler(QObject):
 
         _continue = self.verify_tact_scenarios(_import['unique_refs'], _import['mer_data'])
 
-        self.convert_data() if _continue else self.task_failed.emit('Import Failed')
+        if _continue:
+            self.convert_data()
+        else:
+            self.task_failed.emit('Import Failed')
 
     def convert_data(self) -> None:
         self.converter = ConvertModule(self.parent.model.mer_data)
