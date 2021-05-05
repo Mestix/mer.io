@@ -14,10 +14,7 @@ class TextImporter(IImporter):
         self.skip_tact: bool = skip_tact
 
     def run(self, path: str) -> Union[DataFrame, None]:
-        try:
-            df: DataFrame = import_file(path, self.skip_tact)
-        except NoTactScenarioFoundException:
-            return None
+        df: DataFrame = import_file(path, self.skip_tact)
 
         for step in [transpose_df, clean_datetime_columns, clean_scientific_columns]:
             df: DataFrame = step(df)

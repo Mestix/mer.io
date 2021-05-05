@@ -35,20 +35,19 @@ class MerController(QObject):
 
         self.bulk_handler.task_busy.connect(self.view.import_busy)
         self.bulk_handler.task_failed.connect(self.on_task_failed)
-        self.bulk_handler.export_finished.connect(self.on_bulk_export_finished)
 
         self.file_handler.task_busy.connect(self.view.import_busy)
-        self.file_handler.task_finished.connect(self.on_task_success)
+        self.file_handler.task_finished.connect(self.on_import_success)
         self.file_handler.task_failed.connect(self.on_task_failed)
 
     def import_file(self, paths: List[str]) -> None:
         self.reset_mer()
 
         self.view.toggle_progress(True)
-        self.file_handler.import_and_convert(paths)
+        self.file_handler.start_import(paths)
 
     def import_bulk(self, info: BulkSettings):
-        self.bulk_handler.import_and_convert(info)
+        self.bulk_handler.start_import(info)
 
     def export(self, path: str) -> None:
         selected_items: List[str] = list(self.view.tree.selected_items())
@@ -68,7 +67,7 @@ class MerController(QObject):
         self.view.toggle_progress(False)
         self.view.import_failed(txt)
 
-    def on_task_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
+    def on_import_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
         self.model.mer_data = converted_data
         self.set_mer_view(converted_data)
 
@@ -86,7 +85,7 @@ class MerController(QObject):
                 ' {0}: Lat {1}, Long {2}'.format(
                     row['REFERENCE'],
                     row['GRID CENTER LAT'],
-                    row['GRID CENTER LAT']
+                    row['GRID CENTER LONG']
                 )
 
         self.view.import_success(tact_scenario_txt)

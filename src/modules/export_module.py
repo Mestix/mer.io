@@ -21,16 +21,18 @@ class ExportModule(QtCore.QThread):
 
     def run(self) -> None:
         try:
+            self.task_busy.emit('Start export')
             self.export()
         except Exception as e:
             print('ExportModule.run: ' + get_exception(e))
             self.task_failed.emit()
 
     def export(self) -> None:
-        self.task_busy.emit('Exporting mer...')
+        self.task_busy.emit('Exporting...')
         df: DataFrameModel
         for name, dfm in self.data.items():
             dfm.df.to_excel(self.writer, name)
 
         self.writer.save()
         self.task_finished.emit()
+        self.task_busy.emit('Export finished')

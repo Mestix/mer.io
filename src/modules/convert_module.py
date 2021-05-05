@@ -26,12 +26,14 @@ class ConvertModule(QtCore.QThread):
 
     def run(self) -> None:
         try:
+            self.task_busy.emit('Start convert')
             self.convert_data()
         except Exception as e:
+            self.task_failed.emit('Convert failed')
             print('ConvertModule.run: ' + get_exception(e))
 
     def convert_data(self) -> None:
-        self.task_busy.emit('Converting data...')
+        self.task_busy.emit('Converting...')
 
         data = self.data.copy()
         tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].df_unfiltered
@@ -48,6 +50,7 @@ class ConvertModule(QtCore.QThread):
                 data[key].df_unfiltered = converted_df
                 data[key].df = converted_df
 
+        self.task_busy.emit('Convert success')
         self.task_finished.emit(data)
 
     def add_converter(self, c: IConverter) -> None:

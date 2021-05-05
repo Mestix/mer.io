@@ -39,6 +39,7 @@ class BulkExportDialog(QDialog):
         self.dst_dir.setDisabled(True)
 
         self.skip_checkbox: QCheckBox = QCheckBox('Skip Mers without tactical scenario')
+        self.skip_checkbox.setCheckState(Qt.Checked)
 
         self.create_form()
 
@@ -87,9 +88,8 @@ class BulkExportDialog(QDialog):
             self.dst_dir.setText(path)
 
     def verify_input(self):
-        if self.src_dir.text() == '' \
-                or self.dst_dir.text() == '':
-            QMessageBox.warning(self, 'Error', 'Source and Destination are required', QMessageBox.Ok)
+        if self.src_dir.text() == '' or self.dst_dir.text() == '':
+            QMessageBox.information(self, 'Notification', 'Source and Destination are required', QMessageBox.Ok)
 
         else:
             self.accept()

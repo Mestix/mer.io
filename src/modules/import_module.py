@@ -5,7 +5,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from pandas import DataFrame
 import pandas as pd
 
-from src.exceptions import NoValidMerImportTypeException
+from src.exceptions import NoValidMerImportTypeException, NoTactScenarioFoundException
 from src.importers.binary_importer import BinaryImporter
 from src.importers.text_importer import TextImporter
 from src.models.dataframe_model import DataFrameModel
@@ -25,36 +25,37 @@ class ImportModule(QtCore.QThread):
         self.binary_importer = BinaryImporter()
 
     def run(self) -> None:
+        self.task_busy.emit('Start import')
         try:
             self.import_from_paths(self.paths)
         except Exception as e:
             print('ImportModule.run: ' + get_exception(e))
 
     def import_from_paths(self, paths) -> None:
-        self.task_busy.emit('Importing files...')
-
+        self.task_busy.emit('Importing...')
         all_paths: List[str] = get_all_paths(paths)
         dfs: list[DataFrame] = list()
 
         for path in all_paths:
             try:
                 if path.endswith('.txt'):
-                    df: Union[DataFrame, None] = self.text_importer.run(path)
-                    if df is not None:
-                        dfs.append(df)
-                elif path.endswith('.mer'):
+                    dfs.append(self.text_importer.run(path))
+                elif path.endswith('.MER'):
                     # Not implemented yet
                     dfs.append(self.binary_importer.run(path))
                 else:
                     raise NoValidMerImportTypeException
+            except NoTactScenarioFoundException:
+                print('Skipped tactical scenario')
             except Exception as e:
-                all_paths.remove(path)
                 print('ImportModule.import_from_paths: ' + get_exception(e))
 
         try:
             df: DataFrame = pd.concat(dfs, sort=False, ignore_index=True)
-            mer_data: Dict[str, DataFrameModel] = create_mer_dict(create_identifier_dict(df.copy()))
             unique_refs: List[str] = df['REFERENCE'].unique()
+            mer_data: Dict[str, DataFrameModel] = create_mer_dict(create_identifier_dict(df.copy()))
+
+            self.task_busy.emit('Import finished')
 
             self.task_finished.emit(dict({
                 'mer_data': mer_data,
@@ -62,5 +63,5 @@ class ImportModule(QtCore.QThread):
             }))
         except Exception as e:
             print('ImportModule.import_from_paths: ' + get_exception(e))
-            self.task_failed.emit('No data found')
+            self.task_failed.emit('No valid data found')
 

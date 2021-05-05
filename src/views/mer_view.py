@@ -152,7 +152,7 @@ class MerView(QMainWindow):
     def import_busy(self, txt: str):
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
-        self.status_bar.showMessage(txt)
+        self.show_status_message(txt)
 
     def import_success(self, tact: str):
         self.set_tact_scenario(tact)
@@ -162,7 +162,11 @@ class MerView(QMainWindow):
         self.tree.show()
 
     def import_failed(self, txt: str):
-        QMessageBox.warning(self, 'Error', txt, QMessageBox.Ok)
+        self.show_status_message(txt)
+        QMessageBox.critical(self, 'Error', txt, QMessageBox.Ok)
+
+    def show_status_message(self, txt: str):
+        self.status_bar.showMessage('Status: ' + txt)
 
     def start_import(self):
         paths: List[str] = open_file()
