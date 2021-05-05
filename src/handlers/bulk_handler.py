@@ -10,11 +10,15 @@ from src.utility.extractors import mock_tact_scenario
 from src.utility.utility import get_files_from_folder
 from src.views.bulk_export_dlg import BulkSettings
 
+from src.log import get_logger
+
 
 class BulkHandler(QObject):
     task_busy: pyqtSignal = pyqtSignal(str)
     task_failed: pyqtSignal = pyqtSignal(str)
     task_finished: pyqtSignal = pyqtSignal()
+
+    logger = get_logger('BulkHandler')
 
     def __init__(self):
         super().__init__()
@@ -47,19 +51,17 @@ class BulkHandler(QObject):
 
     def start_export(self, data: Dict[str, DataFrameModel]):
         self.exporter: ExportModule = ExportModule(data, self.info.dst)
-        self.exporter.task_finished.connect(self.on_task_finished)
         self.exporter.task_failed.connect(self.on_task_failed)
         self.exporter.task_busy.connect(self.on_task_busy)
+        self.exporter.task_finished.connect(self.on_task_finished)
         self.exporter.start()
 
-    def on_task_finished(self):
-        self.task_finished.emit()
-
     def on_task_failed(self, txt) -> None:
-        print(txt)
         self.task_failed.emit(txt)
 
     def on_task_busy(self, txt) -> None:
-        print(txt)
         self.task_busy.emit(txt)
+
+    def on_task_finished(self) -> None:
+        self.task_finished.emit()
 

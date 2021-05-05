@@ -8,7 +8,6 @@ from src.handlers.bulk_handler import BulkHandler
 from src.handlers.file_handler import FileHandler
 from src.models.dataframe_model import DataFrameModel
 from src.models.mer_model import MerModel
-from src.utility.utility import get_files_from_folder
 from src.views.bulk_export_dlg import BulkSettings
 from src.views.mer_view import MerView
 
@@ -35,6 +34,7 @@ class MerController(QObject):
 
         self.bulk_handler.task_busy.connect(self.view.import_busy)
         self.bulk_handler.task_failed.connect(self.on_task_failed)
+        self.bulk_handler.task_finished.connect(self.on_task_finished)
 
         self.file_handler.task_busy.connect(self.view.import_busy)
         self.file_handler.task_finished.connect(self.on_import_success)
@@ -47,6 +47,8 @@ class MerController(QObject):
         self.file_handler.start_import(paths)
 
     def import_bulk(self, info: BulkSettings):
+        self.view.toggle_import_menu(False)
+
         self.bulk_handler.start_import(info)
 
     def export(self, path: str) -> None:
@@ -71,8 +73,8 @@ class MerController(QObject):
         self.model.mer_data = converted_data
         self.set_mer_view(converted_data)
 
-    def on_bulk_export_finished(self):
-        self.view.status_bar.clearMessage()
+    def on_task_finished(self):
+        self.view.toggle_import_menu(True)
 
     def set_mer_view(self, converted_data: Dict[str, DataFrameModel]) -> None:
         for name, idf in self.model.mer_data.items():

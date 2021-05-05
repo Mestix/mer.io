@@ -10,11 +10,15 @@ from src.modules.export_module import ExportModule
 from src.modules.import_module import ImportModule
 from src.utility.extractors import mock_tact_scenario
 
+from src.log import get_logger
+
 
 class FileHandler(QObject):
     task_busy: pyqtSignal = pyqtSignal(str)
     task_failed: pyqtSignal = pyqtSignal(str)
     task_finished: pyqtSignal = pyqtSignal(object)
+
+    logger = get_logger('FileHandler')
 
     def __init__(self, parent):
         super().__init__()
@@ -45,7 +49,6 @@ class FileHandler(QObject):
 
     def start_export(self, data: Dict[str, DataFrameModel], dst: str):
         self.exporter: ExportModule = ExportModule(data, dst)
-        self.exporter.task_finished.connect(self.on_export_finished)
         self.exporter.task_busy.connect(self.on_task_busy)
         self.exporter.task_failed.connect(self.on_task_failed)
         self.exporter.start()
@@ -54,11 +57,9 @@ class FileHandler(QObject):
         self.task_finished.emit(converted_data)
 
     def on_task_busy(self, txt):
-        print(txt)
         self.task_busy.emit(txt)
 
     def on_task_failed(self, txt):
-        print(txt)
         self.task_failed.emit(txt)
 
     def verify_tact_scenarios(self, unique_refs: List[str], mer_data: Dict[str, DataFrameModel]) -> Dict[str, DataFrameModel]:

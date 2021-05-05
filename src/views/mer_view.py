@@ -25,11 +25,14 @@ class MerView(QMainWindow):
         self.tree: Union[TreeView, None] = None
 
         self.status_bar: Union[QStatusBar, None] = None
-        self.status_bar_tactical_scenario: Union[QWidget, None] = None
+        self.status_bar_tactical_scenario: Union[QLabel, None] = None
+        self.status_bar_label: Union[QLabel, None] = None
 
         self.progress_bar: Union[QProgressBar, None] = None
         self.progress_window: Union[QDialog, None] = None
         self.progress_window_label: Union[QLabel, None] = None
+
+        self.running_tasks: int = 0
 
         self.init_ui()
 
@@ -47,6 +50,10 @@ class MerView(QMainWindow):
         self.splitter.setStretchFactor(1, 1)
 
         self.status_bar: QStatusBar = self.statusBar()
+        self.status_bar_tactical_scenario = QLabel()
+        self.status_bar_label = QLabel()
+        self.status_bar.addWidget(self.status_bar_label)
+        self.status_bar.addPermanentWidget(self.status_bar_tactical_scenario)
 
         self.splitter.setSizes([300, 1000])
         self.splitter.setContentsMargins(10, 10, 10, 10)
@@ -68,7 +75,7 @@ class MerView(QMainWindow):
 
         self.import_busy('')
         self.set_tact_scenario('')
-        self.enable_export_menu()
+        self.toggle_export_menu(True)
 
         self.splitter.replaceWidget(0, self.tree)
         self.splitter.replaceWidget(1, self.stacked_dfs)
@@ -112,7 +119,7 @@ class MerView(QMainWindow):
                 action.triggered.connect(item.func)
                 menu.addAction(action)
 
-        self.menuBar().children()[1].actions()[1].setEnabled(False)
+        self.toggle_export_menu(False)
 
     def create_progress_window(self):
         self.progress_window: QDialog = QDialog(self)
@@ -135,13 +142,6 @@ class MerView(QMainWindow):
         else:
             self.progress_window.hide()
 
-    def set_tact_scenario(self, text: str):
-        if self.status_bar_tactical_scenario is not None:
-            self.status_bar.removeWidget(self.status_bar_tactical_scenario)
-
-        self.status_bar_tactical_scenario = QLabel(text)
-        self.status_bar.addPermanentWidget(self.status_bar_tactical_scenario)
-
     def add_widget(self, df):
         from src.views.explorer_view import ExplorerView
         df.explorer = ExplorerView(df)
@@ -155,9 +155,9 @@ class MerView(QMainWindow):
         self.show_status_message(txt)
 
     def import_success(self, tact: str):
-        self.set_tact_scenario(tact)
+        self.status_bar_tactical_scenario.setText(tact)
 
-        self.enable_export_menu()
+        self.toggle_export_menu(False)
         self.toggle_progress(False)
         self.tree.show()
 
@@ -166,7 +166,10 @@ class MerView(QMainWindow):
         QMessageBox.critical(self, 'Error', txt, QMessageBox.Ok)
 
     def show_status_message(self, txt: str):
-        self.status_bar.showMessage('Status: ' + txt)
+        self.status_bar_label.setText('Status: {0} '.format(txt))
+
+    def set_tact_scenario(self, txt: str):
+        self.status_bar_tactical_scenario.setText(txt)
 
     def start_import(self):
         paths: List[str] = open_file()
@@ -184,8 +187,19 @@ class MerView(QMainWindow):
         if bulk_export_dialog.exec() == QDialog.Accepted:
             self.bulk_import_signal.emit(bulk_export_dialog.get_info())
 
-    def enable_export_menu(self):
-        self.menuBar().children()[1].actions()[1].setEnabled(True)
+    def toggle_export_menu(self, enable: bool):
+        if enable:
+            if self.running_tasks > 0:
+                self.running_tasks -= 1
+
+            if self.running_tasks == 0:
+                self.menuBar().children()[1].actions()[1].setEnabled(True)
+        else:
+            self.running_tasks += 1
+            self.menuBar().children()[1].actions()[1].setEnabled(False)
+
+    def toggle_import_menu(self, enable: bool):
+        self.menuBar().children()[1].actions()[0].setEnabled(enable)
 
     def exit_program(self):
         confirm = QMessageBox.warning(self, 'Warning', 'Close program?',
