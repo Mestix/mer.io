@@ -12,7 +12,7 @@ def get_logger(name):
     logging.basicConfig(format=logger_settings['format'], datefmt=logger_settings['datetime'])
 
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.WARNING)
     return logger
 
 
