@@ -7,7 +7,7 @@ PyInstaller.__main__.run([
     '--name',
     'mer.io_v{0}'.format(environment['version']),
     '--specpath',
-    'src/spec',
+    'src/',
     '--distpath',
     'src/dist',
     '--onedir',
