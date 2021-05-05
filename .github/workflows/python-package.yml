@@ -42,7 +42,7 @@ jobs:
     - name: Package Application
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
-        path: src
+        path: .
     - name: Zip Build
       uses: papeloto/action-zip@v1
       with:
