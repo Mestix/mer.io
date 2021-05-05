@@ -10,8 +10,12 @@ from src.interfaces.converter_interface import IConverter
 from src.utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long
 from src.utility.utility import get_exception
 
+from src.log import get_logger
+
 
 class DegreesToCoordinatesConverter(IConverter):
+    logger = get_logger('DegreesToCoordinatesConverter')
+
     def __init__(self):
         super().__init__()
 
@@ -19,7 +23,7 @@ class DegreesToCoordinatesConverter(IConverter):
         try:
             return convert_lat_long_cols(df, kwargs['scientific_cols'])
         except Exception as e:
-            print('DegreesToCoordinatesConverter.convert: ' + get_exception(e))
+            self.logger.error(get_exception(e))
             return df
 
 

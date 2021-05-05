@@ -10,11 +10,15 @@ from src.models.dataframe_model import DataFrameModel
 from src.utility.utility import get_exception
 import numpy as np
 
+from src.log import get_logger
+
 
 class ConvertModule(QtCore.QThread):
     task_finished: pyqtSignal = pyqtSignal(object)
     task_failed: pyqtSignal = pyqtSignal(str)
     task_busy: pyqtSignal = pyqtSignal(str)
+
+    logger = get_logger('ConvertModule')
 
     def __init__(self, data):
         QThread.__init__(self)
@@ -26,18 +30,19 @@ class ConvertModule(QtCore.QThread):
 
     def run(self) -> None:
         try:
+            self.emit_busy('Start convert')
             self.convert_data()
         except Exception as e:
-            print('ConvertModule.run: ' + get_exception(e))
+            self.emit_failed('Convert failed: ' + get_exception(e))
 
     def convert_data(self) -> None:
-        self.task_busy.emit('Converting data...')
-
         data = self.data.copy()
         tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].df_unfiltered
 
         for converter in self.converters:
-            for key, dfm in data.items():
+            for name, dfm in data.items():
+                self.emit_busy('Converting {0}'.format(name))
+
                 scientific_cols: List[str] = dfm.df_unfiltered.select_dtypes(include=np.number).columns.tolist()
 
                 converted_df: DataFrame = converter.convert(
@@ -45,10 +50,19 @@ class ConvertModule(QtCore.QThread):
                     tact_scenario=tact_scenario,
                     scientific_cols=scientific_cols
                     )
-                data[key].df_unfiltered = converted_df
-                data[key].df = converted_df
+                data[name].df_unfiltered = converted_df
+                data[name].df = converted_df
 
+        self.emit_busy('Convert success')
         self.task_finished.emit(data)
 
     def add_converter(self, c: IConverter) -> None:
         self.converters.append(c)
+
+    def emit_busy(self, txt: str):
+        self.task_busy.emit(txt)
+        self.logger.info(txt)
+
+    def emit_failed(self, txt: str):
+        self.task_failed.emit(txt)
+        self.logger.error(txt)

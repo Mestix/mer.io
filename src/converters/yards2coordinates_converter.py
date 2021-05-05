@@ -11,8 +11,12 @@ from src.interfaces.converter_interface import IConverter
 from src.utility.formatters import format_degrees_to_coordinate_lat, format_degrees_to_coordinate_long
 from src.utility.utility import get_exception
 
+from src.log import get_logger
+
 
 class YardsToCoordinatesConverter(IConverter):
+    logger = get_logger('YardsToCoordinatesConverter')
+
     def __init__(self):
         super().__init__()
 
@@ -20,7 +24,7 @@ class YardsToCoordinatesConverter(IConverter):
         try:
             return convert_x_y_cols(df, kwargs['tact_scenario'], kwargs['scientific_cols'])
         except Exception as e:
-            print('YardsToCoordinatesConverter.convert: ' + get_exception(e))
+            self.logger.error(get_exception(e))
             return df
 
 

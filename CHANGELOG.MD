@@ -1,3 +1,17 @@
+## 0.3.5
+### Added
+- Logger
+- (class) BulkHandler: for importing, converting and exporting multiple mers from a directory at once
+- (class) ExportModule: for handling export functionality on thread
+- (class) FileHandler: for handling mer imports that should show on screen
+- Status messages in status bar
+
+### Changed
+- MerController has now both bulk and file handlers.
+- MerController is now only responsible for connecting signals between model, view and handlers
+- While bulk export tasks are running, single file import is been disabled because the program will get very slow
+
+
 ## 0.3.4 - 3-5-2021
 ### Added
 - (class) YardsToCoordinatesConverter: Converts yards to Degrees (non-converted positions)
