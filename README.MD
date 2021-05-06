@@ -24,7 +24,7 @@
 - Build can be found in ```/dist``` folder
 
 ## Run application as executable
-- After building the application execute ```dist/main/mer.io.exe``` to run application
+- After building the application execute ```dist/mer.io_version/mer.io.exe``` to run application
 
 ## Run tests
 - Tests can be found in ```/tests```  

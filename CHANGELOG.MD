@@ -1,3 +1,11 @@
+## 0.3.6
+### Added
+- Themes
+
+### Changed
+- TreeView is now ListView and called IdentifierView
+- Searching for identifiers, replaces underscores for spaces (no need to add underscores anymore)
+
 ## 0.3.5
 ### Added
 - Logger
