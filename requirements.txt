@@ -12,4 +12,5 @@ qt-material
 qt5-applications
 qt5-tools
 QtPy
+wheel
 cx_freeze
