@@ -44,7 +44,7 @@ class MerView(QMainWindow):
         super().__init__()
         self.splitter: Union[QSplitter, None] = None
         self.stacked_dfs: Union[QStackedWidget, None] = None
-        self.tree: Union[IdentifierView, None] = None
+        self.identifiers: Union[IdentifierView, None] = None
 
         self.status_bar: Union[QStatusBar, None] = None
         self.status_bar_tactical_scenario: Union[QLabel, None] = None
@@ -60,14 +60,12 @@ class MerView(QMainWindow):
 
     def init_ui(self):
         self.splitter: QSplitter = QSplitter(self)
-        self.tree: IdentifierView = IdentifierView()
+        self.identifiers: IdentifierView = IdentifierView()
 
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
-        self.splitter.addWidget(self.tree)
+        self.splitter.addWidget(self.identifiers)
         self.splitter.addWidget(self.stacked_dfs)
-        self.splitter.setCollapsible(0, False)
-        self.splitter.setCollapsible(1, False)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
 
@@ -91,18 +89,16 @@ class MerView(QMainWindow):
 
     def reset_ui(self):
         self.toggle_progress(False)
-        self.tree.hide()
-        self.tree: IdentifierView = IdentifierView()
+        self.identifiers.hide()
+        self.identifiers: IdentifierView = IdentifierView()
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
         self.import_busy('')
         self.set_tact_scenario('')
         self.toggle_export_menu(False)
 
-        self.splitter.replaceWidget(0, self.tree)
+        self.splitter.replaceWidget(0, self.identifiers)
         self.splitter.replaceWidget(1, self.stacked_dfs)
-        self.splitter.setCollapsible(0, False)
-        self.splitter.setCollapsible(1, False)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
 
@@ -150,15 +146,16 @@ class MerView(QMainWindow):
     def create_progress_window(self):
         self.progress_window: QDialog = QDialog(self)
         self.progress_window.setWindowModality(Qt.ApplicationModal)
-        self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
         self.progress_window.resize(400, 100)
+
+        self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
         self.progress_window.setFixedSize(self.progress_window.size())
         self.progress_window.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.progress_window.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.progress_window.setWindowTitle('Please wait')
         self.progress_window_label = QLabel(self.progress_window)
         self.progress_window_label.move(15, 18)
-        self.progress_bar.resize(410, 25)
+        self.progress_bar.resize(370, 25)
         self.progress_bar.move(15, 40)
         self.progress_bar.setRange(0, 0)
 
@@ -173,7 +170,7 @@ class MerView(QMainWindow):
         df.explorer = ExplorerView(df)
 
         self.stacked_dfs.addWidget(df.explorer)
-        self.tree.add_tree_item(df.name)
+        self.identifiers.add_tree_item(df.name)
 
     def import_busy(self, txt: str):
         self.progress_window_label.setText(txt)
@@ -185,7 +182,7 @@ class MerView(QMainWindow):
 
         self.toggle_export_menu(True)
         self.toggle_progress(False)
-        self.tree.show()
+        self.identifiers.show()
 
     def import_failed(self, txt: str):
         self.show_status_message(txt)

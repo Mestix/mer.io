@@ -20,7 +20,8 @@
 - Or Open project in PyCharm, select ```main.py``` and press play (run)
 
 ## Build application
-- Run ```python src/pyinstaller.py```  
+- Run ```python src/pyinstaller.py```
+- ```pyinstaller -F --add-data venv/Lib/site-packages/qt_material;qt_material --add-data src/assets;assets src/main.py --name mer.io_v0.3.6 --icon=src/assets/app_icon.ico --noconfirm --onedir --windowed```
 - Build can be found in ```/dist``` folder
 
 ## Run application as executable

@@ -17,7 +17,7 @@ class MerController(QObject, QtStyleTools):
     def __init__(self):
         super().__init__()
         self.app: QApplication = QApplication(sys.argv)
-        apply_stylesheet(self.app, theme='light_teal.xml', invert_secondary=True)
+        apply_stylesheet(self.app, theme='light_amber.xml', invert_secondary=True)
         self.model: MerModel = MerModel()
 
         self.view: MerView = MerView()
@@ -32,7 +32,7 @@ class MerController(QObject, QtStyleTools):
         self.view.bulk_import_signal.connect(self.import_bulk)
 
         self.view.export_signal.connect(self.export)
-        self.view.tree.selection_changed_signal.connect(self.select_df)
+        self.view.identifiers.selection_changed_signal.connect(self.select_df)
         self.view.exit_signal.connect(self.exit_program)
         self.view.set_theme_signal.connect(self.set_theme)
 
@@ -56,7 +56,7 @@ class MerController(QObject, QtStyleTools):
         self.bulk_handler.start_import(info)
 
     def export(self, path: str) -> None:
-        selected_items: List[str] = list(self.view.tree.selected_items())
+        selected_items: List[str] = list(self.view.identifiers.selected_items())
         if len(selected_items) > 0:
             data = dict()
             for name in selected_items:
@@ -100,7 +100,7 @@ class MerController(QObject, QtStyleTools):
         if self.model.has_mer():
             self.model.reset_mer()
             self.view.reset_ui()
-            self.view.tree.selection_changed_signal.connect(self.select_df)
+            self.view.identifiers.selection_changed_signal.connect(self.select_df)
 
     def select_df(self, name: str) -> None:
         df: DataFrameModel = self.model.select_df(name)
