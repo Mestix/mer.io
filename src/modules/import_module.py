@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Union
+from typing import List, Dict
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -23,10 +23,10 @@ class ImportModule(QtCore.QThread):
 
     logger = get_logger('ImportModule')
 
-    def __init__(self, paths, skip_tact: bool = False):
+    def __init__(self, paths, skip: bool = False):
         QThread.__init__(self)
         self.paths: List[str] = paths
-        self.text_importer = TextImporter(skip_tact)
+        self.text_importer = TextImporter(skip)
         self.binary_importer = BinaryImporter()
 
     def run(self) -> None:

@@ -6,6 +6,7 @@ from src.models.dataframe_model import DataFrameModel
 from src.modules.convert_module import ConvertModule
 from src.modules.export_module import ExportModule
 from src.modules.import_module import ImportModule
+from src.modules.preset_translator import PresetTranslator, IdentifierNotFoundException, ColumnNotFoundException
 from src.utility.extractors import mock_tact_scenario
 from src.utility.utility import get_files_from_folder
 from src.views.bulk_export_dlg import BulkSettings
@@ -26,11 +27,12 @@ class BulkHandler(QObject):
         self.converter: Union[ConvertModule, None] = None
         self.exporter: Union[ExportModule, None] = None
         self.info: Union[BulkSettings, None] = None
+        self.preset_translator: Union[PresetTranslator, None] = None
 
     def start_import(self, info: BulkSettings):
         paths: List[str] = list(get_files_from_folder(info.src))
         self.info: BulkSettings = info
-        self.importer = ImportModule(paths, info.skip)
+        self.importer = ImportModule(paths, info)
         self.importer.task_finished.connect(self.start_convert)
         self.importer.task_failed.connect(self.on_task_failed)
         self.importer.task_busy.connect(self.on_task_busy)
@@ -50,7 +52,21 @@ class BulkHandler(QObject):
         self.converter.start()
 
     def start_export(self, data: Dict[str, DataFrameModel]):
-        self.exporter: ExportModule = ExportModule(data, self.info.dst)
+        if self.info.preset != '':
+            self.preset_translator = PresetTranslator(self.info.preset)
+
+            try:
+                data: Dict[str, DataFrameModel] = self.preset_translator.transform_dataframe(data)
+                self.exporter: ExportModule = ExportModule(data, self.info.dst)
+            except IdentifierNotFoundException as e:
+                self.task_failed.emit('Identifier {0} not found!'.format(str(e)))
+                return
+            except ColumnNotFoundException as e:
+                self.task_failed.emit('Column {0} not found!'.format(str(e)))
+                return
+        else:
+            self.exporter: ExportModule = ExportModule(data, self.info.dst)
+
         self.exporter.task_failed.connect(self.on_task_failed)
         self.exporter.task_busy.connect(self.on_task_busy)
         self.exporter.task_finished.connect(self.on_task_finished)

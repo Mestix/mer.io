@@ -1,5 +1,13 @@
 ## 0.3.6 - 6-5-2021
 ### Added
+- /src/assets/presets folder for adding json presets
+- (class) PresetTranslator: Converts json preset to python dict and transforms DataFrame according to preset
+- (class) ColumnNotFoundException: Raises when the preset has a column value which is not in the DataFrame
+- (class) IdentifierNotFoundException: Raises when the preset has an identifier which is not in the DataFrame
+- ()
+
+## 0.3.6 - 6-5-2021
+### Added
 - Themes
 
 ### Changed

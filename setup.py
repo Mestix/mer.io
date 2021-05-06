@@ -12,7 +12,7 @@ build_options = {
 
 msi_options = {
     'target_name': 'mer.io_{0}_setup'.format(environment['version']),
-    'install_icon': 'src/assets/app_icon.ico',
+    'install_icon': 'src/assets/icons/app_icon.ico',
 }
 
 base = 'Win32GUI' if sys.platform == 'win32' else None
@@ -22,7 +22,7 @@ executables = [
                base=base,
                shortcut_name="Mer.io",
                shortcut_dir="DesktopFolder",
-               icon='src/assets/app_icon.ico',
+               icon='src/assets/icons/app_icon.ico',
                target_name='mer.io')
 ]
 

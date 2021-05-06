@@ -1,8 +1,12 @@
 from dataclasses import dataclass
+from typing import List
+import os
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGroupBox, QComboBox, QLineEdit, QDialogButtonBox, QVBoxLayout, \
     QFormLayout, QLabel, QFileDialog, QPushButton, QMessageBox, QCheckBox
+
+preset_path = 'assets/presets'
 
 
 @dataclass
@@ -27,7 +31,8 @@ class BulkExportDialog(QDialog):
         self.form_groupbox = QGroupBox()
 
         self.preset_box = QComboBox()
-        self.preset_box.addItems(['', 'Rijkswaterstaat', 'Maritime Warfare Center', 'Science DataCell'])
+
+        self.preset_box.addItems([''] + get_available_presets())
 
         self.format_box = QComboBox()
         self.format_box.addItems(['.xlsx'])
@@ -101,3 +106,13 @@ class BulkExportDialog(QDialog):
             preset=str(self.preset_box.currentText()),
             skip=self.skip_checkbox.checkState()
         )
+
+
+def get_available_presets() -> List[str]:
+    presets: List[str] = list()
+    for root, dirs, files in os.walk(preset_path):
+        for file in files:
+            if file.endswith('.json'):
+                presets.append(os.path.splitext(os.path.basename(file))[0])
+
+    return presets

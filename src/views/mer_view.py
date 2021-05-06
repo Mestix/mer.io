@@ -85,7 +85,7 @@ class MerView(QMainWindow):
         self.setGeometry(250, 150, 1500, 750)
 
         self.setWindowTitle('MER.io v{0}'.format(environment['version']))
-        self.setWindowIcon(QIcon('./assets/copter_icon.png'))
+        self.setWindowIcon(QIcon('./assets/icons/copter_icon.png'))
 
     def reset_ui(self):
         self.toggle_progress(False)
@@ -93,7 +93,7 @@ class MerView(QMainWindow):
         self.identifiers: IdentifierView = IdentifierView()
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
-        self.import_busy('')
+        self.task_busy('')
         self.set_tact_scenario('')
         self.toggle_export_menu(False)
 
@@ -127,7 +127,8 @@ class MerView(QMainWindow):
                                                                         func=self.bulk_export),
                                                                ],
                                                      'Theme': map(lambda x: MenuItem(name=x
-                                                                                     .replace('.xml', ''),
+                                                                                     .replace('.xml', '')
+                                                                                     .replace('_', ' '),
                                                                                      func=self.set_theme)
                                                                   , themes)
                                                      }
@@ -172,7 +173,7 @@ class MerView(QMainWindow):
         self.stacked_dfs.addWidget(df.explorer)
         self.identifiers.add_tree_item(df.name)
 
-    def import_busy(self, txt: str):
+    def task_busy(self, txt: str):
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
         self.show_status_message(txt)

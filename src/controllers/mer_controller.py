@@ -18,8 +18,8 @@ class MerController(QObject, QtStyleTools):
         super().__init__()
         self.app: QApplication = QApplication(sys.argv)
         apply_stylesheet(self.app, theme='light_amber.xml', invert_secondary=True)
-        self.model: MerModel = MerModel()
 
+        self.model: MerModel = MerModel()
         self.view: MerView = MerView()
 
         self.bulk_handler: BulkHandler = BulkHandler()
@@ -36,13 +36,15 @@ class MerController(QObject, QtStyleTools):
         self.view.exit_signal.connect(self.exit_program)
         self.view.set_theme_signal.connect(self.set_theme)
 
-        self.bulk_handler.task_busy.connect(self.view.import_busy)
+        self.bulk_handler.task_busy.connect(self.view.task_busy)
         self.bulk_handler.task_failed.connect(self.on_task_failed)
+        self.bulk_handler.task_finished.connect(self.on_bulk_success)
         self.bulk_handler.task_finished.connect(self.on_task_finished)
 
-        self.file_handler.task_busy.connect(self.view.import_busy)
-        self.file_handler.task_finished.connect(self.on_import_success)
+        self.file_handler.task_busy.connect(self.view.task_busy)
         self.file_handler.task_failed.connect(self.on_task_failed)
+        self.file_handler.task_finished.connect(self.on_file_success)
+        self.file_handler.task_finished.connect(self.on_task_finished)
 
     def import_file(self, paths: List[str]) -> None:
         self.reset_mer()
@@ -73,11 +75,14 @@ class MerController(QObject, QtStyleTools):
         self.view.toggle_progress(False)
         self.view.import_failed(txt)
 
-    def on_import_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
+    def on_task_finished(self):
+        self.view.task_busy('Task success')
+
+    def on_file_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
         self.model.mer_data = converted_data
         self.set_mer_view(converted_data)
 
-    def on_task_finished(self):
+    def on_bulk_success(self):
         self.view.toggle_import_menu(True)
 
     def set_mer_view(self, converted_data: Dict[str, DataFrameModel]) -> None:
@@ -108,7 +113,7 @@ class MerController(QObject, QtStyleTools):
 
     def set_theme(self, theme: str):
         invert: bool = theme.startswith('light')
-        apply_stylesheet(self.app, theme=theme + '.xml', invert_secondary=invert)
+        apply_stylesheet(self.app, theme=theme.replace(' ', '_') + '.xml', invert_secondary=invert)
 
     def exit_program(self) -> None:
         self.app.exit()

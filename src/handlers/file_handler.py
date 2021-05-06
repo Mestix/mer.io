@@ -28,7 +28,7 @@ class FileHandler(QObject):
         self.exporter: Union[ExportModule, None] = None
 
     def start_import(self, paths):
-        self.importer = ImportModule(paths)
+        self.importer: ImportModule = ImportModule(paths)
         self.importer.task_finished.connect(self.start_convert)
         self.importer.task_failed.connect(self.on_task_failed)
         self.importer.task_busy.connect(self.on_task_busy)
