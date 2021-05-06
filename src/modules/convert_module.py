@@ -36,13 +36,13 @@ class ConvertModule(QtCore.QThread):
             self.emit_failed('Convert failed: ' + get_exception(e))
 
     def convert_data(self) -> None:
+        self.emit_busy('Converting data')
+
         data = self.data.copy()
         tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].df_unfiltered
 
         for converter in self.converters:
             for name, dfm in data.items():
-                self.emit_busy('Converting {0}'.format(name))
-
                 scientific_cols: List[str] = dfm.df_unfiltered.select_dtypes(include=np.number).columns.tolist()
 
                 converted_df: DataFrame = converter.convert(

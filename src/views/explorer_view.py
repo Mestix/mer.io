@@ -25,12 +25,12 @@ class ExplorerView(QtWidgets.QMainWindow):
         splitter.addWidget(self.viewer)
         splitter.addWidget(self.filter)
 
-        splitter.setCollapsible(0, False)
-        splitter.setCollapsible(1, False)
+        splitter.setCollapsible(0, True)
+        splitter.setCollapsible(1, True)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
 
-        splitter.setSizes([750, 250])
+        splitter.setSizes([700, 300])
 
         self.setCentralWidget(splitter)
 

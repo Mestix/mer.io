@@ -1,15 +1,36 @@
+import functools
 from dataclasses import dataclass
 from typing import Union, List, Dict
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, QWidget, \
+from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, \
     QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu
 
 from src.environment import environment
 from src.utility.utility import save_file, open_file
 from src.views.bulk_export_dlg import BulkExportDialog
-from src.views.tree_view import TreeView
+from src.views.identifier_view import IdentifierView
+
+themes = ['dark_amber.xml',
+          'dark_blue.xml',
+          'dark_cyan.xml',
+          'dark_lightgreen.xml',
+          'dark_pink.xml',
+          'dark_purple.xml',
+          'dark_red.xml',
+          'dark_teal.xml',
+          'dark_yellow.xml',
+          'light_amber.xml',
+          'light_blue.xml',
+          'light_cyan.xml',
+          'light_cyan_500.xml',
+          'light_lightgreen.xml',
+          'light_pink.xml',
+          'light_purple.xml',
+          'light_red.xml',
+          'light_teal.xml',
+          'light_yellow.xml']
 
 
 class MerView(QMainWindow):
@@ -17,12 +38,13 @@ class MerView(QMainWindow):
     export_signal: pyqtSignal = pyqtSignal(str)
     exit_signal: pyqtSignal = pyqtSignal()
     bulk_import_signal: pyqtSignal = pyqtSignal(object)
+    set_theme_signal: pyqtSignal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
         self.splitter: Union[QSplitter, None] = None
         self.stacked_dfs: Union[QStackedWidget, None] = None
-        self.tree: Union[TreeView, None] = None
+        self.identifiers: Union[IdentifierView, None] = None
 
         self.status_bar: Union[QStatusBar, None] = None
         self.status_bar_tactical_scenario: Union[QLabel, None] = None
@@ -38,14 +60,12 @@ class MerView(QMainWindow):
 
     def init_ui(self):
         self.splitter: QSplitter = QSplitter(self)
-        self.tree: TreeView = TreeView()
+        self.identifiers: IdentifierView = IdentifierView()
 
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
-        self.splitter.addWidget(self.tree)
+        self.splitter.addWidget(self.identifiers)
         self.splitter.addWidget(self.stacked_dfs)
-        self.splitter.setCollapsible(0, False)
-        self.splitter.setCollapsible(1, False)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
 
@@ -69,18 +89,16 @@ class MerView(QMainWindow):
 
     def reset_ui(self):
         self.toggle_progress(False)
-        self.tree.hide()
-        self.tree: TreeView = TreeView()
+        self.identifiers.hide()
+        self.identifiers: IdentifierView = IdentifierView()
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
         self.import_busy('')
         self.set_tact_scenario('')
-        self.toggle_export_menu(True)
+        self.toggle_export_menu(False)
 
-        self.splitter.replaceWidget(0, self.tree)
+        self.splitter.replaceWidget(0, self.identifiers)
         self.splitter.replaceWidget(1, self.stacked_dfs)
-        self.splitter.setCollapsible(0, False)
-        self.splitter.setCollapsible(1, False)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
 
@@ -107,7 +125,11 @@ class MerView(QMainWindow):
                                                               ],
                                                      'Admin': [MenuItem(name='Bulk export',
                                                                         func=self.bulk_export),
-                                                               ]
+                                                               ],
+                                                     'Theme': map(lambda x: MenuItem(name=x
+                                                                                     .replace('.xml', ''),
+                                                                                     func=self.set_theme)
+                                                                  , themes)
                                                      }
 
         for name in menu_bar_items:
@@ -116,7 +138,7 @@ class MerView(QMainWindow):
             for item in menu_bar_items[name]:
                 action: QAction = QAction(item.name, self)
                 action.setShortcut(item.shortcut)
-                action.triggered.connect(item.func)
+                action.triggered.connect(functools.partial(item.func, item.name))
                 menu.addAction(action)
 
         self.toggle_export_menu(False)
@@ -124,15 +146,16 @@ class MerView(QMainWindow):
     def create_progress_window(self):
         self.progress_window: QDialog = QDialog(self)
         self.progress_window.setWindowModality(Qt.ApplicationModal)
-        self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
         self.progress_window.resize(400, 100)
+
+        self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
         self.progress_window.setFixedSize(self.progress_window.size())
         self.progress_window.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.progress_window.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.progress_window.setWindowTitle('Please wait')
         self.progress_window_label = QLabel(self.progress_window)
         self.progress_window_label.move(15, 18)
-        self.progress_bar.resize(410, 25)
+        self.progress_bar.resize(370, 25)
         self.progress_bar.move(15, 40)
         self.progress_bar.setRange(0, 0)
 
@@ -147,7 +170,7 @@ class MerView(QMainWindow):
         df.explorer = ExplorerView(df)
 
         self.stacked_dfs.addWidget(df.explorer)
-        self.tree.add_tree_item(df.name)
+        self.identifiers.add_tree_item(df.name)
 
     def import_busy(self, txt: str):
         self.progress_window_label.setText(txt)
@@ -157,9 +180,9 @@ class MerView(QMainWindow):
     def import_success(self, tact: str):
         self.status_bar_tactical_scenario.setText(tact)
 
-        self.toggle_export_menu(False)
+        self.toggle_export_menu(True)
         self.toggle_progress(False)
-        self.tree.show()
+        self.identifiers.show()
 
     def import_failed(self, txt: str):
         self.show_status_message(txt)
@@ -171,37 +194,40 @@ class MerView(QMainWindow):
     def set_tact_scenario(self, txt: str):
         self.status_bar_tactical_scenario.setText(txt)
 
-    def start_import(self):
+    def start_import(self, name):
         paths: List[str] = open_file()
         if len(paths) > 0:
             self.import_signal.emit(paths)
 
-    def start_export(self):
+    def start_export(self, name):
         path: str = save_file()
         if path:
             self.export_signal.emit(path)
 
-    def bulk_export(self):
+    def bulk_export(self, name):
         bulk_export_dialog: BulkExportDialog = BulkExportDialog(self)
 
         if bulk_export_dialog.exec() == QDialog.Accepted:
             self.bulk_import_signal.emit(bulk_export_dialog.get_info())
 
-    def toggle_export_menu(self, enable: bool):
+    def toggle_import_menu(self, enable: bool):
         if enable:
             if self.running_tasks > 0:
                 self.running_tasks -= 1
 
             if self.running_tasks == 0:
-                self.menuBar().children()[1].actions()[1].setEnabled(True)
+                self.menuBar().children()[1].actions()[0].setEnabled(True)
         else:
             self.running_tasks += 1
-            self.menuBar().children()[1].actions()[1].setEnabled(False)
+            self.menuBar().children()[1].actions()[0].setEnabled(False)
 
-    def toggle_import_menu(self, enable: bool):
-        self.menuBar().children()[1].actions()[0].setEnabled(enable)
+    def toggle_export_menu(self, enable: bool):
+        self.menuBar().children()[1].actions()[1].setEnabled(enable)
 
-    def exit_program(self):
+    def set_theme(self, theme: str):
+        self.set_theme_signal.emit(theme)
+
+    def exit_program(self, name):
         confirm = QMessageBox.warning(self, 'Warning', 'Close program?',
                                       QMessageBox.No | QMessageBox.Yes)
         if confirm == QMessageBox.Yes:

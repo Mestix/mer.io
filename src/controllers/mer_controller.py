@@ -3,6 +3,7 @@ from typing import List, Dict
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QApplication
+from qt_material import apply_stylesheet, QtStyleTools
 
 from src.handlers.bulk_handler import BulkHandler
 from src.handlers.file_handler import FileHandler
@@ -12,11 +13,13 @@ from src.views.bulk_export_dlg import BulkSettings
 from src.views.mer_view import MerView
 
 
-class MerController(QObject):
+class MerController(QObject, QtStyleTools):
     def __init__(self):
         super().__init__()
         self.app: QApplication = QApplication(sys.argv)
+        apply_stylesheet(self.app, theme='light_amber.xml', invert_secondary=True)
         self.model: MerModel = MerModel()
+
         self.view: MerView = MerView()
 
         self.bulk_handler: BulkHandler = BulkHandler()
@@ -29,8 +32,9 @@ class MerController(QObject):
         self.view.bulk_import_signal.connect(self.import_bulk)
 
         self.view.export_signal.connect(self.export)
-        self.view.tree.selection_changed_signal.connect(self.select_df)
+        self.view.identifiers.selection_changed_signal.connect(self.select_df)
         self.view.exit_signal.connect(self.exit_program)
+        self.view.set_theme_signal.connect(self.set_theme)
 
         self.bulk_handler.task_busy.connect(self.view.import_busy)
         self.bulk_handler.task_failed.connect(self.on_task_failed)
@@ -52,7 +56,7 @@ class MerController(QObject):
         self.bulk_handler.start_import(info)
 
     def export(self, path: str) -> None:
-        selected_items: List[str] = list(self.view.tree.selected_items())
+        selected_items: List[str] = list(self.view.identifiers.selected_items())
         if len(selected_items) > 0:
             data = dict()
             for name in selected_items:
@@ -96,11 +100,15 @@ class MerController(QObject):
         if self.model.has_mer():
             self.model.reset_mer()
             self.view.reset_ui()
-            self.view.tree.selection_changed_signal.connect(self.select_df)
+            self.view.identifiers.selection_changed_signal.connect(self.select_df)
 
     def select_df(self, name: str) -> None:
         df: DataFrameModel = self.model.select_df(name)
         self.view.stacked_dfs.setCurrentWidget(df.explorer)
+
+    def set_theme(self, theme: str):
+        invert: bool = theme.startswith('light')
+        apply_stylesheet(self.app, theme=theme + '.xml', invert_secondary=invert)
 
     def exit_program(self) -> None:
         self.app.exit()

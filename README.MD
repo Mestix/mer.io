@@ -5,7 +5,7 @@
 - PyQt5 (https://pypi.org/project/PyQt5/)
 - Pytest (https://www.guru99.com/pytest-tutorial.html)
 - Pandas (https://pandas.pydata.org/pandas-docs/stable/getting_started/install.html)
-- PyInstaller (https://www.pyinstaller.org/downloads.html)
+- cx_Freeze (https://cx-freeze.readthedocs.io/en/latest/installation.html)
 
 ## Run commands
 - Open command prompt in project folder (Windows) or terminal (PyCharm)
@@ -20,11 +20,12 @@
 - Or Open project in PyCharm, select ```main.py``` and press play (run)
 
 ## Build application
-- Run ```python src/pyinstaller.py```  
+- Run ```python ./setup.py bdist_msi```
 - Build can be found in ```/dist``` folder
 
-## Run application as executable
-- After building the application execute ```dist/main/mer.io.exe``` to run application
+## Install application
+- After building the application execute ```dist/mer.io_{version}_setup-amd64.msi``` to install the application
+- A desktop shortcut will be created automatically
 
 ## Run tests
 - Tests can be found in ```/tests```  
