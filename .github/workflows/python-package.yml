@@ -37,17 +37,8 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest src/tests/
-    - name: Package Application
-      uses: JackMcKew/pyinstaller-action-windows@main
-      with:
-        path: .
-    - name: Zip Build
-      uses: papeloto/action-zip@v1
-      with:
-        files: dist/mer.io_v0.3.6
-        dest: mer.io.zip
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
       with:
-        name: mer.io
+        name: dist
         path: mer.io.zip
