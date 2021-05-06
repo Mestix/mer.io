@@ -44,7 +44,7 @@ jobs:
     - name: Zip Build
       uses: papeloto/action-zip@v1
       with:
-        files: src/dist/mer.io_v0.3.6
+        files: src/assets
         dest: mer.io.zip
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
