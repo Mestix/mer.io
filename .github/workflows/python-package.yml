@@ -37,7 +37,9 @@ jobs:
     - name: Test with pytest
       run: python -m pytest src/tests/
     - name: Build installer
-      run: python ./setup.py bdist_msi
+      run: python setup.py bdist_msi
+      with:
+        path: .
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
       with:
