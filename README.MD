@@ -20,11 +20,12 @@
 - Or Open project in PyCharm, select ```main.py``` and press play (run)
 
 ## Build application
-- Run ```python ./setup.py bdist_msi```
-- Build can be found in ```/dist``` folder
+- Run ```python setup.py bdist_msi```
+- Build can be found in ```/build``` 
+- Installer can be found in ```/dist```
 
 ## Install application
-- After building the application execute ```dist/mer.io_{version}_setup-amd64.msi``` to install the application
+- Exececute ```mer.io_{version}_setup-amd64.msi``` from ```/dist``` to install the application
 - A desktop shortcut will be created automatically
 
 ## Run tests
