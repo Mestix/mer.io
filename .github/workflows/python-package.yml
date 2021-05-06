@@ -44,7 +44,7 @@ jobs:
     - name: Zip Build
       uses: papeloto/action-zip@v1
       with:
-        files: src/dist
+        files: ${{ github.workflow }}/src/dist
         dest: mer.io.zip
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
