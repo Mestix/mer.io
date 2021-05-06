@@ -36,5 +36,4 @@ share/python-wheels/
 MANIFEST
 
 /build/
-/dist/
 /src/temp/
