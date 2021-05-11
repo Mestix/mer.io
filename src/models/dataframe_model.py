@@ -5,7 +5,6 @@ from pandas import DataFrame
 
 from src.models.filter_model import Filter
 from src.utility.utility import get_exception
-from src.views.mer_view import MerView
 
 
 @dataclass
@@ -21,8 +20,8 @@ class DataFrameModel:
         self.rename_columns()
         self.set_filters()
 
-        self.viewer: Union[MerView, None] = None
-        self.explorer = None
+        self.viewer: Union['DataframeView', None] = None
+        self.explorer: Union['ExplorerView', None] = None
 
     @property
     def df_unfiltered(self):

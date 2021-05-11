@@ -15,8 +15,8 @@ class FilterView(QWidget):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
 
-        dfm.filter = self
         self.dfm: DataFrameModel = dfm
+
         self.filter_fields: List[FilterField] = list()
         self.column_fields: List[ColumnField] = list()
         self.column_list: QListWidget = QListWidget()

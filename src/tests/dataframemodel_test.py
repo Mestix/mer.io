@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from src.utility.extractors import create_identifier_dict
+from src.utility.dataframemodel_operations import create_mer_data
 
 
 class CreateIdentifierTests(unittest.TestCase):
@@ -13,7 +13,7 @@ class CreateIdentifierTests(unittest.TestCase):
         """
         Should correctly create a separate dataframe for every unique identifier type
         """
-        df_dict = create_identifier_dict(self.test_df)
+        df_dict = create_mer_data(self.test_df)
 
         self.assertEqual(list(df_dict.keys()), ['SCENARIO_1', 'SCENARIO_2', 'SCENARIO_3'])
         for key, value in df_dict.items():

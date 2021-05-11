@@ -2,9 +2,11 @@ import unittest
 import pandas as pd
 from numpy import dtype
 
-from src.importers.text_importer import clean_datetime_columns, clean_scientific_columns, rename_duplicate_columns
+from src.importers.text_importer import rename_duplicate_columns
 
 import numpy as np
+
+from src.modules.import_module import clean_datetime_columns, clean_scientific_columns
 
 
 class TextImporterTests(unittest.TestCase):

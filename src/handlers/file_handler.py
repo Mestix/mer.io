@@ -8,9 +8,9 @@ from src.models.dataframe_model import DataFrameModel
 from src.modules.convert_module import ConvertModule
 from src.modules.export_module import ExportModule
 from src.modules.import_module import ImportModule
-from src.utility.extractors import mock_tact_scenario
 
 from src.log import get_logger
+from src.utility.dataframemodel_operations import mock_tact_scenario
 
 
 class FileHandler(QObject):
@@ -18,14 +18,14 @@ class FileHandler(QObject):
     task_failed: pyqtSignal = pyqtSignal(str)
     task_finished: pyqtSignal = pyqtSignal(object)
 
-    logger = get_logger('FileHandler')
+    logger = get_logger(__name__)
+    importer: ImportModule
+    converter: ConvertModule
+    exporter: ExportModule
 
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
-        self.importer: Union[ImportModule, None] = None
-        self.converter: Union[ConvertModule, None] = None
-        self.exporter: Union[ExportModule, None] = None
 
     def start_import(self, paths):
         self.importer: ImportModule = ImportModule(paths)

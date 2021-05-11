@@ -15,7 +15,7 @@ from src.log import get_logger
 
 
 class YardsToCoordinatesConverter(IConverter):
-    logger = get_logger('YardsToCoordinatesConverter')
+    logger = get_logger(__name__)
 
     def __init__(self):
         super().__init__()

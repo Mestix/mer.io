@@ -5,10 +5,9 @@ from typing import Union, List, Dict
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, \
-    QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu
+    QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu, QFileDialog
 
 from src.environment import environment
-from src.utility.utility import save_file, open_file
 from src.views.bulk_export_dlg import BulkExportDialog
 from src.views.identifier_view import IdentifierView
 
@@ -196,12 +195,12 @@ class MerView(QMainWindow):
         self.status_bar_tactical_scenario.setText(txt)
 
     def start_import(self, name):
-        paths: List[str] = open_file()
+        paths, _ = QFileDialog().getOpenFileNames(filter='*.txt *.zip')
         if len(paths) > 0:
             self.import_signal.emit(paths)
 
     def start_export(self, name):
-        path: str = save_file()
+        path, _ = QFileDialog().getSaveFileName(filter="*.xlsx")
         if path:
             self.export_signal.emit(path)
 

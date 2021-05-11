@@ -2,13 +2,13 @@ from typing import Union, Dict, List
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
+from src.exceptions import IdentifierNotFoundException, ColumnNotFoundException
 from src.models.dataframe_model import DataFrameModel
 from src.modules.convert_module import ConvertModule
 from src.modules.export_module import ExportModule
 from src.modules.import_module import ImportModule
-from src.modules.preset_translator import PresetTranslator, IdentifierNotFoundException, ColumnNotFoundException
-from src.utility.extractors import mock_tact_scenario
-from src.utility.utility import get_files_from_folder
+from src.utility.dataframemodel_operations import apply_preset, mock_tact_scenario
+from src.utility.utility import get_valid_files_from_folder, get_exception
 from src.views.bulk_export_dlg import BulkSettings
 
 from src.log import get_logger
@@ -19,7 +19,7 @@ class BulkHandler(QObject):
     task_failed: pyqtSignal = pyqtSignal(str)
     task_finished: pyqtSignal = pyqtSignal()
 
-    logger = get_logger('BulkHandler')
+    logger = get_logger(__name__)
 
     def __init__(self):
         super().__init__()
@@ -27,12 +27,11 @@ class BulkHandler(QObject):
         self.converter: Union[ConvertModule, None] = None
         self.exporter: Union[ExportModule, None] = None
         self.info: Union[BulkSettings, None] = None
-        self.preset_translator: Union[PresetTranslator, None] = None
 
     def start_import(self, info: BulkSettings):
-        paths: List[str] = list(get_files_from_folder(info.src))
+        paths: List[str] = list(get_valid_files_from_folder(info.src))
         self.info: BulkSettings = info
-        self.importer = ImportModule(paths, info)
+        self.importer = ImportModule(paths)
         self.importer.task_finished.connect(self.start_convert)
         self.importer.task_failed.connect(self.on_task_failed)
         self.importer.task_busy.connect(self.on_task_busy)
@@ -43,6 +42,7 @@ class BulkHandler(QObject):
         mer_data: Dict[str, DataFrameModel] = data['mer_data']
 
         if not self.info.skip:
+            #TODO
             mock_tact_scenario(mer_data, data['unique_refs'])
 
         self.converter = ConvertModule(mer_data)
@@ -52,11 +52,9 @@ class BulkHandler(QObject):
         self.converter.start()
 
     def start_export(self, data: Dict[str, DataFrameModel]):
-        if self.info.preset != '':
-            self.preset_translator = PresetTranslator(self.info.preset)
-
+        if bool(self.info.preset):
             try:
-                data: Dict[str, DataFrameModel] = self.preset_translator.transform_dataframe(data)
+                data: Dict[str, DataFrameModel] = apply_preset(data, self.info.preset)
                 self.exporter: ExportModule = ExportModule(data, self.info.dst)
             except IdentifierNotFoundException as e:
                 self.task_failed.emit('Identifier {0} not found!'.format(str(e)))
@@ -64,6 +62,7 @@ class BulkHandler(QObject):
             except ColumnNotFoundException as e:
                 self.task_failed.emit('Column {0} not found!'.format(str(e)))
                 return
+
         else:
             self.exporter: ExportModule = ExportModule(data, self.info.dst)
 
@@ -80,4 +79,6 @@ class BulkHandler(QObject):
 
     def on_task_finished(self) -> None:
         self.task_finished.emit()
+
+
 

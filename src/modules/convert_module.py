@@ -18,24 +18,24 @@ class ConvertModule(QtCore.QThread):
     task_failed: pyqtSignal = pyqtSignal(str)
     task_busy: pyqtSignal = pyqtSignal(str)
 
-    logger = get_logger('ConvertModule')
+    logger = get_logger(__name__)
 
     def __init__(self, data):
         QThread.__init__(self)
         self.data: Dict[str, DataFrameModel] = data
-        self.converters: List[IConverter] = list()
 
+        self.converters: List[IConverter] = list()
         self.add_converter(YardsToCoordinatesConverter())
         self.add_converter(DegreesToCoordinatesConverter())
 
     def run(self) -> None:
         try:
             self.emit_busy('Start convert')
-            self.convert_data()
+            self.convert()
         except Exception as e:
             self.emit_failed('Convert failed: ' + get_exception(e))
 
-    def convert_data(self) -> None:
+    def convert(self) -> None:
         self.emit_busy('Converting data')
 
         data = self.data.copy()

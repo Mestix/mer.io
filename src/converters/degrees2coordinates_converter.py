@@ -14,7 +14,7 @@ from src.log import get_logger
 
 
 class DegreesToCoordinatesConverter(IConverter):
-    logger = get_logger('DegreesToCoordinatesConverter')
+    logger = get_logger(__name__)
 
     def __init__(self):
         super().__init__()
