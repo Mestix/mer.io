@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, \
 
 from src.environment import environment
 from src.views.bulk_export_dlg import BulkExportDialog
+from src.views.explorer_view import ExplorerView
 from src.views.identifier_view import IdentifierView
 
 themes = ['dark_amber.xml',
@@ -55,6 +56,8 @@ class MerView(QMainWindow):
         self.progress_window_label: Union[QLabel, None] = None
 
         self.running_tasks: int = 0
+
+        self.explorers: List[ExplorerView] = list()
 
         self.init_ui()
 

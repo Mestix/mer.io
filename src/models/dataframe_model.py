@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Union, List
 
+from PyQt5.QtCore import pyqtSignal, QObject
 from pandas import DataFrame
 
 from src.models.filter_model import Filter
@@ -8,10 +9,13 @@ from src.utility.utility import get_exception
 
 
 @dataclass
-class DataFrameModel:
+class DataFrameModel(QObject):
+
+    notify_change_signal: pyqtSignal = pyqtSignal()
 
     def __init__(self, df: DataFrame, name='Untitled'):
-        df: DataFrame = df.copy()
+        super().__init__()
+        self.df: DataFrame = df.copy()
         self.name: str = name
         self._df_unfiltered: DataFrame = df
 
@@ -20,7 +24,6 @@ class DataFrameModel:
         self.rename_columns()
         self.set_filters()
 
-        self.viewer: Union['DataframeView', None] = None
         self.explorer: Union['ExplorerView', None] = None
 
     @property
@@ -97,16 +100,4 @@ class DataFrameModel:
         return columns
 
     def update(self) -> None:
-        if self.viewer is not None:
-            for model in [self.viewer.dataView.model(),
-                          self.viewer.columnHeader.model(),
-                          self.viewer.indexHeader.model(),
-                          self.viewer.columnHeaderNames.model(),
-                          self.viewer.indexHeaderNames.model()]:
-                model.beginResetModel()
-                model.endResetModel()
-
-        for view in [self.viewer.columnHeader,
-                     self.viewer.indexHeader,
-                     self.viewer.dataView]:
-            view.updateGeometry()
+        self.notify_change_signal.emit()
