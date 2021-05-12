@@ -39,7 +39,6 @@ class MerView(QMainWindow):
     exit_signal: pyqtSignal = pyqtSignal()
     bulk_import_signal: pyqtSignal = pyqtSignal(object)
     set_theme_signal: pyqtSignal = pyqtSignal(str)
-    select_df_signal: pyqtSignal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -57,7 +56,7 @@ class MerView(QMainWindow):
 
         self.running_tasks: int = 0
 
-        self.explorers: List[ExplorerView] = list()
+        self.explorers: Dict[str, ExplorerView] = dict()
 
         self.init_ui()
 
@@ -92,8 +91,11 @@ class MerView(QMainWindow):
     def reset_ui(self):
         self.toggle_progress(False)
         self.identifiers.hide()
+
         self.identifiers: IdentifierView = IdentifierView(self)
         self.stacked_dfs: QStackedWidget = QStackedWidget(self)
+
+        self.explorers: Dict[str, ExplorerView] = dict()
 
         self.task_busy('')
         self.set_tact_scenario('')
@@ -170,9 +172,10 @@ class MerView(QMainWindow):
 
     def add_widget(self, df):
         from src.views.explorer_view import ExplorerView
-        df.explorer = ExplorerView(df)
+        explorer: ExplorerView = ExplorerView(df)
+        self.explorers[df.name] = explorer
+        self.stacked_dfs.addWidget(explorer)
 
-        self.stacked_dfs.addWidget(df.explorer)
         self.identifiers.add_tree_item(df.name)
 
     def task_busy(self, txt: str):
@@ -231,7 +234,7 @@ class MerView(QMainWindow):
         self.set_theme_signal.emit(args[0])
 
     def set_identifier(self, name: str):
-        self.select_df_signal.emit(name)
+        self.stacked_dfs.setCurrentWidget(self.explorers[name])
 
     def exit_program(self, *args):
         confirm = QMessageBox.warning(self, 'Warning', 'Close program?',

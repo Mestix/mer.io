@@ -32,7 +32,7 @@ class MerController(QObject, QtStyleTools):
         self.view.bulk_import_signal.connect(self.import_bulk)
         self.view.export_signal.connect(self.export)
 
-        self.view.select_df_signal.connect(self.select_df)
+        self.view.identifiers.selection_changed_signal.connect(self.model.select_df)
         self.view.set_theme_signal.connect(self.set_theme)
 
         self.view.exit_signal.connect(self.exit_program)
@@ -106,10 +106,6 @@ class MerController(QObject, QtStyleTools):
         if self.model.has_mer():
             self.model.reset_mer()
             self.view.reset_ui()
-
-    def select_df(self, name: str) -> None:
-        df: DataFrameModel = self.model.select_df(name)
-        self.view.stacked_dfs.setCurrentWidget(df.explorer)
 
     def set_theme(self, theme: str):
         invert: bool = theme.startswith('light')

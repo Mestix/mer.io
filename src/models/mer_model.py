@@ -22,9 +22,7 @@ class MerModel:
     def has_mer(self) -> bool:
         return bool(self.mer_data)
 
-    def select_df(self, name: str) -> DataFrameModel:
-        df: DataFrameModel = self.get_df(name)
-        self.selected_df = df
+    def select_df(self, name: str) -> None:
+        self.selected_df = self.get_df(name)
 
-        return df
 

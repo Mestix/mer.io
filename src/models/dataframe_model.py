@@ -24,8 +24,6 @@ class DataFrameModel(QObject):
         self.rename_columns()
         self.set_filters()
 
-        self.explorer: Union['ExplorerView', None] = None
-
     @property
     def df_unfiltered(self):
         return self._df_unfiltered
