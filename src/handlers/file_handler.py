@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
@@ -23,9 +23,7 @@ class FileHandler(QObject):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.import_tasks: Dict[int, ImportModule] = dict()
-        self.convert_tasks: Dict[int, ConvertModule] = dict()
-        self.export_tasks: Dict[int, ExportModule] = dict()
+        self.tasks: List[Union[ImportModule, ConvertModule, ExportModule]] = list()
 
     def start_import(self, paths):
         importer: ImportModule = ImportModule(paths)
@@ -33,8 +31,7 @@ class FileHandler(QObject):
         importer.task_failed.connect(self.on_task_failed)
         importer.task_busy.connect(self.on_task_busy)
 
-        index: int = len(self.import_tasks) + 1
-        self.import_tasks[index] = importer
+        self.tasks.append(importer)
 
         importer.start()
 
@@ -51,8 +48,7 @@ class FileHandler(QObject):
         converter.task_failed.connect(self.on_task_failed)
         converter.task_busy.connect(self.on_task_busy)
 
-        index: int = len(self.convert_tasks) + 1
-        self.convert_tasks[index] = converter
+        self.tasks.append(converter)
 
         converter.start()
 
@@ -62,8 +58,7 @@ class FileHandler(QObject):
         exporter.task_failed.connect(self.on_task_failed)
         exporter.task_busy.connect(self.on_task_busy)
 
-        index: int = len(self.export_tasks) + 1
-        self.export_tasks[index] = exporter
+        self.tasks.append(exporter)
 
         exporter.start()
 

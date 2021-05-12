@@ -54,8 +54,6 @@ class MerView(QMainWindow):
         self.progress_window: Union[QDialog, None] = None
         self.progress_window_label: Union[QLabel, None] = None
 
-        self.running_tasks: int = 0
-
         self.explorers: Dict[str, ExplorerView] = dict()
 
         self.init_ui()
@@ -173,6 +171,7 @@ class MerView(QMainWindow):
     def add_widget(self, df):
         from src.views.explorer_view import ExplorerView
         explorer: ExplorerView = ExplorerView(df)
+
         self.explorers[df.name] = explorer
         self.stacked_dfs.addWidget(explorer)
 
@@ -218,13 +217,8 @@ class MerView(QMainWindow):
 
     def toggle_import_menu(self, enable: bool):
         if enable:
-            if self.running_tasks > 0:
-                self.running_tasks -= 1
-
-            if self.running_tasks == 0:
-                self.menuBar().children()[1].actions()[0].setEnabled(True)
+            self.menuBar().children()[1].actions()[0].setEnabled(True)
         else:
-            self.running_tasks += 1
             self.menuBar().children()[1].actions()[0].setEnabled(False)
 
     def toggle_export_menu(self, enable: bool):

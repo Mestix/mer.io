@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union, Dict
+from typing import Dict
 
 from pandas import DataFrame
 
@@ -11,7 +11,6 @@ class MerModel:
     def __init__(self):
         super().__init__()
         self.mer_data: Dict[str, DataFrameModel] = dict()
-        self.selected_df: Union[DataFrameModel, None] = None
 
     def get_df(self, name) -> DataFrameModel:
         return self.mer_data[name]
@@ -21,8 +20,3 @@ class MerModel:
 
     def has_mer(self) -> bool:
         return bool(self.mer_data)
-
-    def select_df(self, name: str) -> None:
-        self.selected_df = self.get_df(name)
-
-

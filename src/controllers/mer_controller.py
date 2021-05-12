@@ -32,7 +32,6 @@ class MerController(QObject, QtStyleTools):
         self.view.bulk_import_signal.connect(self.import_bulk)
         self.view.export_signal.connect(self.export)
 
-        self.view.identifiers.selection_changed_signal.connect(self.model.select_df)
         self.view.set_theme_signal.connect(self.set_theme)
 
         self.view.exit_signal.connect(self.exit_program)
@@ -84,7 +83,8 @@ class MerController(QObject, QtStyleTools):
         self.set_mer_view(converted_data)
 
     def on_bulk_success(self):
-        self.view.toggle_import_menu(True)
+        if self.bulk_handler.all_tasks_finished():
+            self.view.toggle_import_menu(True)
 
     def set_mer_view(self, converted_data: Dict[str, DataFrameModel]) -> None:
         for name, idf in self.model.mer_data.items():
@@ -117,3 +117,4 @@ class MerController(QObject, QtStyleTools):
     def run(self) -> int:
         self.view.show()
         return self.app.exec_()
+

@@ -1,3 +1,4 @@
+import functools
 from typing import Union, Dict, List
 
 from PyQt5.QtCore import pyqtSignal, QObject
@@ -25,9 +26,7 @@ class BulkHandler(QObject):
         super().__init__()
         self.info: Union[BulkSettings, None] = None
 
-        self.import_tasks: Dict[int, ImportModule] = dict()
-        self.convert_tasks: Dict[int, ConvertModule] = dict()
-        self.export_tasks: Dict[int, ExportModule] = dict()
+        self.tasks: List[Union[ExportModule, ConvertModule, ImportModule]] = list()
 
     def start_import(self, settings: BulkSettings):
         paths: List[str] = list(get_valid_files_from_folder(settings.src))
@@ -38,8 +37,9 @@ class BulkHandler(QObject):
         importer.task_failed.connect(self.on_task_failed)
         importer.task_busy.connect(self.on_task_busy)
 
-        index: int = len(self.import_tasks) + 1
-        self.import_tasks[index] = importer
+        importer.task_finished.connect(functools.partial(self.remove_task, importer))
+
+        self.tasks.append(importer)
         importer.start()
 
     def start_convert(self, data):
@@ -53,9 +53,9 @@ class BulkHandler(QObject):
         converter.task_finished.connect(self.start_export)
         converter.task_failed.connect(self.on_task_failed)
         converter.task_busy.connect(self.on_task_busy)
+        converter.task_finished.connect(functools.partial(self.remove_task, converter))
 
-        index: int = len(self.convert_tasks) + 1
-        self.convert_tasks[index] = converter
+        self.tasks.append(converter)
 
         converter.start()
 
@@ -78,9 +78,9 @@ class BulkHandler(QObject):
         exporter.task_failed.connect(self.on_task_failed)
         exporter.task_busy.connect(self.on_task_busy)
         exporter.task_finished.connect(self.on_task_success)
+        exporter.task_finished.connect(functools.partial(self.remove_task, exporter))
 
-        index: int = len(self.export_tasks) + 1
-        self.export_tasks[index] = exporter
+        self.tasks.append(exporter)
 
         exporter.start()
 
@@ -93,5 +93,8 @@ class BulkHandler(QObject):
     def on_task_success(self) -> None:
         self.task_finished.emit()
 
+    def remove_task(self, task: Union[ExportModule, ConvertModule, ImportModule]):
+        self.tasks.remove(task)
 
-
+    def all_tasks_finished(self):
+        return len(self.tasks) == 0
