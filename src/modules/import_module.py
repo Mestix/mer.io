@@ -44,6 +44,7 @@ class ImportModule(QtCore.QThread):
 
         for path in all_paths:
             importer: str = os.path.splitext(path)[1][1:].lower()
+
             try:
                 self.emit_busy('Importing {0}'.format(os.path.basename(path)))
 

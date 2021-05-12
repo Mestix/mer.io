@@ -1,4 +1,4 @@
-from typing import Union, Dict, List
+from typing import Dict, List
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
@@ -19,39 +19,53 @@ class FileHandler(QObject):
     task_finished: pyqtSignal = pyqtSignal(object)
 
     logger = get_logger(__name__)
-    importer: ImportModule
-    converter: ConvertModule
-    exporter: ExportModule
 
     def __init__(self, parent):
-        super().__init__()
-        self.parent = parent
+        super().__init__(parent)
+
+        self.import_tasks: Dict[int, ImportModule] = dict()
+        self.convert_tasks: Dict[int, ConvertModule] = dict()
+        self.export_tasks: Dict[int, ExportModule] = dict()
 
     def start_import(self, paths):
-        self.importer: ImportModule = ImportModule(paths)
-        self.importer.task_finished.connect(self.start_convert)
-        self.importer.task_failed.connect(self.on_task_failed)
-        self.importer.task_busy.connect(self.on_task_busy)
+        importer: ImportModule = ImportModule(paths)
+        importer.task_finished.connect(self.start_convert)
+        importer.task_failed.connect(self.on_task_failed)
+        importer.task_busy.connect(self.on_task_busy)
 
-        self.importer.start()
+        index: int = len(self.import_tasks) + 1
+        self.import_tasks[index] = importer
+
+        importer.start()
 
     def start_convert(self, _import: Dict) -> None:
+        mer_data: Dict[str, DataFrameModel]
         try:
-            data: Dict[str, DataFrameModel] = self.verify_tact_scenarios(_import['unique_refs'], _import['mer_data'])
-
-            self.converter = ConvertModule(data)
-            self.converter.task_finished.connect(self.on_convert_success)
-            self.converter.task_failed.connect(self.on_task_failed)
-            self.converter.task_busy.connect(self.on_task_busy)
-            self.converter.start()
+            mer_data: Dict[str, DataFrameModel] = self.verify_tact_scenarios(_import['unique_refs'], _import['mer_data'])
         except NoTactScenarioFoundException:
             self.task_failed.emit('Import Failed')
+            return
+
+        converter: ConvertModule = ConvertModule(mer_data)
+        converter.task_finished.connect(self.on_convert_success)
+        converter.task_failed.connect(self.on_task_failed)
+        converter.task_busy.connect(self.on_task_busy)
+
+        index: int = len(self.convert_tasks) + 1
+        self.convert_tasks[index] = converter
+
+        converter.start()
 
     def start_export(self, data: Dict[str, DataFrameModel], dst: str):
-        self.exporter: ExportModule = ExportModule(data, dst)
-        self.exporter.task_busy.connect(self.on_task_busy)
-        self.exporter.task_failed.connect(self.on_task_failed)
-        self.exporter.start()
+        exporter: ExportModule = ExportModule(data, dst)
+
+        exporter.task_failed.connect(self.on_task_failed)
+        exporter.task_busy.connect(self.on_task_busy)
+
+        index: int = len(self.export_tasks) + 1
+        self.export_tasks[index] = exporter
+
+        exporter.start()
 
     def on_convert_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
         self.task_finished.emit(converted_data)
@@ -66,7 +80,7 @@ class FileHandler(QObject):
         if 'TACTICAL_SCENARIO' not in mer_data \
                 or len(unique_refs) > mer_data['TACTICAL_SCENARIO'].df_unfiltered['REFERENCE'].nunique():
 
-            confirm: QMessageBox = QMessageBox.warning(self.parent.view, 'Warning',
+            confirm: QMessageBox = QMessageBox.warning(self.parent().view, 'Warning',
                                                        'No Tactical Scenario found, continue?',
                                                        QMessageBox.No | QMessageBox.Yes)
             if confirm == QMessageBox.Yes:

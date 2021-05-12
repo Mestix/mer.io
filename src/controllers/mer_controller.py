@@ -23,18 +23,19 @@ class MerController(QObject, QtStyleTools):
         self.view: MerView = MerView()
 
         self.bulk_handler: BulkHandler = BulkHandler()
-        self.file_handler: FileHandler = FileHandler(parent=self)
+        self.file_handler: FileHandler = FileHandler(self)
 
         self.init()
 
     def init(self) -> None:
         self.view.import_signal.connect(self.import_file)
         self.view.bulk_import_signal.connect(self.import_bulk)
-
         self.view.export_signal.connect(self.export)
-        self.view.identifiers.selection_changed_signal.connect(self.select_df)
-        self.view.exit_signal.connect(self.exit_program)
+
+        self.view.select_df_signal.connect(self.select_df)
         self.view.set_theme_signal.connect(self.set_theme)
+
+        self.view.exit_signal.connect(self.exit_program)
 
         self.bulk_handler.task_busy.connect(self.view.task_busy)
         self.bulk_handler.task_failed.connect(self.on_task_failed)
@@ -52,10 +53,10 @@ class MerController(QObject, QtStyleTools):
         self.view.toggle_progress(True)
         self.file_handler.start_import(paths)
 
-    def import_bulk(self, info: BulkSettings):
+    def import_bulk(self, settings: BulkSettings):
         self.view.toggle_import_menu(False)
 
-        self.bulk_handler.start_import(info)
+        self.bulk_handler.start_import(settings)
 
     def export(self, path: str) -> None:
         selected_items: List[str] = list(self.view.identifiers.selected_items())
@@ -105,7 +106,6 @@ class MerController(QObject, QtStyleTools):
         if self.model.has_mer():
             self.model.reset_mer()
             self.view.reset_ui()
-            self.view.identifiers.selection_changed_signal.connect(self.select_df)
 
     def select_df(self, name: str) -> None:
         df: DataFrameModel = self.model.select_df(name)

@@ -38,6 +38,7 @@ class MerView(QMainWindow):
     exit_signal: pyqtSignal = pyqtSignal()
     bulk_import_signal: pyqtSignal = pyqtSignal(object)
     set_theme_signal: pyqtSignal = pyqtSignal(str)
+    select_df_signal: pyqtSignal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -59,8 +60,7 @@ class MerView(QMainWindow):
 
     def init_ui(self):
         self.splitter: QSplitter = QSplitter(self)
-        self.identifiers: IdentifierView = IdentifierView()
-
+        self.identifiers: IdentifierView = IdentifierView(self)
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
         self.splitter.addWidget(self.identifiers)
@@ -89,8 +89,8 @@ class MerView(QMainWindow):
     def reset_ui(self):
         self.toggle_progress(False)
         self.identifiers.hide()
-        self.identifiers: IdentifierView = IdentifierView()
-        self.stacked_dfs: QStackedWidget = QStackedWidget()
+        self.identifiers: IdentifierView = IdentifierView(self)
+        self.stacked_dfs: QStackedWidget = QStackedWidget(self)
 
         self.task_busy('')
         self.set_tact_scenario('')
@@ -194,17 +194,17 @@ class MerView(QMainWindow):
     def set_tact_scenario(self, txt: str):
         self.status_bar_tactical_scenario.setText(txt)
 
-    def start_import(self, name):
+    def start_import(self, *args):
         paths, _ = QFileDialog().getOpenFileNames(filter='*.txt *.zip')
         if len(paths) > 0:
             self.import_signal.emit(paths)
 
-    def start_export(self, name):
+    def start_export(self, *args):
         path, _ = QFileDialog().getSaveFileName(filter="*.xlsx")
         if path:
             self.export_signal.emit(path)
 
-    def bulk_export(self, name):
+    def bulk_export(self, *args):
         bulk_export_dialog: BulkExportDialog = BulkExportDialog(self)
 
         if bulk_export_dialog.exec() == QDialog.Accepted:
@@ -224,10 +224,13 @@ class MerView(QMainWindow):
     def toggle_export_menu(self, enable: bool):
         self.menuBar().children()[1].actions()[1].setEnabled(enable)
 
-    def set_theme(self, theme: str):
-        self.set_theme_signal.emit(theme)
+    def set_theme(self, *args):
+        self.set_theme_signal.emit(args[0])
 
-    def exit_program(self, name):
+    def set_identifier(self, name: str):
+        self.select_df_signal.emit(name)
+
+    def exit_program(self, *args):
         confirm = QMessageBox.warning(self, 'Warning', 'Close program?',
                                       QMessageBox.No | QMessageBox.Yes)
         if confirm == QMessageBox.Yes:

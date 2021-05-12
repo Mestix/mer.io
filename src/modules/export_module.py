@@ -25,7 +25,6 @@ class ExportModule(QtCore.QThread):
         QThread.__init__(self)
         self.data: Dict[str, DataFrameModel] = data
         self.dst: str = dst
-        self.writer: pd.ExcelWriter = pd.ExcelWriter(dst)
 
         self.exporters: Dict[str, IExporter] = dict()
         self.add_exporter('xlsx', ExcelExporter())
@@ -40,7 +39,7 @@ class ExportModule(QtCore.QThread):
     def export(self) -> None:
         self.emit_busy('Exporting to {0}'.format(self.dst))
 
-        exporter: str = os.path.splitext(self.dst)[1][1:]
+        exporter: str = os.path.splitext(self.dst)[1][1:].lower()
 
         self.exporters[exporter].run(self.data, self.dst)
 

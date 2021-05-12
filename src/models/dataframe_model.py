@@ -9,10 +9,10 @@ from src.utility.utility import get_exception
 
 @dataclass
 class DataFrameModel:
+
     def __init__(self, df: DataFrame, name='Untitled'):
-        df = df.copy()
+        df: DataFrame = df.copy()
         self.name: str = name
-        self.df: Union[DataFrame, None] = None
         self._df_unfiltered: DataFrame = df
 
         self.filters: dict[str, Filter] = dict()

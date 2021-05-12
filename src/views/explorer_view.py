@@ -8,7 +8,7 @@ from src.views.filter_view import FilterView
 from src.views.dataframe_view import DataframeView
 
 
-class ExplorerView(QtWidgets.QMainWindow):
+class ExplorerView(QSplitter):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
         dfm.explorer = self
@@ -20,19 +20,15 @@ class ExplorerView(QtWidgets.QMainWindow):
         self.init_ui()
 
     def init_ui(self) -> None:
-        splitter: QSplitter = QSplitter(self)
+        self.addWidget(self.viewer)
+        self.addWidget(self.filter)
 
-        splitter.addWidget(self.viewer)
-        splitter.addWidget(self.filter)
+        self.setCollapsible(0, True)
+        self.setCollapsible(1, True)
+        self.setStretchFactor(0, 1)
+        self.setStretchFactor(1, 1)
 
-        splitter.setCollapsible(0, True)
-        splitter.setCollapsible(1, True)
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 1)
-
-        splitter.setSizes([700, 300])
-
-        self.setCentralWidget(splitter)
+        self.setSizes([700, 300])
 
 
 if __name__ == "__main__":
