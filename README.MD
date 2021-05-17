@@ -6,12 +6,15 @@
 - Pytest (https://www.guru99.com/pytest-tutorial.html)
 - Pandas (https://pandas.pydata.org/pandas-docs/stable/getting_started/install.html)
 - cx_Freeze (https://cx-freeze.readthedocs.io/en/latest/installation.html)
+- Git (https://git-scm.com/book/nl/v2/Aan-de-slag-Git-installeren)
 
-## Run commands
-- Open command prompt in project folder (Windows) or terminal (PyCharm)
-- Run command
+## Clone repository
+- Run ```git clone https://github.com/Mestix/mer.io.git```
 
-## Install packages
+## Install all required packages
+- Run ```pip install -r requirements.txt```
+
+## Install package
 - Run ```pip install <package_name>```
 
 ## Run application from source

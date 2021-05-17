@@ -1,17 +1,3 @@
 pandas
 PyQt5
-pyqt5-plugins
-PyQt5-Qt5
-PyQt5-sip
-PyQt5-stubs
-pyqt5-tools
-PyQtWebEngine
-PyQtWebEngine-Qt5
-pytest
-qt-material
-qt5-applications
-qt5-tools
-QtPy
 numpy
-seaborn
-pyinstaller

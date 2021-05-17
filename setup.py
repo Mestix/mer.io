@@ -13,7 +13,7 @@ build_options = {
 msi_options = {
     'target_name': 'mer.io_{0}_setup'.format(environment['version']),
     'install_icon': 'src/assets/icons/app_icon.ico',
-    'upgrade_code': '2967c71a-9bf5-48be-b9db-b2c5a6c9fab6'
+    'upgrade_code': '{2967c71a-9bf5-48be-b9db-b2c5a6c9fab6}'
 }
 
 base = 'Win32GUI' if sys.platform == 'win32' else None
