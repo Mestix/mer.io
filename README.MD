@@ -25,7 +25,7 @@
 - Installer can be found in ```/dist```
 
 ## Install application
-- Exececute ```mer.io_{version}_setup-amd64.msi``` from ```/dist``` to install the application
+- Execute ```mer.io_{version}_setup-amd64.msi``` from ```/dist``` to install the application
 - A desktop shortcut will be created automatically
 
 ## Run tests

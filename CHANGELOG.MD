@@ -4,6 +4,7 @@
 - Added preset retrieval to ExportModule which Converts json preset to python dict and transforms DataFrame according to preset before exporting.
 - (class) ColumnNotFoundException: Raises when the preset has a column value which is not in the DataFrame
 - (class) IdentifierNotFoundException: Raises when the preset has an identifier which is not in the DataFrame
+- Upgrade Code GUID to setup.py for automatically uninstall old versions of the program when installing
 
 ### Changed
 - Separated utility methods to the folder which the utility methods belong to. Each folder has now its own utility file.
