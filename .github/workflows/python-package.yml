@@ -37,7 +37,7 @@ jobs:
     - name: Test with pytest
       run: |
       python -m pytest
-      pytest --cov-report term --cov=src src/tests/
+      pytest --cov-report xml:coverage-reports/coverage-.xml --cov=src src/tests/
     - name: Zip installer
       uses: papeloto/action-zip@v1
       with:
