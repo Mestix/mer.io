@@ -1,4 +1,4 @@
 pandas
 PyQt5
 numpy
-anticrlf
+logging-formatter-anticrlf
