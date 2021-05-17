@@ -11,7 +11,7 @@ from src.importers.text_importer import TextImporter
 from src.interfaces.importer_interface import IImporter
 from src.models.dataframe_model import DataFrameModel
 from src.modules.utility import get_valid_files, clean_datetime_columns, clean_scientific_columns, create_mer_data
-from src.utility.utility import get_exception
+from src.utility import get_exception
 
 from src.log import get_logger
 

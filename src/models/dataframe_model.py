@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from pandas import DataFrame
 
 from src.models.filter_model import Filter
-from src.utility.utility import get_exception
+from src.utility import get_exception
 
 
 @dataclass

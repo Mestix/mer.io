@@ -7,7 +7,7 @@ from pandas import DataFrame
 from src.converters.degrees2coordinates_converter import DegreesToCoordinatesConverter
 from src.converters.yards2coordinates_converter import IConverter, YardsToCoordinatesConverter
 from src.models.dataframe_model import DataFrameModel
-from src.utility.utility import get_exception
+from src.utility import get_exception
 import numpy as np
 
 from src.log import get_logger

@@ -1,4 +1,3 @@
-import copy
 import os
 from typing import Dict
 
@@ -9,7 +8,8 @@ from src.exceptions import ColumnNotFoundException, IdentifierNotFoundException
 from src.exporters.ExcelExporter import ExcelExporter
 from src.interfaces.exporter_interface import IExporter
 from src.models.dataframe_model import DataFrameModel
-from src.utility.utility import get_exception
+from src.modules.utility import retrieve_preset
+from src.utility import get_exception
 
 from src.log import get_logger
 
@@ -66,7 +66,7 @@ def apply_preset(mer_data: Dict[str, DataFrameModel], preset: str):
         if identifier not in mer_data:
             raise IdentifierNotFoundException(identifier)
         else:
-            data[identifier]: DataFrameModel = copy.deepcopy(mer_data[identifier])
+            data[identifier]: DataFrameModel = mer_data[identifier]
 
         for col in columns:
             if col not in data[identifier].original_df:

@@ -7,7 +7,7 @@ from pandas import DataFrame
 import pandas as pd
 
 from src.exceptions import ConversionFailedException
-from src.utility.utility import get_exception
+from src.utility import get_exception
 import numpy as np
 
 

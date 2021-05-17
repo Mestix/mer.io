@@ -9,6 +9,7 @@ from src.models.dataframe_model import DataFrameModel
 from src.modules.convert_module import ConvertModule
 from src.modules.export_module import ExportModule, apply_preset
 from src.modules.import_module import ImportModule
+from src.utility import get_exception
 from src.views.bulk_export_dlg import BulkSettings
 
 from src.log import get_logger
@@ -69,6 +70,9 @@ class BulkHandler(QObject):
                 return
             except ColumnNotFoundException as e:
                 self.task_failed.emit('Column {0} not found!'.format(str(e)))
+                return
+            except Exception as e:
+                self.logger.error(get_exception(e))
                 return
 
         else:

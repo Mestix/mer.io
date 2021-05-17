@@ -2,14 +2,14 @@ import sys
 from typing import List, Dict
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtWidgets import QApplication
 from qt_material import apply_stylesheet, QtStyleTools
 
 from src.controllers.utility import remove_tempdir_contents
 from src.handlers.bulk_handler import BulkHandler
 from src.handlers.file_handler import FileHandler
 from src.models.dataframe_model import DataFrameModel
-from src.utility.utility import get_exception
+from src.utility import get_exception
 from src.views.bulk_export_dlg import BulkSettings
 from src.views.mer_view import MerView
 

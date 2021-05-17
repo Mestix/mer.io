@@ -2,7 +2,7 @@ from pandas import DataFrame
 
 from src.converters.utility import convert_x_y_cols
 from src.interfaces.converter_interface import IConverter
-from src.utility.utility import get_exception
+from src.utility import get_exception
 
 from src.log import get_logger
 
