@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGroupBox, QComboBox, QLineEdit, QDialogButtonBox, QVBoxLayout, \
     QFormLayout, QLabel, QFileDialog, QPushButton, QMessageBox, QCheckBox
 
-preset_path = 'assets/presets'
+preset_path = './assets/presets'
 
 
 @dataclass
