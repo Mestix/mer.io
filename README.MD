@@ -11,6 +11,12 @@
 ## Clone repository
 - Run ```git clone https://github.com/Mestix/mer.io.git```
 
+## Setup Git large file storage for storing MSI file
+- Download and install Git LFS extension by running ```git lfs install```
+- Select files to be managed by Git LFS by running ```git lfs track "*.msi"```
+- Add .gitattributes for tracked files by running ```git add .gitattributes```
+- Migrate Git History by running ```git lfs migrate info --everything --include="*.zip"```
+
 ## Install all required packages
 - Run ```pip install -r requirements.txt```
 
