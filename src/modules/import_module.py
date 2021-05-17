@@ -10,8 +10,8 @@ from src.importers.binary_importer import BinaryImporter
 from src.importers.text_importer import TextImporter
 from src.interfaces.importer_interface import IImporter
 from src.models.dataframe_model import DataFrameModel
-from src.utility.dataframemodel_operations import create_mer_data
-from src.utility.utility import get_exception, get_valid_files
+from src.modules.utility import get_valid_files, clean_datetime_columns, clean_scientific_columns, create_mer_data
+from src.utility.utility import get_exception
 
 from src.log import get_logger
 
@@ -90,25 +90,3 @@ class ImportModule(QtCore.QThread):
     def add_importer(self, name: str, importer: IImporter):
         self.importers[name] = importer
 
-
-def clean_datetime_columns(df: DataFrame) -> DataFrame:
-    df = df.copy()
-    df.insert(0, 'DATE', (pd.to_datetime(
-        df['EVENT HEADER - TIME (YY)'] + '-' + df['EVENT HEADER - TIME (MM)'] + '-' +
-        df['EVENT HEADER - TIME (DD)'], format='%y-%m-%d').dt.date))
-
-    df.insert(1, 'TIME', (pd.to_datetime(
-        df['EVENT HEADER - TIME (HH)'] + ':' + df['EVENT HEADER - TIME (MM).1'] + ':' +
-        df['EVENT HEADER - TIME (SS)'], format='%H:%M:%S').dt.time))
-
-    df = df.loc[:, ~df.columns.str.startswith('EVENT HEADER - TIME')]
-
-    return df
-
-
-def clean_scientific_columns(df: DataFrame) -> DataFrame:
-    df = df.copy()
-    scientific_columns = df.columns[
-        df.stack().str.contains(r'^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
-    df[scientific_columns] = df[scientific_columns].apply(pd.to_numeric, errors='coerce')
-    return df

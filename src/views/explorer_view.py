@@ -11,10 +11,9 @@ from src.views.dataframe_view import DataframeView
 class ExplorerView(QSplitter):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
-        self.dfm: DataFrameModel = dfm
 
-        self.viewer: DataframeView = DataframeView(self.dfm)
-        self.filter: FilterView = FilterView(self.dfm)
+        self.viewer: DataframeView = DataframeView(dfm)
+        self.filter: FilterView = FilterView(dfm)
 
         self.init_ui()
 

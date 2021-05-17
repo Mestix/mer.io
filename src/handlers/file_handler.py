@@ -4,13 +4,13 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
 from src.exceptions import NoTactScenarioFoundException
+from src.handlers.utility import mock_tact_scenario
 from src.models.dataframe_model import DataFrameModel
 from src.modules.convert_module import ConvertModule
 from src.modules.export_module import ExportModule
 from src.modules.import_module import ImportModule
 
 from src.log import get_logger
-from src.utility.dataframemodel_operations import mock_tact_scenario
 
 
 class FileHandler(QObject):
@@ -73,7 +73,7 @@ class FileHandler(QObject):
 
     def verify_tact_scenarios(self, unique_refs: List[str], mer_data: Dict[str, DataFrameModel]) -> Dict[str, DataFrameModel]:
         if 'TACTICAL_SCENARIO' not in mer_data \
-                or len(unique_refs) > mer_data['TACTICAL_SCENARIO'].df_unfiltered['REFERENCE'].nunique():
+                or len(unique_refs) > mer_data['TACTICAL_SCENARIO'].original_df['REFERENCE'].nunique():
 
             confirm: QMessageBox = QMessageBox.warning(self.parent().view, 'Warning',
                                                        'No Tactical Scenario found, continue?',

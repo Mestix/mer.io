@@ -4,12 +4,11 @@ from typing import Union, Dict, List
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from src.exceptions import IdentifierNotFoundException, ColumnNotFoundException
+from src.handlers.utility import mock_tact_scenario, get_valid_files_from_folder
 from src.models.dataframe_model import DataFrameModel
 from src.modules.convert_module import ConvertModule
-from src.modules.export_module import ExportModule
+from src.modules.export_module import ExportModule, apply_preset
 from src.modules.import_module import ImportModule
-from src.utility.dataframemodel_operations import apply_preset, mock_tact_scenario
-from src.utility.utility import get_valid_files_from_folder
 from src.views.bulk_export_dlg import BulkSettings
 
 from src.log import get_logger
@@ -42,7 +41,7 @@ class BulkHandler(QObject):
         self.tasks.append(importer)
         importer.start()
 
-    def start_convert(self, data):
+    def start_convert(self, data: Dict):
         mer_data: Dict[str, DataFrameModel] = data['mer_data']
 
         if not self.info.skip:
@@ -84,10 +83,10 @@ class BulkHandler(QObject):
 
         exporter.start()
 
-    def on_task_failed(self, txt) -> None:
+    def on_task_failed(self, txt: str) -> None:
         self.task_failed.emit(txt)
 
-    def on_task_busy(self, txt) -> None:
+    def on_task_busy(self, txt: str) -> None:
         self.task_busy.emit(txt)
 
     def on_task_success(self) -> None:

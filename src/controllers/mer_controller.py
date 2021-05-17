@@ -2,13 +2,14 @@ import sys
 from typing import List, Dict
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 from qt_material import apply_stylesheet, QtStyleTools
 
+from src.controllers.utility import remove_tempdir_contents
 from src.handlers.bulk_handler import BulkHandler
 from src.handlers.file_handler import FileHandler
 from src.models.dataframe_model import DataFrameModel
-from src.models.mer_model import MerModel
+from src.utility.utility import get_exception
 from src.views.bulk_export_dlg import BulkSettings
 from src.views.mer_view import MerView
 
@@ -19,7 +20,8 @@ class MerController(QObject, QtStyleTools):
         self.app: QApplication = QApplication(sys.argv)
         apply_stylesheet(self.app, theme='light_amber.xml', invert_secondary=True)
 
-        self.model: MerModel = MerModel()
+        self.mer_data: Dict[str, DataFrameModel] = dict()
+
         self.view: MerView = MerView()
 
         self.bulk_handler: BulkHandler = BulkHandler()
@@ -60,10 +62,7 @@ class MerController(QObject, QtStyleTools):
     def export(self, path: str) -> None:
         selected_items: List[str] = list(self.view.identifiers.selected_items())
         if len(selected_items) > 0:
-            data = dict()
-            for name in selected_items:
-                dfm = self.model.get_df(name)
-                data[name] = dfm
+            data = {key: value for key, value in self.mer_data.items() if key in selected_items}
 
             self.file_handler.start_export(data, path)
         else:
@@ -79,7 +78,7 @@ class MerController(QObject, QtStyleTools):
         self.view.task_busy('Task success')
 
     def on_file_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
-        self.model.mer_data = converted_data
+        self.mer_data = converted_data
         self.set_mer_view(converted_data)
 
     def on_bulk_success(self):
@@ -87,12 +86,12 @@ class MerController(QObject, QtStyleTools):
             self.view.toggle_import_menu(True)
 
     def set_mer_view(self, converted_data: Dict[str, DataFrameModel]) -> None:
-        for name, idf in self.model.mer_data.items():
+        for name, idf in self.mer_data.items():
             self.view.add_widget(idf)
 
         tact_scenario_txt = 'Tactical Scenarios:'
 
-        for index, row in converted_data['TACTICAL_SCENARIO'].df_unfiltered.iterrows():
+        for index, row in converted_data['TACTICAL_SCENARIO'].original_df.iterrows():
             tact_scenario_txt += \
                 ' {0}: Lat {1}, Long {2}'.format(
                     row['REFERENCE'],
@@ -103,8 +102,8 @@ class MerController(QObject, QtStyleTools):
         self.view.import_success(tact_scenario_txt)
 
     def reset_mer(self) -> None:
-        if self.model.has_mer():
-            self.model.reset_mer()
+        if bool(self.mer_data):
+            self.mer_data: Dict[str, DataFrameModel] = dict()
             self.view.reset_ui()
 
     def set_theme(self, theme: str):
@@ -112,6 +111,11 @@ class MerController(QObject, QtStyleTools):
         apply_stylesheet(self.app, theme=theme.replace(' ', '_') + '.xml', invert_secondary=invert)
 
     def exit_program(self) -> None:
+        try:
+            remove_tempdir_contents()
+        except Exception as E:
+            print(get_exception(E))
+
         self.app.exit()
 
     def run(self) -> int:

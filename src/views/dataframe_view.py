@@ -15,7 +15,7 @@ class DataframeView(QWidget):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
 
-        self.dfm = dfm
+        self.dfm:DataFrameModel = dfm
         self.dfm.notify_change_signal.connect(self.update)
 
         # Set up DataFrame TableView and Model

@@ -17,7 +17,7 @@ class DataFrameModel(QObject):
         super().__init__()
         self.df: DataFrame = df.copy()
         self.name: str = name
-        self._df_unfiltered: DataFrame = df
+        self._original_df: DataFrame = df
 
         self.filters: dict[str, Filter] = dict()
 
@@ -25,26 +25,26 @@ class DataFrameModel(QObject):
         self.set_filters()
 
     @property
-    def df_unfiltered(self):
-        return self._df_unfiltered
+    def original_df(self):
+        return self._original_df
 
-    @df_unfiltered.setter
-    def df_unfiltered(self, value):
-        self._df_unfiltered = value
+    @original_df.setter
+    def original_df(self, value):
+        self._original_df = value
         self.df = value
 
     def rename_columns(self) -> None:
-        for col_old in self.df_unfiltered.columns:
+        for col_old in self.original_df.columns:
             try:
                 search: str = ' - '
                 i = col_old.index(search) + len(search)
                 col_new: str = col_old[i:]
-                self.df_unfiltered = self.df_unfiltered.rename(columns={col_old: col_new})
+                self.original_df = self.original_df.rename(columns={col_old: col_new})
             except Exception:
                 pass
 
     def set_filters(self) -> None:
-        for name in list(self.df_unfiltered.columns):
+        for name in list(self.original_df.columns):
             self.filters[name] = Filter(name=name)
 
     def add_filter(self, name: str, expr: str, enabled: bool = True) -> None:
@@ -70,7 +70,7 @@ class DataFrameModel(QObject):
         return True
 
     def apply_filters(self) -> None:
-        df: DataFrame = self.df_unfiltered.copy()
+        df: DataFrame = self.original_df.copy()
 
         for name, f in self.filters.items():
             if f.filter_enabled:

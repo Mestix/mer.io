@@ -39,18 +39,18 @@ class ConvertModule(QtCore.QThread):
         self.emit_busy('Converting data')
 
         data = self.data.copy()
-        tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].df_unfiltered
+        tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].original_df
 
         for converter in self.converters:
             for name, dfm in data.items():
-                scientific_cols: List[str] = dfm.df_unfiltered.select_dtypes(include=np.number).columns.tolist()
+                scientific_cols: List[str] = dfm.original_df.select_dtypes(include=np.number).columns.tolist()
 
                 converted_df: DataFrame = converter.convert(
-                    dfm.df_unfiltered,
+                    dfm.original_df,
                     tact_scenario=tact_scenario,
                     scientific_cols=scientific_cols
                     )
-                data[name].df_unfiltered = converted_df
+                data[name].original_df = converted_df
                 data[name].df = converted_df
 
         self.emit_busy('Convert success')

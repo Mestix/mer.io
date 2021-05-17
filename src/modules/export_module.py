@@ -1,11 +1,11 @@
+import copy
 import os
 from typing import Dict
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
 
-import pandas as pd
-
+from src.exceptions import ColumnNotFoundException, IdentifierNotFoundException
 from src.exporters.ExcelExporter import ExcelExporter
 from src.interfaces.exporter_interface import IExporter
 from src.models.dataframe_model import DataFrameModel
@@ -56,4 +56,24 @@ class ExportModule(QtCore.QThread):
 
     def add_exporter(self, name: str, exporter: IExporter):
         self.exporters[name] = exporter
+
+
+def apply_preset(mer_data: Dict[str, DataFrameModel], preset: str):
+    preset = retrieve_preset(preset)
+    data: Dict[str, DataFrameModel] = dict()
+
+    for identifier, columns in preset.items():
+        if identifier not in mer_data:
+            raise IdentifierNotFoundException(identifier)
+        else:
+            data[identifier]: DataFrameModel = copy.deepcopy(mer_data[identifier])
+
+        for col in columns:
+            if col not in data[identifier].original_df:
+                raise ColumnNotFoundException(col)
+            else:
+                continue
+
+        data[identifier].original_df = data[identifier].original_df[columns]
+    return data
 

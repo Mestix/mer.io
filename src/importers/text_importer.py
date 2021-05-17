@@ -1,6 +1,5 @@
 from typing import Union
 
-from src.exceptions import NoTactScenarioFoundException
 from src.interfaces.importer_interface import IImporter
 
 import pandas as pd
@@ -38,7 +37,7 @@ def transpose_df(df: DataFrame) -> DataFrame:
         df_dict[key] = rename_duplicate_columns(df_dict[key])
 
     all_data: DataFrame = pd.concat(list(df_dict.values()), sort=False, ignore_index=True) \
-        .dropna(axis=1, how='all').dropna(axis=1, how='all')
+        .dropna(axis=1, how='all')
 
     return all_data
 
