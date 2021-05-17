@@ -109,9 +109,10 @@ class YardsToCoordinatesConverterTests(unittest.TestCase):
         Should correctly convert a X and a Y yards to degrees
         """
 
-        actual = convert_yards_to_degrees(36.94333, -258.8558, self.lat, self.long)
-        expect = (50.082379501373865, -5.2428401542896115)
+        degrees = convert_yards_to_degrees(36.94333, -258.8558, self.lat, self.long)
+        expect = (50.0823795014, -5.2428401543)
 
+        actual = tuple(map(lambda x: isinstance(x, float) and round(x, 10) or x, degrees))
         self.assertEqual(expect, actual)
 
     def test_convert_yards_to_coordinates(self):
