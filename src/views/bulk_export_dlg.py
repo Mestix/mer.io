@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 import os
 
 from PyQt5.QtCore import Qt
@@ -11,10 +11,10 @@ preset_path = './assets/presets'
 
 @dataclass
 class BulkSettings:
-    src: str
-    dst: str
-    preset: str
-    skip: bool
+    src: Union[str, List[str]] = ''
+    dst: str = ''
+    preset: str = ''
+    skip: bool = False
 
 
 class BulkExportDialog(QDialog):

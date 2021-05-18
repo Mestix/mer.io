@@ -10,7 +10,7 @@ from src.models.dataframe_model import DataFrameModel
 class ExcelExporter(IExporter):
     logger = get_logger(__name__)
 
-    def run(self, mer_data: Dict[str, DataFrameModel], dst: str, **kwargs) -> None:
+    def export(self, mer_data: Dict[str, DataFrameModel], dst: str, **kwargs) -> None:
         export(mer_data, dst)
 
 

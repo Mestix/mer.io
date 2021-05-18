@@ -41,7 +41,7 @@ class ExportModule(QtCore.QThread):
 
         exporter: str = os.path.splitext(self.dst)[1][1:].lower()
 
-        self.exporters[exporter].run(self.data, self.dst)
+        self.exporters[exporter].export(self.data, self.dst)
 
         self.emit_busy('Export success')
         self.task_finished.emit()

@@ -4,5 +4,5 @@ from pandas import DataFrame
 
 class IImporter:
     @abstractmethod
-    def run(self, path: str, **kwargs) -> DataFrame:
+    def _import(self, path: str, **kwargs) -> DataFrame:
         raise NotImplementedError

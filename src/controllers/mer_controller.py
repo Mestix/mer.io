@@ -52,7 +52,7 @@ class MerController(QObject, QtStyleTools):
         self.reset_mer()
 
         self.view.toggle_progress(True)
-        self.file_handler.start_import(paths)
+        self.file_handler.start_import(BulkSettings(src=paths))
 
     def import_bulk(self, settings: BulkSettings):
         self.view.toggle_import_menu(False)

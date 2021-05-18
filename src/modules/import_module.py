@@ -48,7 +48,7 @@ class ImportModule(QtCore.QThread):
             try:
                 self.emit_busy('Importing {0}'.format(os.path.basename(path)))
 
-                df: DataFrame = self.importers[importer].run(path)
+                df: DataFrame = self.importers[importer]._import(path)
 
                 df = clean_datetime_columns(df)
                 df = clean_scientific_columns(df)
