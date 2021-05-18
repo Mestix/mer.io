@@ -17,6 +17,7 @@ class FilterView(QWidget):
 
         dfm.filter = self
         self.dfm: DataFrameModel = dfm
+
         self.filter_fields: List[FilterField] = list()
         self.column_fields: List[ColumnField] = list()
         self.column_list: QListWidget = QListWidget()

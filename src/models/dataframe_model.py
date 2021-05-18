@@ -1,50 +1,50 @@
 from dataclasses import dataclass
-from typing import Union, List
+from typing import List
 
+from PyQt5.QtCore import pyqtSignal, QObject
 from pandas import DataFrame
 
 from src.models.filter_model import Filter
-from src.utility.utility import get_exception
-from src.views.mer_view import MerView
+from src.utility import get_exception
 
 
 @dataclass
-class DataFrameModel:
+class DataFrameModel(QObject):
+
+    notify_change_signal: pyqtSignal = pyqtSignal()
+
     def __init__(self, df: DataFrame, name='Untitled'):
-        df = df.copy()
+        super().__init__()
+        self.df: DataFrame = df.copy()
         self.name: str = name
-        self.df: Union[DataFrame, None] = None
-        self._df_unfiltered: DataFrame = df
+        self._original_df: DataFrame = df
 
         self.filters: dict[str, Filter] = dict()
 
         self.rename_columns()
         self.set_filters()
 
-        self.viewer: Union[MerView, None] = None
-        self.explorer = None
-
     @property
-    def df_unfiltered(self):
-        return self._df_unfiltered
+    def original_df(self):
+        return self._original_df
 
-    @df_unfiltered.setter
-    def df_unfiltered(self, value):
-        self._df_unfiltered = value
+    @original_df.setter
+    def original_df(self, value):
+        self._original_df = value
         self.df = value
 
     def rename_columns(self) -> None:
-        for col_old in self.df_unfiltered.columns:
+        for col_old in self.original_df.columns:
             try:
                 search: str = ' - '
                 i = col_old.index(search) + len(search)
                 col_new: str = col_old[i:]
-                self.df_unfiltered = self.df_unfiltered.rename(columns={col_old: col_new})
+                self.original_df = self.original_df.rename(columns={col_old: col_new})
             except Exception:
                 pass
 
     def set_filters(self) -> None:
-        for name in list(self.df_unfiltered.columns):
+        for name in list(self.original_df.columns):
             self.filters[name] = Filter(name=name)
 
     def add_filter(self, name: str, expr: str, enabled: bool = True) -> None:
@@ -70,7 +70,7 @@ class DataFrameModel:
         return True
 
     def apply_filters(self) -> None:
-        df: DataFrame = self.df_unfiltered.copy()
+        df: DataFrame = self.original_df.copy()
 
         for name, f in self.filters.items():
             if f.filter_enabled:
@@ -98,16 +98,4 @@ class DataFrameModel:
         return columns
 
     def update(self) -> None:
-        if self.viewer is not None:
-            for model in [self.viewer.dataView.model(),
-                          self.viewer.columnHeader.model(),
-                          self.viewer.indexHeader.model(),
-                          self.viewer.columnHeaderNames.model(),
-                          self.viewer.indexHeaderNames.model()]:
-                model.beginResetModel()
-                model.endResetModel()
-
-        for view in [self.viewer.columnHeader,
-                     self.viewer.indexHeader,
-                     self.viewer.dataView]:
-            view.updateGeometry()
+        self.notify_change_signal.emit()

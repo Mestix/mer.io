@@ -1,7 +1,5 @@
-import os
 from typing import Union
 
-from src.exceptions import NoTactScenarioFoundException
 from src.interfaces.importer_interface import IImporter
 
 import pandas as pd
@@ -9,22 +7,16 @@ from pandas import DataFrame
 
 
 class TextImporter(IImporter):
-    def __init__(self, skip_tact: bool):
+    def __init__(self):
         super(TextImporter, self).__init__()
-        self.skip_tact: bool = skip_tact
 
-    def run(self, path: str) -> Union[DataFrame, None]:
-        df: DataFrame = import_file(path, self.skip_tact)
+    def run(self, path: str, **kwargs) -> Union[DataFrame, None]:
+        df: DataFrame = import_file(path)
 
-        for step in [transpose_df, clean_datetime_columns, clean_scientific_columns]:
-            df: DataFrame = step(df)
-
-        df['REFERENCE'] = os.path.basename(path)[0:8]
-
-        return df
+        return transpose_df(df)
 
 
-def import_file(csv: str, skip_tact: bool) -> DataFrame:
+def import_file(csv: str) -> DataFrame:
     df: DataFrame = pd.read_csv(csv, sep=':', names=['NAME', 'VALUE'], header=None, engine='python').apply(
         lambda x: x.str.strip())
 
@@ -32,9 +24,6 @@ def import_file(csv: str, skip_tact: bool) -> DataFrame:
     df['EVENT NUMBER'] = df[df['NAME'].str.contains('EVENT NUMBER')]['VALUE']
     df['EVENT NUMBER'] = df['EVENT NUMBER'].fillna(method='ffill')
     df['EVENT NUMBER'] = pd.to_numeric(df["EVENT NUMBER"])
-
-    if skip_tact and 'TACTICAL_SCENARIO' not in list(df['VALUE'].unique()):
-        raise NoTactScenarioFoundException()
 
     return df.set_index('NAME')
 
@@ -48,32 +37,9 @@ def transpose_df(df: DataFrame) -> DataFrame:
         df_dict[key] = rename_duplicate_columns(df_dict[key])
 
     all_data: DataFrame = pd.concat(list(df_dict.values()), sort=False, ignore_index=True) \
-        .dropna(axis=1, how='all').dropna(axis=1, how='all')
+        .dropna(axis=1, how='all')
 
     return all_data
-
-
-def clean_datetime_columns(df: DataFrame) -> DataFrame:
-    df = df.copy()
-    df.insert(0, 'DATE', (pd.to_datetime(
-        df['EVENT HEADER - TIME (YY)'] + '-' + df['EVENT HEADER - TIME (MM)'] + '-' +
-        df['EVENT HEADER - TIME (DD)'], format='%y-%m-%d').dt.date))
-
-    df.insert(1, 'TIME', (pd.to_datetime(
-        df['EVENT HEADER - TIME (HH)'] + ':' + df['EVENT HEADER - TIME (MM).1'] + ':' +
-        df['EVENT HEADER - TIME (SS)'], format='%H:%M:%S').dt.time))
-
-    df = df.loc[:, ~df.columns.str.startswith('EVENT HEADER - TIME')]
-
-    return df
-
-
-def clean_scientific_columns(df: DataFrame) -> DataFrame:
-    df = df.copy()
-    scientific_columns = df.columns[
-        df.stack().str.contains(r'^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
-    df[scientific_columns] = df[scientific_columns].apply(pd.to_numeric, errors='coerce')
-    return df
 
 
 def rename_duplicate_columns(df: DataFrame) -> DataFrame:

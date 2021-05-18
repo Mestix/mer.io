@@ -15,8 +15,8 @@ class DataframeView(QWidget):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
 
-        dfm.viewer = self
-        self.dfm = dfm
+        self.dfm:DataFrameModel = dfm
+        self.dfm.notify_change_signal.connect(self.update)
 
         # Set up DataFrame TableView and Model
         self.dataView = DataTableView(parent=self)
@@ -203,6 +203,20 @@ class DataframeView(QWidget):
                                                                excel=False), args=(df,)).start()
         else:
             threading.Thread(target=lambda df: df.to_clipboard(index=header, header=header), args=(df,)).start()
+
+    def update(self) -> None:
+        for model in [self.dataView.model(),
+                      self.columnHeader.model(),
+                      self.indexHeader.model(),
+                      self.columnHeaderNames.model(),
+                      self.indexHeaderNames.model()]:
+            model.beginResetModel()
+            model.endResetModel()
+
+        for view in [self.columnHeader,
+                     self.indexHeader,
+                     self.dataView]:
+            view.updateGeometry()
 
 
 # Remove dotted border on cell focus.  https://stackoverflow.com/a/55252650/3620725

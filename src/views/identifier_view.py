@@ -10,8 +10,8 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QAbstractItemView, 
 class IdentifierView(QWidget):
     selection_changed_signal: pyqtSignal = pyqtSignal(str)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self.hide()
         self.identifiers: QListView = QListView()
         self.identifiers.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -25,6 +25,8 @@ class IdentifierView(QWidget):
 
         self.identifiers.setModel(self.proxy_model)
         self.select_all_box: QCheckBox = QCheckBox('Select All')
+
+        self.selection_changed_signal.connect(self.parent().set_identifier)
 
         self.init_ui()
 

@@ -8,3 +8,11 @@ class NoValidMerImportTypeException(Exception):
 
 class ConversionFailedException(Exception):
     pass
+
+
+class IdentifierNotFoundException(Exception):
+    pass
+
+
+class ColumnNotFoundException(Exception):
+    pass

@@ -1,3 +1,19 @@
+## 0.4 - 17-5-2021
+### Added
+- /src/assets/presets folder for adding json presets
+- Added preset retrieval to ExportModule which Converts json preset to python dict and transforms DataFrame according to preset before exporting.
+- (class) ColumnNotFoundException: Raises when the preset has a column value which is not in the DataFrame
+- (class) IdentifierNotFoundException: Raises when the preset has an identifier which is not in the DataFrame
+- Upgrade Code GUID to setup.py for automatically uninstall old versions of the program when installing
+
+### Changed
+- Separated utility methods to the folder which the utility methods belong to. Each folder has now its own utility file.
+- Removed reference to Explorer and DataFrameViewer from DataFrameModel. DataFrameModel just emits signal now when changed.
+- BulkHandler and FileHandler now keep lists of running tasks. When a task is finished, it gets removed from this list and garbage collected.
+
+### Removed
+- (class) MerModel: MerModel class became so little that it could just be a Dictionary in MerController
+
 ## 0.3.6 - 6-5-2021
 ### Added
 - Themes
@@ -43,7 +59,7 @@
 ### Removed
 - Removed continue_without_tact_scenario signal from MerView
 - Removed tactical scenario and names property from MerModel
-- Removed filenames from statusbar in MerView
+- Removed filenames from status bar in MerView
 
 ## 0.3.2 - 30-4-2021
 ### Added

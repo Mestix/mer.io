@@ -7,7 +7,7 @@ from pandas import DataFrame
 from src.converters.degrees2coordinates_converter import DegreesToCoordinatesConverter
 from src.converters.yards2coordinates_converter import IConverter, YardsToCoordinatesConverter
 from src.models.dataframe_model import DataFrameModel
-from src.utility.utility import get_exception
+from src.utility import get_exception
 import numpy as np
 
 from src.log import get_logger
@@ -18,39 +18,39 @@ class ConvertModule(QtCore.QThread):
     task_failed: pyqtSignal = pyqtSignal(str)
     task_busy: pyqtSignal = pyqtSignal(str)
 
-    logger = get_logger('ConvertModule')
+    logger = get_logger(__name__)
 
     def __init__(self, data):
         QThread.__init__(self)
         self.data: Dict[str, DataFrameModel] = data
-        self.converters: List[IConverter] = list()
 
+        self.converters: List[IConverter] = list()
         self.add_converter(YardsToCoordinatesConverter())
         self.add_converter(DegreesToCoordinatesConverter())
 
     def run(self) -> None:
         try:
             self.emit_busy('Start convert')
-            self.convert_data()
+            self.convert()
         except Exception as e:
             self.emit_failed('Convert failed: ' + get_exception(e))
 
-    def convert_data(self) -> None:
+    def convert(self) -> None:
         self.emit_busy('Converting data')
 
         data = self.data.copy()
-        tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].df_unfiltered
+        tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].original_df
 
         for converter in self.converters:
             for name, dfm in data.items():
-                scientific_cols: List[str] = dfm.df_unfiltered.select_dtypes(include=np.number).columns.tolist()
+                scientific_cols: List[str] = dfm.original_df.select_dtypes(include=np.number).columns.tolist()
 
                 converted_df: DataFrame = converter.convert(
-                    dfm.df_unfiltered,
+                    dfm.original_df,
                     tact_scenario=tact_scenario,
                     scientific_cols=scientific_cols
                     )
-                data[name].df_unfiltered = converted_df
+                data[name].original_df = converted_df
                 data[name].df = converted_df
 
         self.emit_busy('Convert success')

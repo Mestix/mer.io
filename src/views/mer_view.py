@@ -5,11 +5,11 @@ from typing import Union, List, Dict
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, \
-    QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu
+    QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu, QFileDialog
 
 from src.environment import environment
-from src.utility.utility import save_file, open_file
 from src.views.bulk_export_dlg import BulkExportDialog
+from src.views.explorer_view import ExplorerView
 from src.views.identifier_view import IdentifierView
 
 themes = ['dark_amber.xml',
@@ -54,14 +54,13 @@ class MerView(QMainWindow):
         self.progress_window: Union[QDialog, None] = None
         self.progress_window_label: Union[QLabel, None] = None
 
-        self.running_tasks: int = 0
+        self.explorers: Dict[str, ExplorerView] = dict()
 
         self.init_ui()
 
     def init_ui(self):
         self.splitter: QSplitter = QSplitter(self)
-        self.identifiers: IdentifierView = IdentifierView()
-
+        self.identifiers: IdentifierView = IdentifierView(self)
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
         self.splitter.addWidget(self.identifiers)
@@ -85,15 +84,18 @@ class MerView(QMainWindow):
         self.setGeometry(250, 150, 1500, 750)
 
         self.setWindowTitle('MER.io v{0}'.format(environment['version']))
-        self.setWindowIcon(QIcon('./assets/copter_icon.png'))
+        self.setWindowIcon(QIcon('./assets/icons/copter_icon.png'))
 
     def reset_ui(self):
         self.toggle_progress(False)
         self.identifiers.hide()
-        self.identifiers: IdentifierView = IdentifierView()
-        self.stacked_dfs: QStackedWidget = QStackedWidget()
 
-        self.import_busy('')
+        self.identifiers: IdentifierView = IdentifierView(self)
+        self.stacked_dfs: QStackedWidget = QStackedWidget(self)
+
+        self.explorers: Dict[str, ExplorerView] = dict()
+
+        self.task_busy('')
         self.set_tact_scenario('')
         self.toggle_export_menu(False)
 
@@ -127,7 +129,8 @@ class MerView(QMainWindow):
                                                                         func=self.bulk_export),
                                                                ],
                                                      'Theme': map(lambda x: MenuItem(name=x
-                                                                                     .replace('.xml', ''),
+                                                                                     .replace('.xml', '')
+                                                                                     .replace('_', ' '),
                                                                                      func=self.set_theme)
                                                                   , themes)
                                                      }
@@ -167,12 +170,14 @@ class MerView(QMainWindow):
 
     def add_widget(self, df):
         from src.views.explorer_view import ExplorerView
-        df.explorer = ExplorerView(df)
+        explorer: ExplorerView = ExplorerView(df)
 
-        self.stacked_dfs.addWidget(df.explorer)
+        self.explorers[df.name] = explorer
+        self.stacked_dfs.addWidget(explorer)
+
         self.identifiers.add_tree_item(df.name)
 
-    def import_busy(self, txt: str):
+    def task_busy(self, txt: str):
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
         self.show_status_message(txt)
@@ -194,17 +199,17 @@ class MerView(QMainWindow):
     def set_tact_scenario(self, txt: str):
         self.status_bar_tactical_scenario.setText(txt)
 
-    def start_import(self, name):
-        paths: List[str] = open_file()
+    def start_import(self, *args):
+        paths, _ = QFileDialog().getOpenFileNames(filter='*.txt *.zip')
         if len(paths) > 0:
             self.import_signal.emit(paths)
 
-    def start_export(self, name):
-        path: str = save_file()
+    def start_export(self, *args):
+        path, _ = QFileDialog().getSaveFileName(filter="*.xlsx")
         if path:
             self.export_signal.emit(path)
 
-    def bulk_export(self, name):
+    def bulk_export(self, *args):
         bulk_export_dialog: BulkExportDialog = BulkExportDialog(self)
 
         if bulk_export_dialog.exec() == QDialog.Accepted:
@@ -212,22 +217,20 @@ class MerView(QMainWindow):
 
     def toggle_import_menu(self, enable: bool):
         if enable:
-            if self.running_tasks > 0:
-                self.running_tasks -= 1
-
-            if self.running_tasks == 0:
-                self.menuBar().children()[1].actions()[0].setEnabled(True)
+            self.menuBar().children()[1].actions()[0].setEnabled(True)
         else:
-            self.running_tasks += 1
             self.menuBar().children()[1].actions()[0].setEnabled(False)
 
     def toggle_export_menu(self, enable: bool):
         self.menuBar().children()[1].actions()[1].setEnabled(enable)
 
-    def set_theme(self, theme: str):
-        self.set_theme_signal.emit(theme)
+    def set_theme(self, *args):
+        self.set_theme_signal.emit(args[0])
 
-    def exit_program(self, name):
+    def set_identifier(self, name: str):
+        self.stacked_dfs.setCurrentWidget(self.explorers[name])
+
+    def exit_program(self, *args):
         confirm = QMessageBox.warning(self, 'Warning', 'Close program?',
                                       QMessageBox.No | QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
