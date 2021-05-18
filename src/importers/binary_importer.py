@@ -4,5 +4,5 @@ from src.interfaces.importer_interface import IImporter
 
 
 class BinaryImporter(IImporter):
-    def run(self, path: str, **kwargs) -> DataFrame:
+    def _import(self, path: str, **kwargs) -> DataFrame:
         raise NotImplementedError
