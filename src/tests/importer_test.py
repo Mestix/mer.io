@@ -3,7 +3,7 @@ from io import StringIO
 
 import pandas as pd
 
-from src.importers.text_importer import rename_duplicate_columns, transpose_df, import_file, TextImporter
+from src.importers.text_importer import rename_duplicate_columns, transpose_df, import_file
 
 import numpy as np
 

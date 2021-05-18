@@ -81,7 +81,7 @@ def convert_yards_to_coordinates(lat_yards, long_yards, tact_lat_deg, tact_long_
         lat, long = convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
         return format_degrees_to_coordinate_lat(lat), format_degrees_to_coordinate_long(long)
     except Exception as e:
-        print('convert_yards_to_coordinates: ' + get_exception(e) + '{0},    {1}'.format(tact_lat_deg, tact_long_deg) )
+        print('convert_yards_to_coordinates: ' + get_exception(e) + '{0},    {1}'.format(tact_lat_deg, tact_long_deg))
         return np.nan, np.nan
 
 
@@ -112,7 +112,9 @@ def convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
     rho = a * math.sqrt(1 - ((e * e) * math.sin(tact_lat_rad) * math.sin(tact_lat_rad)))
     beta = pos_neg(y) * math.atan(math.sqrt(x * x + y * y) / rho)
 
-    lat_deg = (180 / math.pi) * math.asin((math.sin(tact_lat_rad) * math.cos(beta)) + (math.cos(tact_lat_rad) * math.sin(beta) * math.cos(alpha)))
+    lat_deg = (180 / math.pi) * math.asin((math.sin(tact_lat_rad)
+                                           * math.cos(beta)) + (math.cos(tact_lat_rad)
+                                                                * math.sin(beta) * math.cos(alpha)))
     lat_rad = lat_deg * math.pi / 180
 
     long_deg = tact_long_deg + (180 / math.pi) * math.asin(math.sin(alpha) * math.sin(beta) / math.cos(lat_rad))

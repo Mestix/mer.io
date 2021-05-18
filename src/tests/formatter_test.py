@@ -60,5 +60,3 @@ class DegreesToCoordinatesTests(unittest.TestCase):
         for key, value in cases.items():
             with self.subTest(key=key):
                 self.assertEqual(value, format_degrees_lat(key))
-
-

@@ -136,6 +136,3 @@ class IdentifierView(QWidget):
                 return False
 
         return True
-
-
-

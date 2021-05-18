@@ -76,4 +76,3 @@ def apply_preset(mer_data: Dict[str, DataFrameModel], preset: str):
 
         data[identifier].original_df = data[identifier].original_df[columns]
     return data
-

@@ -15,7 +15,7 @@ class DataframeView(QWidget):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
 
-        self.dfm:DataFrameModel = dfm
+        self.dfm: DataFrameModel = dfm
         self.dfm.notify_change_signal.connect(self.update)
 
         # Set up DataFrame TableView and Model
@@ -475,20 +475,29 @@ class HeaderView(QTableView):
                 # Removes the higher levels so that only the lowest level of the header affects the data table selection
                 last_row_ix = self.dfm.df.columns.nlevels - 1
                 last_col_ix = self.model().columnCount() - 1
-                higher_levels = QtCore.QItemSelection(self.model().index(0, 0), self.model().index(last_row_ix - 1, last_col_ix))
+                higher_levels = QtCore.QItemSelection(
+                    self.model().index(0, 0),
+                    self.model().index(last_row_ix - 1,
+                                       last_col_ix
+                                       ))
                 selection.merge(higher_levels, QtCore.QItemSelectionModel.Deselect)
 
                 # Select the cells in the data view
-                data_view.selectionModel().select(selection, QtCore.QItemSelectionModel.Columns | QtCore.QItemSelectionModel.ClearAndSelect)
+                data_view.selectionModel().select(selection,
+                                                  QtCore.QItemSelectionModel.Columns |
+                                                  QtCore.QItemSelectionModel.ClearAndSelect)
             if self.orientation == Qt.Vertical:
                 selection = self.selectionModel().selection()
 
                 last_row_ix = self.model().rowCount() - 1
                 last_col_ix = self.dfm.df.index.nlevels - 1
-                higher_levels = QtCore.QItemSelection(self.model().index(0, 0), self.model().index(last_row_ix, last_col_ix - 1))
+                higher_levels = QtCore.QItemSelection(self.model().index(0, 0),
+                                                      self.model().index(last_row_ix, last_col_ix - 1))
                 selection.merge(higher_levels, QtCore.QItemSelectionModel.Deselect)
 
-                data_view.selectionModel().select(selection, QtCore.QItemSelectionModel.Rows | QtCore.QItemSelectionModel.ClearAndSelect)
+                data_view.selectionModel().select(selection,
+                                                  QtCore.QItemSelectionModel.Rows |
+                                                  QtCore.QItemSelectionModel.ClearAndSelect)
 
         self.selectAbove()
 
@@ -728,6 +737,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     import seaborn as sns
+
     iris = sns.load_dataset('iris')
     dfw = DataframeView(DataFrameModel(iris))
 

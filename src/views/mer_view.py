@@ -132,8 +132,7 @@ class MerView(QMainWindow):
                                                                                      .replace('.xml', '')
                                                                                      .replace('_', ' '),
                                                                                      func=self.set_theme)
-                                                                  , themes)
-                                                     }
+                                                                  , themes)}
 
         for name in menu_bar_items:
             menu: QMenu = menu_bar.addMenu(name)

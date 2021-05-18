@@ -89,4 +89,3 @@ class ImportModule(QtCore.QThread):
 
     def add_importer(self, name: str, importer: IImporter):
         self.importers[name] = importer
-

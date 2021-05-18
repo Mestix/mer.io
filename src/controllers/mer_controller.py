@@ -121,4 +121,3 @@ class MerController(QObject, QtStyleTools):
     def run(self) -> int:
         self.view.show()
         return self.app.exec_()
-
