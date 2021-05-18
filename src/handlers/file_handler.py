@@ -11,6 +11,7 @@ from src.modules.export_module import ExportModule
 from src.modules.import_module import ImportModule
 
 from src.log import get_logger
+from src.views.bulk_export_dlg import BulkSettings
 
 
 class FileHandler(QObject):
@@ -25,8 +26,8 @@ class FileHandler(QObject):
 
         self.tasks: List[Union[ImportModule, ConvertModule, ExportModule]] = list()
 
-    def start_import(self, paths):
-        importer: ImportModule = ImportModule(paths)
+    def start_import(self, settings: BulkSettings):
+        importer: ImportModule = ImportModule(settings.src)
         importer.task_finished.connect(self.start_convert)
         importer.task_failed.connect(self.on_task_failed)
         importer.task_busy.connect(self.on_task_busy)
