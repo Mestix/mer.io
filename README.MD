@@ -4,7 +4,6 @@
 - Pip (https://phoenixnap.com/kb/install-pip-windows)
 - PyQt5 (https://pypi.org/project/PyQt5/)
 - Pytest (https://www.guru99.com/pytest-tutorial.html)
-- Pandas (https://pandas.pydata.org/pandas-docs/stable/getting_started/install.html)
 - cx_Freeze (https://cx-freeze.readthedocs.io/en/latest/installation.html)
 - Git (https://git-scm.com/book/nl/v2/Aan-de-slag-Git-installeren)
 
