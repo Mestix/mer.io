@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QAbstractItemView, 
     QHBoxLayout
 
 
-class IdentifierView(QWidget):
+class NavigationView(QWidget):
     selection_changed_signal: pyqtSignal = pyqtSignal(str)
 
     def __init__(self, parent):
@@ -30,13 +30,13 @@ class IdentifierView(QWidget):
 
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         self.select_all_box.setCheckState(Qt.Checked)
         self.select_all_box.stateChanged.connect(self.select_box_checked)
 
         searchbar: QLineEdit = QLineEdit('')
         searchbar.setPlaceholderText('Search')
-        searchbar.textChanged.connect(self.on_search)
+        searchbar.textChanged.connect(self.filter_list)
 
         info_box: QHBoxLayout = QHBoxLayout()
         identifier_label: QLabel = QLabel('Identifiers')
@@ -60,8 +60,8 @@ class IdentifierView(QWidget):
         self.selection_changed_signal.emit(name)
         self.check_all_checked()
 
-    def on_search(self, text):
-        self.proxy_model.setFilterRegExp(text.replace(' ', '_').upper())
+    def filter_list(self, txt):
+        self.proxy_model.setFilterRegExp(QtCore.QRegExp(txt.replace(' ', '_').upper(), Qt.CaseInsensitive, QtCore.QRegExp.FixedString))
 
     def add_tree_item(self, name: str) -> None:
         item: QStandardItem = QStandardItem(name)
@@ -105,9 +105,6 @@ class IdentifierView(QWidget):
         for i in range(item_count):
             item: QStandardItem = root.child(i)
             item.setCheckState(Qt.Unchecked)
-
-    def filter_list(self, txt: str) -> None:
-        self.proxy_model.setFilterRegExp(QtCore.QRegExp(txt, Qt.CaseInsensitive, QtCore.QRegExp.FixedString))
 
     def check_all_checked(self) -> None:
         if self.is_all_checked():

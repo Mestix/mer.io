@@ -8,7 +8,7 @@ from qt_material import apply_stylesheet, QtStyleTools
 from src.controllers.utility import remove_tempdir_contents
 from src.handlers.bulk_handler import BulkHandler
 from src.handlers.file_handler import FileHandler
-from src.models.dataframe_model import DataFrameModel
+from src.types import MerData
 from src.utility import get_exception
 from src.views.bulk_export_dlg import BulkSettings
 from src.views.mer_view import MerView
@@ -20,7 +20,7 @@ class MerController(QObject, QtStyleTools):
         self.app: QApplication = QApplication(sys.argv)
         apply_stylesheet(self.app, theme='light_amber.xml', invert_secondary=True)
 
-        self.mer_data: Dict[str, DataFrameModel] = dict()
+        self.mer_data: MerData = dict()
 
         self.view: MerView = MerView()
 
@@ -33,20 +33,16 @@ class MerController(QObject, QtStyleTools):
         self.view.import_signal.connect(self.import_file)
         self.view.bulk_import_signal.connect(self.import_bulk)
         self.view.export_signal.connect(self.export)
-
         self.view.set_theme_signal.connect(self.set_theme)
-
         self.view.exit_signal.connect(self.exit_program)
 
-        self.bulk_handler.task_busy.connect(self.view.task_busy)
-        self.bulk_handler.task_failed.connect(self.on_task_failed)
-        self.bulk_handler.task_finished.connect(self.on_bulk_success)
-        self.bulk_handler.task_finished.connect(self.on_task_finished)
+        for handler in [self.file_handler, self.bulk_handler]:
+            handler.task_busy.connect(self.view.task_busy)
+            handler.task_failed.connect(self.on_task_failed)
+            handler.task_finished.connect(self.on_task_finished)
 
-        self.file_handler.task_busy.connect(self.view.task_busy)
-        self.file_handler.task_failed.connect(self.on_task_failed)
+        self.bulk_handler.task_finished.connect(self.on_bulk_success)
         self.file_handler.task_finished.connect(self.on_file_success)
-        self.file_handler.task_finished.connect(self.on_task_finished)
 
     def import_file(self, paths: List[str]) -> None:
         self.reset_mer()
@@ -60,11 +56,12 @@ class MerController(QObject, QtStyleTools):
         self.bulk_handler.start_import(settings)
 
     def export(self, path: str) -> None:
+        self.file_handler.settings = BulkSettings(dst=path)
         selected_items: List[str] = list(self.view.identifiers.selected_items())
         if len(selected_items) > 0:
             data = {key: value for key, value in self.mer_data.items() if key in selected_items}
 
-            self.file_handler.start_export(data, path)
+            self.file_handler.start_export(data)
         else:
             self.view.import_failed('Select at least 1 Identifier')
 
@@ -77,7 +74,9 @@ class MerController(QObject, QtStyleTools):
     def on_task_finished(self):
         self.view.task_busy('Task success')
 
-    def on_file_success(self, converted_data: Dict[str, DataFrameModel]) -> None:
+    def on_file_success(self, converted_data: MerData) -> None:
+        if self.file_handler.all_tasks_finished():
+            self.view.toggle_import_menu(True)
         self.mer_data = converted_data
         self.set_mer_view(converted_data)
 
@@ -85,7 +84,7 @@ class MerController(QObject, QtStyleTools):
         if self.bulk_handler.all_tasks_finished():
             self.view.toggle_import_menu(True)
 
-    def set_mer_view(self, converted_data: Dict[str, DataFrameModel]) -> None:
+    def set_mer_view(self, converted_data: MerData) -> None:
         for name, idf in self.mer_data.items():
             self.view.add_widget(idf)
 
@@ -103,7 +102,7 @@ class MerController(QObject, QtStyleTools):
 
     def reset_mer(self) -> None:
         if bool(self.mer_data):
-            self.mer_data: Dict[str, DataFrameModel] = dict()
+            self.mer_data: MerData = dict()
             self.view.reset_ui()
 
     def set_theme(self, theme: str):

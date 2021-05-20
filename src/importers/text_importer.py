@@ -10,7 +10,7 @@ class TextImporter(IImporter):
     def __init__(self):
         super(TextImporter, self).__init__()
 
-    def _import(self, path: str, **kwargs) -> Union[DataFrame, None]:
+    def import_(self, path: str, **kwargs) -> Union[DataFrame, None]:
         df: DataFrame = import_file(path)
 
         return transpose_df(df)

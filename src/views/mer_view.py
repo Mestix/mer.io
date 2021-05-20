@@ -8,9 +8,10 @@ from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, \
     QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu, QFileDialog
 
 from src.environment import environment
+from src.utility import get_exception
 from src.views.bulk_export_dlg import BulkExportDialog
 from src.views.explorer_view import ExplorerView
-from src.views.identifier_view import IdentifierView
+from src.views.identifier_view import NavigationView
 
 themes = ['dark_amber.xml',
           'dark_blue.xml',
@@ -44,7 +45,7 @@ class MerView(QMainWindow):
         super().__init__()
         self.splitter: Union[QSplitter, None] = None
         self.stacked_dfs: Union[QStackedWidget, None] = None
-        self.identifiers: Union[IdentifierView, None] = None
+        self.identifiers: Union[NavigationView, None] = None
 
         self.status_bar: Union[QStatusBar, None] = None
         self.status_bar_tactical_scenario: Union[QLabel, None] = None
@@ -60,7 +61,7 @@ class MerView(QMainWindow):
 
     def init_ui(self):
         self.splitter: QSplitter = QSplitter(self)
-        self.identifiers: IdentifierView = IdentifierView(self)
+        self.identifiers: NavigationView = NavigationView(self)
         self.stacked_dfs: QStackedWidget = QStackedWidget()
 
         self.splitter.addWidget(self.identifiers)
@@ -90,7 +91,7 @@ class MerView(QMainWindow):
         self.toggle_progress(False)
         self.identifiers.hide()
 
-        self.identifiers: IdentifierView = IdentifierView(self)
+        self.identifiers: NavigationView = NavigationView(self)
         self.stacked_dfs: QStackedWidget = QStackedWidget(self)
 
         self.explorers: Dict[str, ExplorerView] = dict()
@@ -126,7 +127,7 @@ class MerView(QMainWindow):
                                                                        shortcut='Ctrl+Q')
                                                               ],
                                                      'Admin': [MenuItem(name='Bulk export',
-                                                                        func=self.bulk_export),
+                                                                        func=self.start_bulk_export),
                                                                ],
                                                      'Theme': map(lambda x: MenuItem(name=x
                                                                                      .replace('.xml', '')
@@ -168,7 +169,7 @@ class MerView(QMainWindow):
 
     def add_widget(self, df):
         from src.views.explorer_view import ExplorerView
-        explorer: ExplorerView = ExplorerView(df)
+        explorer = ExplorerView(df)
 
         self.explorers[df.name] = explorer
         self.stacked_dfs.addWidget(explorer)
@@ -207,7 +208,7 @@ class MerView(QMainWindow):
         if path:
             self.export_signal.emit(path)
 
-    def bulk_export(self, *args):
+    def start_bulk_export(self, *args):
         bulk_export_dialog: BulkExportDialog = BulkExportDialog(self)
 
         if bulk_export_dialog.exec() == QDialog.Accepted:

@@ -19,18 +19,17 @@ class ColumnField(Field):
 
 @dataclass
 class FilterField(Field):
-    def __init__(self, name: str, parent=None):
+    def __init__(self, name: str, parent):
         super().__init__(name, parent)
-        self.parent: QWidget = parent
         self.field: QLineEdit = QLineEdit('')
-        self.checkbox = QCheckBox(self.name)
-        self.checkbox.setChecked(True)
-        self.checkbox.stateChanged.connect(self.toggle_enabled)
-        self.checkbox.stateChanged.connect(self.set_filter)
+        self.activated = QCheckBox(self.name)
+        self.activated.setChecked(True)
+        self.activated.stateChanged.connect(self.toggle_enabled)
+        self.activated.stateChanged.connect(self.set_filter)
         self.field.textChanged.connect(self.set_filter)
 
     def set_filter(self) -> None:
-        self.parent.set_filter(self)
+        self.parent().set_filter(self)
 
     def toggle_enabled(self, value: int) -> None:
         self.field.setEnabled(False) if value == Qt.Unchecked else self.field.setEnabled(True)
@@ -38,4 +37,4 @@ class FilterField(Field):
     def reset_field(self) -> None:
         self.field.setText('')
         self.field.setEnabled(True)
-        self.checkbox.setChecked(True)
+        self.activated.setChecked(True)

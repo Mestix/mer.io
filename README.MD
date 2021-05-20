@@ -19,6 +19,9 @@
 ## Install all required packages
 - Run ```pip install -r requirements.txt```
 
+## Create requirements file
+- Run ```pip freeze > requirements.txt```
+
 ## Install package
 - Run ```pip install <package_name>```
 

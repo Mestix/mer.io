@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QSplitter
 
 from src.models.dataframe_model import DataFrameModel
 from src.views.filter_view import FilterView
-from src.views.dataframe_view import DataframeView
+from src.views.dataframeview.dataframe_view import DataframeView
 
 
 class ExplorerView(QSplitter):

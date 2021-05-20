@@ -5,8 +5,10 @@ from pandas import DataFrame
 from src.models.dataframe_model import DataFrameModel
 import pandas as pd
 
+from src.types import MerData
 
-def mock_tact_scenario(mer_data: Dict[str, DataFrameModel], unique_refs: List[str]) -> Dict[str, DataFrameModel]:
+
+def mock_tact_scenario(mer_data: MerData, unique_refs: List[str]) -> MerData:
     if 'TACTICAL_SCENARIO' not in mer_data:
         mer_data['TACTICAL_SCENARIO'] = DataFrameModel(DataFrame({'REFERENCE': []}), 'TACTICAL_SCENARIO')
     for ref in unique_refs:

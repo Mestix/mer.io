@@ -15,7 +15,6 @@ class FilterView(QWidget):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
 
-        dfm.filter = self
         self.dfm: DataFrameModel = dfm
 
         self.filter_fields: List[FilterField] = list()
@@ -60,7 +59,7 @@ class FilterView(QWidget):
         column_layout.addWidget(self.column_list)
         column_tab.setLayout(column_layout)
 
-        self.column_list.itemClicked.connect(self.set_column)
+        self.column_list.itemClicked.connect(self.select_column)
 
         self.create_filter_form()
         self.create_column_list()
@@ -73,7 +72,7 @@ class FilterView(QWidget):
 
     def create_filter_form(self) -> None:
         for f in self.filter_fields:
-            self.filter_form.addRow(f.checkbox, f.field)
+            self.filter_form.addRow(f.activated, f.field)
 
     def create_column_list(self) -> None:
         for f in self.column_fields:
@@ -101,15 +100,15 @@ class FilterView(QWidget):
         for i in range(self.column_list.count()):
             item: QListWidgetItem = self.column_list.item(i)
             item.setCheckState(Qt.Unchecked)
-            self.set_column(item)
+            self.select_column(item)
 
     def select_all_cols(self) -> None:
         for i in range(self.column_list.count()):
             item: QListWidgetItem = self.column_list.item(i)
             item.setCheckState(Qt.Checked)
-            self.set_column(item)
+            self.select_column(item)
 
-    def set_column(self, item: QListWidgetItem) -> None:
+    def select_column(self, item: QListWidgetItem) -> None:
         name: str = item.text()
         if item.checkState() == Qt.Checked:
             self.dfm.add_column(name)
@@ -142,7 +141,7 @@ class FilterView(QWidget):
     def set_filter(self, f: FilterField) -> None:
         expr: str = f.field.text()
         if not expr == '':
-            self.dfm.add_filter(f.name, expr, f.checkbox.isChecked())
+            self.dfm.add_filter(f.name, expr, f.activated.isChecked())
         else:
             self.dfm.remove_filter(f.name)
 
