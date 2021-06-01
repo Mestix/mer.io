@@ -4,7 +4,6 @@
 - Pip (https://phoenixnap.com/kb/install-pip-windows)
 - PyQt5 (https://pypi.org/project/PyQt5/)
 - Pytest (https://www.guru99.com/pytest-tutorial.html)
-- Pandas (https://pandas.pydata.org/pandas-docs/stable/getting_started/install.html)
 - cx_Freeze (https://cx-freeze.readthedocs.io/en/latest/installation.html)
 - Git (https://git-scm.com/book/nl/v2/Aan-de-slag-Git-installeren)
 
@@ -19,6 +18,9 @@
 
 ## Install all required packages
 - Run ```pip install -r requirements.txt```
+
+## Create requirements file
+- Run ```pip freeze > requirements.txt```
 
 ## Install package
 - Run ```pip install <package_name>```

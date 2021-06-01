@@ -2,9 +2,9 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from src.importers.text_importer import rename_duplicate_columns
+from src.importers.text_importer import rename_duplicate_columns, clean_datetime_columns, clean_scientific_columns
 from src.models.dataframe_model import DataFrameModel
-from src.modules.utility import clean_scientific_columns, clean_datetime_columns, create_mer_data
+from src.tasks.utility import create_mer_data
 
 
 class ImportModuleTests(unittest.TestCase):

@@ -19,4 +19,3 @@ class YardsToCoordinatesConverter(IConverter):
         except Exception as e:
             self.logger.error(get_exception(e))
             return df
-

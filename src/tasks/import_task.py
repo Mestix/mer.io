@@ -1,26 +1,22 @@
 import os
 from typing import List, Dict
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread
 from pandas import DataFrame
 import pandas as pd
 
 from src.importers.binary_importer import BinaryImporter
 from src.importers.text_importer import TextImporter
 from src.interfaces.importer_interface import IImporter
-from src.models.dataframe_model import DataFrameModel
-from src.modules.utility import get_valid_files, clean_datetime_columns, clean_scientific_columns, create_mer_data
+from src.tasks.TaskBase import TaskBase
+from src.tasks.utility import get_valid_files, create_mer_data
+from src.types import MerData
 from src.utility import get_exception
 
 from src.log import get_logger
 
 
-class ImportModule(QtCore.QThread):
-    task_finished: pyqtSignal = pyqtSignal(object)
-    task_failed: pyqtSignal = pyqtSignal(str)
-    task_busy: pyqtSignal = pyqtSignal(str)
-
+class ImportTask(TaskBase):
     logger = get_logger(__name__)
 
     def __init__(self, paths):
@@ -48,10 +44,7 @@ class ImportModule(QtCore.QThread):
             try:
                 self.emit_busy('Importing {0}'.format(os.path.basename(path)))
 
-                df: DataFrame = self.importers[importer].run(path)
-
-                df = clean_datetime_columns(df)
-                df = clean_scientific_columns(df)
+                df: DataFrame = self.importers[importer].import_(path)
 
                 # TODO: ADD NEW REFERENCE
                 df['REFERENCE'] = os.path.basename(path)[0:8]
@@ -63,11 +56,7 @@ class ImportModule(QtCore.QThread):
         try:
             df: DataFrame = pd.concat(dfs, sort=False, ignore_index=True)
             unique_refs: List[str] = df['REFERENCE'].unique()
-            mer_data: Dict[str, DataFrameModel] = create_mer_data(df.copy())
-
-            # if skip_tact and 'TACTICAL_SCENARIO' not in list(df['VALUE'].unique()):
-            #     raise NoTactScenarioFoundException()
-            # TODO: verify Tact Scenario !!!
+            mer_data: MerData = create_mer_data(df.copy())
 
             self.emit_busy('Import success')
 
@@ -79,14 +68,5 @@ class ImportModule(QtCore.QThread):
             self.logger.error(get_exception(e))
             self.task_failed.emit('No valid data found')
 
-    def emit_busy(self, txt: str):
-        self.task_busy.emit(txt)
-        self.logger.info(txt)
-
-    def emit_failed(self, txt: str):
-        self.task_failed.emit(txt)
-        self.logger.error(txt)
-
     def add_importer(self, name: str, importer: IImporter):
         self.importers[name] = importer
-

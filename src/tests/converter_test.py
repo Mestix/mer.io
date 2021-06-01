@@ -157,7 +157,9 @@ class YardsToCoordinatesConverterTests(unittest.TestCase):
         """
 
         converter = YardsToCoordinatesConverter()
-        actual = converter.convert(self.df, tact_scenario=self.tact_scenario, scientific_cols=list(self.df.columns)).values.tolist()
+        actual = converter.convert(self.df,
+                                   tact_scenario=self.tact_scenario,
+                                   scientific_cols=list(self.df.columns)).values.tolist()
         expect = [["N 50° 04.94'",
                    "W 005° 14.57'",
                    "N 50° 04.95'",

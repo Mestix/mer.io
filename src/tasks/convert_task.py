@@ -1,28 +1,23 @@
-from typing import List, Dict
-
-from PyQt5 import QtCore
-from PyQt5.QtCore import QThread, pyqtSignal
+from typing import List
+from PyQt5.QtCore import QThread
 from pandas import DataFrame
 
 from src.converters.degrees2coordinates_converter import DegreesToCoordinatesConverter
 from src.converters.yards2coordinates_converter import IConverter, YardsToCoordinatesConverter
-from src.models.dataframe_model import DataFrameModel
+from src.tasks.TaskBase import TaskBase
+from src.types import MerData
 from src.utility import get_exception
 import numpy as np
 
 from src.log import get_logger
 
 
-class ConvertModule(QtCore.QThread):
-    task_finished: pyqtSignal = pyqtSignal(object)
-    task_failed: pyqtSignal = pyqtSignal(str)
-    task_busy: pyqtSignal = pyqtSignal(str)
-
+class ConvertTask(TaskBase):
     logger = get_logger(__name__)
 
-    def __init__(self, data):
+    def __init__(self, data: MerData):
         QThread.__init__(self)
-        self.data: Dict[str, DataFrameModel] = data
+        self.data: MerData = data
 
         self.converters: List[IConverter] = list()
         self.add_converter(YardsToCoordinatesConverter())
@@ -58,11 +53,3 @@ class ConvertModule(QtCore.QThread):
 
     def add_converter(self, c: IConverter) -> None:
         self.converters.append(c)
-
-    def emit_busy(self, txt: str):
-        self.task_busy.emit(txt)
-        self.logger.info(txt)
-
-    def emit_failed(self, txt: str):
-        self.task_failed.emit(txt)
-        self.logger.error(txt)

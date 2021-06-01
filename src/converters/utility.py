@@ -27,21 +27,31 @@ def format_degrees_to_coordinate_long(long_deg: float) -> str:
 
 
 def format_degrees_long(long: float) -> str:
+    """
+    formats a long float to consist of 3 numbers and no decimals
+    """
     return str("%03i" % (round(abs(long))))
 
 
 def format_degrees_lat(lat: float) -> str:
+    """
+    formats a lat float to consist of 2 numbers and no decimals
+    """
     return str("%02i" % (round(abs(lat))))
 
 
-def format_minutes(lat: float) -> str:
-    return str("%05.2f" % round(lat, 2))
+def format_minutes(minutes: float) -> str:
+    """
+    formats a minute float to consist of 2 numbers and 2 decimals
+    """
+    return str("%05.2f" % round(minutes, 2))
 
 
 # --- YARDS TO DEGREES CONVERSION ---
 def convert_x_y_cols(df: DataFrame, tact_scenario: DataFrame, scientific_cols: List[str]) -> DataFrame:
     df_to_convert: DataFrame = df.copy()
 
+    # get all position cols
     x_y_cols = get_x_y_cols(scientific_cols)
 
     for index, pos in x_y_cols.iterrows():
@@ -49,9 +59,11 @@ def convert_x_y_cols(df: DataFrame, tact_scenario: DataFrame, scientific_cols: L
         y_pos: str = pos['Y']
 
         if not pd.isnull(x_pos) and not pd.isnull(y_pos):
+            # if the X and Y col don't represent the opposite of each other, throw Exception
             if x_pos.replace('X', 'Y') != y_pos and x_pos.replace(' X', ' Y') != y_pos:
                 raise ConversionFailedException('X and Y Columns do not match!')
 
+            # for every X and Y col, convert yards to coordinate
             df_to_convert[[x_pos, y_pos]] = df_to_convert[[x_pos, y_pos, 'REFERENCE']].apply(
                 lambda row, x=x_pos, y=y_pos:
                 convert_yards_to_coordinates(
@@ -59,6 +71,7 @@ def convert_x_y_cols(df: DataFrame, tact_scenario: DataFrame, scientific_cols: L
                     row[y],
                     tact_scenario[tact_scenario['REFERENCE'] == row['REFERENCE']]['GRID CENTER LAT'].iloc[0],
                     tact_scenario[tact_scenario['REFERENCE'] == row['REFERENCE']]['GRID CENTER LONG'].iloc[0])
+                # convert_yards_to_coordinates returns a tuple, therefore apply pd.series
                 if pd.notnull(row).any() else row, axis=1).apply(pd.Series)
 
     return df_to_convert
@@ -71,6 +84,7 @@ def get_x_y_cols(scientific_columns) -> DataFrame:
     x_cols = list(filter(regex_x.search, scientific_columns))
     y_cols = list(filter(regex_y.search, scientific_columns))
 
+    # create new dataframe with all X and Y cols
     x_y_df: DataFrame = pd.DataFrame({'X': x_cols, 'Y': y_cols})
 
     return x_y_df
@@ -81,7 +95,7 @@ def convert_yards_to_coordinates(lat_yards, long_yards, tact_lat_deg, tact_long_
         lat, long = convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
         return format_degrees_to_coordinate_lat(lat), format_degrees_to_coordinate_long(long)
     except Exception as e:
-        print('convert_yards_to_coordinates: ' + get_exception(e) + '{0},    {1}'.format(tact_lat_deg, tact_long_deg) )
+        print('convert_yards_to_coordinates: ' + get_exception(e) + '{0},    {1}'.format(tact_lat_deg, tact_long_deg))
         return np.nan, np.nan
 
 
@@ -112,7 +126,9 @@ def convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
     rho = a * math.sqrt(1 - ((e * e) * math.sin(tact_lat_rad) * math.sin(tact_lat_rad)))
     beta = pos_neg(y) * math.atan(math.sqrt(x * x + y * y) / rho)
 
-    lat_deg = (180 / math.pi) * math.asin((math.sin(tact_lat_rad) * math.cos(beta)) + (math.cos(tact_lat_rad) * math.sin(beta) * math.cos(alpha)))
+    lat_deg = (180 / math.pi) * math.asin((math.sin(tact_lat_rad)
+                                           * math.cos(beta)) + (math.cos(tact_lat_rad)
+                                                                * math.sin(beta) * math.cos(alpha)))
     lat_rad = lat_deg * math.pi / 180
 
     long_deg = tact_long_deg + (180 / math.pi) * math.asin(math.sin(alpha) * math.sin(beta) / math.cos(lat_rad))

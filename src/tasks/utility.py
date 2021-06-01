@@ -18,29 +18,6 @@ def retrieve_preset(preset: str):
     return dict(preset)
 
 
-def clean_datetime_columns(df: DataFrame) -> DataFrame:
-    df = df.copy()
-    df.insert(0, 'DATE', (pd.to_datetime(
-        df['EVENT HEADER - TIME (YY)'] + '-' + df['EVENT HEADER - TIME (MM)'] + '-' +
-        df['EVENT HEADER - TIME (DD)'], format='%y-%m-%d').dt.date))
-
-    df.insert(1, 'TIME', (pd.to_datetime(
-        df['EVENT HEADER - TIME (HH)'] + ':' + df['EVENT HEADER - TIME (MM).1'] + ':' +
-        df['EVENT HEADER - TIME (SS)'], format='%H:%M:%S').dt.time))
-
-    df = df.loc[:, ~df.columns.str.startswith('EVENT HEADER - TIME')]
-
-    return df
-
-
-def clean_scientific_columns(df: DataFrame) -> DataFrame:
-    df = df.copy()
-    scientific_columns = df.columns[
-        df.stack().str.contains(r'^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
-    df[scientific_columns] = df[scientific_columns].apply(pd.to_numeric, errors='coerce')
-    return df
-
-
 def create_mer_data(df: DataFrame) -> Dict[str, DataFrameModel]:
     mer_data: Dict[str, DataFrameModel] = dict()
 

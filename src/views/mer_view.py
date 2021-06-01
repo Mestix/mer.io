@@ -1,4 +1,3 @@
-import functools
 from dataclasses import dataclass
 from typing import Union, List, Dict
 
@@ -7,10 +6,11 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSplitter, QStackedWidget, QLabel, QStatusBar, \
     QProgressBar, QDialog, QMainWindow, QAction, QMessageBox, QMenuBar, QMenu, QFileDialog
 
+from src.dataclasses.menuitem import MenuItem
 from src.environment import environment
 from src.views.bulk_export_dlg import BulkExportDialog
 from src.views.explorer_view import ExplorerView
-from src.views.identifier_view import IdentifierView
+from src.views.identifier_view import IdentifierListView
 
 themes = ['dark_amber.xml',
           'dark_blue.xml',
@@ -42,37 +42,31 @@ class MerView(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.splitter: Union[QSplitter, None] = None
-        self.stacked_dfs: Union[QStackedWidget, None] = None
-        self.identifiers: Union[IdentifierView, None] = None
+        self.splitter: QSplitter = QSplitter(self)
+        self.stacked_dfs: QStackedWidget = QStackedWidget(self)
+        self.identifiers: IdentifierListView = IdentifierListView(self)
 
-        self.status_bar: Union[QStatusBar, None] = None
-        self.status_bar_tactical_scenario: Union[QLabel, None] = None
-        self.status_bar_label: Union[QLabel, None] = None
+        self.splitter.addWidget(self.identifiers)
+        self.splitter.addWidget(self.stacked_dfs)
 
-        self.progress_bar: Union[QProgressBar, None] = None
-        self.progress_window: Union[QDialog, None] = None
-        self.progress_window_label: Union[QLabel, None] = None
+        self.status_bar: QStatusBar = self.statusBar()
+        self.status_bar_tactical_scenario: QLabel = QLabel()
+        self.status_bar_label: QLabel = QLabel()
+
+        self.status_bar.addWidget(self.status_bar_label)
+        self.status_bar.addPermanentWidget(self.status_bar_tactical_scenario)
+
+        self.progress_window: QDialog = QDialog(self)
+        self.progress_window_label: QLabel = QLabel()
+        self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
 
         self.explorers: Dict[str, ExplorerView] = dict()
 
         self.init_ui()
 
     def init_ui(self):
-        self.splitter: QSplitter = QSplitter(self)
-        self.identifiers: IdentifierView = IdentifierView(self)
-        self.stacked_dfs: QStackedWidget = QStackedWidget()
-
-        self.splitter.addWidget(self.identifiers)
-        self.splitter.addWidget(self.stacked_dfs)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
-
-        self.status_bar: QStatusBar = self.statusBar()
-        self.status_bar_tactical_scenario = QLabel()
-        self.status_bar_label = QLabel()
-        self.status_bar.addWidget(self.status_bar_label)
-        self.status_bar.addPermanentWidget(self.status_bar_tactical_scenario)
 
         self.splitter.setSizes([300, 1000])
         self.splitter.setContentsMargins(10, 10, 10, 10)
@@ -87,71 +81,104 @@ class MerView(QMainWindow):
         self.setWindowIcon(QIcon('./assets/icons/copter_icon.png'))
 
     def reset_ui(self):
+        """
+        Completely reset the mer view
+        """
+
+        # disable progress dialog
         self.toggle_progress(False)
+
+        # first hide the identifier List view or it will remain somewhere in the view
         self.identifiers.hide()
 
-        self.identifiers: IdentifierView = IdentifierView(self)
+        # let the garbage collector reset the widgets,
+        # because it takes too many time to remove all widgets separately
+        self.identifiers: IdentifierListView = IdentifierListView(self)
         self.stacked_dfs: QStackedWidget = QStackedWidget(self)
 
         self.explorers: Dict[str, ExplorerView] = dict()
 
         self.task_busy('')
         self.set_tact_scenario('')
-        self.toggle_export_menu(False)
 
         self.splitter.replaceWidget(0, self.identifiers)
         self.splitter.replaceWidget(1, self.stacked_dfs)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
 
-        self.menuBar().children()[1].actions()[1].setEnabled(False)
+        self.toggle_menus(False)
 
     def create_menu_bar(self):
         menu_bar: QMenuBar = self.menuBar()
 
-        @dataclass
-        class MenuItem:
-            name: str
-            func: callable
-            shortcut: str = ''
-
-        menu_bar_items: Dict[str, List[MenuItem]] = {'File': [MenuItem(name='Import',
-                                                                       func=self.start_import,
-                                                                       shortcut='Ctrl+O'),
-                                                              MenuItem(name='Export',
-                                                                       func=self.start_export,
-                                                                       shortcut='Ctrl+E'),
-                                                              MenuItem(name='Exit',
-                                                                       func=self.exit_program,
-                                                                       shortcut='Ctrl+Q')
-                                                              ],
-                                                     'Admin': [MenuItem(name='Bulk export',
-                                                                        func=self.bulk_export),
-                                                               ],
-                                                     'Theme': map(lambda x: MenuItem(name=x
-                                                                                     .replace('.xml', '')
-                                                                                     .replace('_', ' '),
-                                                                                     func=self.set_theme)
-                                                                  , themes)
-                                                     }
+        menu_bar_items: Dict[str, List[MenuItem]] = \
+            {'File': [MenuItem(name='Import',
+                               func=self.start_import,
+                               shortcut='Ctrl+O',
+                               items=[]),
+                      MenuItem(name='Export',
+                               func=self.start_export,
+                               shortcut='Ctrl+E',
+                               items=[]),
+                      MenuItem(name='Bulk export',
+                               func=self.start_bulk_export,
+                               shortcut='Ctrl+B',
+                               items=[]),
+                      MenuItem(name='Exit',
+                               func=self.exit_program,
+                               shortcut='Ctrl+Q',
+                               items=[])
+                      ],
+             'Edit': [MenuItem(name='Copy',
+                               func=lambda x: self.copy(False),
+                               shortcut='Ctrl+C',
+                               items=[]),
+                      MenuItem(name='Copy with header',
+                               func=lambda x: self.copy(True),
+                               shortcut='Ctrl+shift+C',
+                               items=[])
+                      ],
+             'Settings': [MenuItem(name='Theme',
+                                   func=None,
+                                   shortcut='',
+                                   items=list(map(lambda x: MenuItem(name=x
+                                                                     .replace('.xml', '')
+                                                                     .replace('_', ' '),
+                                                                     func=lambda y: self.set_theme(x),
+                                                                     shortcut='',
+                                                                     items=[]), themes))),
+                          MenuItem(name='Help',
+                                   func=callable,
+                                   shortcut='',
+                                   items=[])
+                          ]}
 
         for name in menu_bar_items:
             menu: QMenu = menu_bar.addMenu(name)
-
+            item: MenuItem
             for item in menu_bar_items[name]:
                 action: QAction = QAction(item.name, self)
                 action.setShortcut(item.shortcut)
-                action.triggered.connect(functools.partial(item.func, item.name))
-                menu.addAction(action)
+                if item.func:
+                    action.triggered.connect(item.func)
+                    menu.addAction(action)
 
-        self.toggle_export_menu(False)
+                if item.items:
+                    sub_menu: QMenu = menu.addMenu(item.name)
+
+                    sub_item: MenuItem
+                    for sub_item in item.items:
+                        action: QAction = QAction(sub_item.name, self)
+                        action.setShortcut(sub_item.shortcut)
+                        action.triggered.connect(sub_item.func)
+                        sub_menu.addAction(action)
+
+        self.toggle_menus(False)
 
     def create_progress_window(self):
-        self.progress_window: QDialog = QDialog(self)
         self.progress_window.setWindowModality(Qt.ApplicationModal)
         self.progress_window.resize(400, 100)
 
-        self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
         self.progress_window.setFixedSize(self.progress_window.size())
         self.progress_window.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.progress_window.setWindowFlag(Qt.WindowCloseButtonHint, False)
@@ -163,14 +190,20 @@ class MerView(QMainWindow):
         self.progress_bar.setRange(0, 0)
 
     def toggle_progress(self, show: bool):
+        """
+        Show or hide progress dialog
+        """
         if show:
             self.progress_window.show()
         else:
             self.progress_window.hide()
 
     def add_widget(self, df):
+        """
+        For every dataframe model, add a explorer view to the stacked widget
+        """
         from src.views.explorer_view import ExplorerView
-        explorer: ExplorerView = ExplorerView(df)
+        explorer = ExplorerView(df)
 
         self.explorers[df.name] = explorer
         self.stacked_dfs.addWidget(explorer)
@@ -178,6 +211,9 @@ class MerView(QMainWindow):
         self.identifiers.add_tree_item(df.name)
 
     def task_busy(self, txt: str):
+        """
+        Set status message and progress dialog text
+        """
         self.progress_window_label.setText(txt)
         self.progress_window_label.adjustSize()
         self.show_status_message(txt)
@@ -185,7 +221,7 @@ class MerView(QMainWindow):
     def import_success(self, tact: str):
         self.status_bar_tactical_scenario.setText(tact)
 
-        self.toggle_export_menu(True)
+        self.toggle_menus(True)
         self.toggle_progress(False)
         self.identifiers.show()
 
@@ -194,43 +230,76 @@ class MerView(QMainWindow):
         QMessageBox.critical(self, 'Error', txt, QMessageBox.Ok)
 
     def show_status_message(self, txt: str):
+        """
+        Updates status bar left widget when any busy signal is emitted from controller
+        """
         self.status_bar_label.setText('Status: {0} '.format(txt))
 
     def set_tact_scenario(self, txt: str):
+        """
+        Set status bar right widget to tactical scenario(s)
+        """
         self.status_bar_tactical_scenario.setText(txt)
 
-    def start_import(self, *args):
+    def start_import(self):
         paths, _ = QFileDialog().getOpenFileNames(filter='*.txt *.zip')
         if len(paths) > 0:
             self.import_signal.emit(paths)
 
-    def start_export(self, *args):
+    def start_export(self):
         path, _ = QFileDialog().getSaveFileName(filter="*.xlsx")
         if path:
             self.export_signal.emit(path)
 
-    def bulk_export(self, *args):
+    def start_bulk_export(self):
         bulk_export_dialog: BulkExportDialog = BulkExportDialog(self)
 
         if bulk_export_dialog.exec() == QDialog.Accepted:
             self.bulk_import_signal.emit(bulk_export_dialog.get_info())
 
     def toggle_import_menu(self, enable: bool):
-        if enable:
-            self.menuBar().children()[1].actions()[0].setEnabled(True)
-        else:
-            self.menuBar().children()[1].actions()[0].setEnabled(False)
+        """
+        Some menu's are disabled when running a long task
+        """
+        # file > import
+        self.menuBar().children()[1].actions()[0].setEnabled(enable)
 
-    def toggle_export_menu(self, enable: bool):
+    def toggle_menus(self, enable: bool):
+        """
+        Some menu's are disabled when running a long task
+        """
+        # file > export
         self.menuBar().children()[1].actions()[1].setEnabled(enable)
 
-    def set_theme(self, *args):
-        self.set_theme_signal.emit(args[0])
+        # edit > copy
+        self.menuBar().children()[2].actions()[0].setEnabled(enable)
+
+        # edit > copy with header
+        self.menuBar().children()[2].actions()[1].setEnabled(enable)
+
+    def set_theme(self, name: str):
+        """
+        Apply theme stylesheet
+        """
+        self.set_theme_signal.emit(name)
 
     def set_identifier(self, name: str):
+        """
+        Select a identifier from the IdentifierListview. Puts the selected Explorer on top of the stacked widget.
+        """
         self.stacked_dfs.setCurrentWidget(self.explorers[name])
 
-    def exit_program(self, *args):
+    def copy(self, header):
+        """
+        According to the selected menu item (with or without header) execute copying in DataFrameViewer
+        """
+        current_dfm: ExplorerView = self.stacked_dfs.currentWidget()
+        if current_dfm:
+            current_dfm.viewer.copy(header)
+        else:
+            return
+
+    def exit_program(self):
         confirm = QMessageBox.warning(self, 'Warning', 'Close program?',
                                       QMessageBox.No | QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
