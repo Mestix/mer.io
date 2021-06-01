@@ -23,17 +23,19 @@ class HeaderNamesModel(QtCore.QAbstractTableModel):
             return 1
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
-        row = index.row()
-        col = index.column()
+        if role == QtCore.Qt.DisplayRole:
 
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.ToolTipRole:
+            row = index.row()
+            col = index.column()
 
             if self.orientation == Qt.Horizontal:
+                # header
                 val = self.dfm.df.columns.names[row]
                 if val is None:
                     return ""
 
             elif self.orientation == Qt.Vertical:
+                # index
                 val = self.dfm.df.index.names[col]
                 if val is None:
                     return "index"

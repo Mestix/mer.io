@@ -3,14 +3,13 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableView, QAbstractItemView
 
 from src.models.dataframe_model import DataFrameModel
-from src.models.headernames_model import HeaderNamesModel
+from src.models.dataframeview.headernames_model import HeaderNamesModel
 
 
 class HeaderNamesView(QTableView):
     def __init__(self, parent, orientation):
         super().__init__(parent)
         self.dfm: DataFrameModel = parent.dfm
-        self.setProperty('orientation', 'horizontal' if orientation == 1 else 'vertical')  # Used in stylesheet
 
         # Setup
         self.orientation = orientation
@@ -41,9 +40,9 @@ class HeaderNamesView(QTableView):
     def sizeHint(self):
         if self.orientation == Qt.Horizontal:
             width = self.columnWidth(0)
-            height = self.parent().columnHeader.sizeHint().height()
+            height = self.parent().column_header.sizeHint().height()
         else:  # Vertical
-            width = self.parent().indexHeader.sizeHint().width()
+            width = self.parent().index_header.sizeHint().width()
             height = self.rowHeight(0) + 2
 
         return QtCore.QSize(width, height)
@@ -52,7 +51,7 @@ class HeaderNamesView(QTableView):
         return self.sizeHint()
 
     def rowHeight(self, row: int) -> int:
-        return self.parent().columnHeader.rowHeight(row)
+        return self.parent().column_header.rowHeight(row)
 
     def columnWidth(self, column: int) -> int:
         if self.orientation == Qt.Horizontal:
@@ -61,4 +60,4 @@ class HeaderNamesView(QTableView):
             else:
                 return super().columnWidth(column)
         else:
-            return self.parent().indexHeader.columnWidth(column)
+            return self.parent().index_header.columnWidth(column)

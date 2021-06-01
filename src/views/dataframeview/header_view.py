@@ -3,22 +3,20 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableView, QSizePolicy, QAbstractItemView
 
 from src.models.dataframe_model import DataFrameModel
-from src.models.header_model import HeaderModel
+from src.models.dataframeview.header_model import HeaderModel
 
 
 class HeaderView(QTableView):
-    """
-    Displays the DataFrame index or columns depending on orientation
-    """
-
     def __init__(self, parent, orientation):
         super().__init__(parent)
         self.dfm: DataFrameModel = parent.dfm
 
-        # Setup
         self.orientation = orientation
-        self.table = parent.dataView
+        self.table = parent.data_view
+
+        # model
         self.setModel(HeaderModel(parent, orientation))
+
         # These are used during column resizing
         self.header_being_resized = None
         self.resize_start_position = None
@@ -61,7 +59,7 @@ class HeaderView(QTableView):
         """
         # Check focus so we don't get recursive loop, since headers trigger selection of data cells and vice versa
         if self.hasFocus():
-            data_view = self.parent().dataView
+            data_view = self.parent().data_view
 
             # Set selection mode so selecting one row or column at a time adds to selection each time
             if self.orientation == Qt.Horizontal:  # This case is for the horizontal header
@@ -127,19 +125,19 @@ class HeaderView(QTableView):
             return None
 
     def eventFilter(self, obj: QtCore.QObject, event: QtCore.QEvent) -> bool:
-        # start the drag process
+        # start dragging
         if event.type() == QtCore.QEvent.MouseButtonPress:
             return self.mouse_press(event)
 
-        # End the drag process
+        # end dragging
         if event.type() == QtCore.QEvent.MouseButtonRelease:
             self.header_being_resized = None
 
-        # Auto size the column that was double clicked
+        # auto size column on double click
         if event.type() == QtCore.QEvent.MouseButtonDblClick:
             return self.mouse_double_click(event)
 
-        # Handle active drag resizing
+        # drag resizing
         if event.type() == QtCore.QEvent.MouseMove:
             return self.mouse_move(event)
 
@@ -175,10 +173,10 @@ class HeaderView(QTableView):
             size = self.initial_header_size + (mouse_position - self.resize_start_position)
             if size > 10:
                 self.setColumnWidth(self.header_being_resized, size)
-                self.parent().dataView.setColumnWidth(self.header_being_resized, size)
+                self.parent().data_view.setColumnWidth(self.header_being_resized, size)
 
                 self.updateGeometry()
-                self.parent().dataView.updateGeometry()
+                self.parent().data_view.updateGeometry()
             return True
 
             # Set the cursor shape

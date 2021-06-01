@@ -9,7 +9,7 @@ from src.importers.binary_importer import BinaryImporter
 from src.importers.text_importer import TextImporter
 from src.interfaces.importer_interface import IImporter
 from src.tasks.TaskBase import TaskBase
-from src.tasks.utility import get_valid_files, clean_datetime_columns, clean_scientific_columns, create_mer_data
+from src.tasks.utility import get_valid_files, create_mer_data
 from src.types import MerData
 from src.utility import get_exception
 
@@ -46,9 +46,6 @@ class ImportTask(TaskBase):
 
                 df: DataFrame = self.importers[importer].import_(path)
 
-                df = clean_datetime_columns(df)
-                df = clean_scientific_columns(df)
-
                 # TODO: ADD NEW REFERENCE
                 df['REFERENCE'] = os.path.basename(path)[0:8]
 
@@ -60,10 +57,6 @@ class ImportTask(TaskBase):
             df: DataFrame = pd.concat(dfs, sort=False, ignore_index=True)
             unique_refs: List[str] = df['REFERENCE'].unique()
             mer_data: MerData = create_mer_data(df.copy())
-
-            # if skip_tact and 'TACTICAL_SCENARIO' not in list(df['VALUE'].unique()):
-            #     raise NoTactScenarioFoundException()
-            # TODO: verify Tact Scenario !!!
 
             self.emit_busy('Import success')
 

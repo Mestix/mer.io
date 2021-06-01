@@ -9,6 +9,9 @@ from src.types import MerData
 
 
 def mock_tact_scenario(mer_data: MerData, unique_refs: List[str]) -> MerData:
+    """
+    Mock all tactical scenario's to zero (equator)
+    """
     if 'TACTICAL_SCENARIO' not in mer_data:
         mer_data['TACTICAL_SCENARIO'] = DataFrameModel(DataFrame({'REFERENCE': []}), 'TACTICAL_SCENARIO')
     for ref in unique_refs:
@@ -26,6 +29,9 @@ def mock_tact_scenario(mer_data: MerData, unique_refs: List[str]) -> MerData:
 
 
 def get_valid_files_from_folder(path: str) -> Generator:
+    """
+    return all zip and text files from the given directory
+    """
     for root, dirs, files in os.walk(path):
         for file in files:
             if file.endswith(('.txt', '.zip')):

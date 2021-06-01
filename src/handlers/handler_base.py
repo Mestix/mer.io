@@ -2,10 +2,10 @@ from typing import Union, List
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
-from src.tasks.convert_module import ConvertTask
-from src.tasks.export_module import ExportTask
-from src.tasks.import_module import ImportTask
-from src.views.bulk_export_dlg import BulkSettings
+from src.tasks.convert_task import ConvertTask
+from src.tasks.export_task import ExportTask
+from src.tasks.import_task import ImportTask
+from src.views.bulk_export_dlg import Settings
 
 
 class HandlerBase(QObject):
@@ -15,7 +15,10 @@ class HandlerBase(QObject):
 
     tasks: List[Union[ExportTask, ConvertTask, ImportTask]] = list()
 
-    def start_import(self, settings: BulkSettings):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def start_import(self, settings: Settings):
         raise NotImplementedError
 
     def start_convert(self, _import):

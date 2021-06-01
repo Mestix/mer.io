@@ -14,6 +14,9 @@ class ExcelExporter(IExporter):
 
 
 def export(mer_data: MerData, dst: str) -> None:
+    """
+    For each dataframe(identifier) in mer data create a separate tab in the Excel sheet
+    """
     writer: pd.ExcelWriter = pd.ExcelWriter(dst)
 
     df: DataFrameModel

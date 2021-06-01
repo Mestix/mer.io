@@ -1,27 +1,19 @@
-from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 import os
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGroupBox, QComboBox, QLineEdit, QDialogButtonBox, QVBoxLayout, \
     QFormLayout, QLabel, QFileDialog, QPushButton, QMessageBox, QCheckBox
 
+from src.dataclasses.settings import Settings
+
 preset_path = './assets/presets'
-
-
-@dataclass
-class BulkSettings:
-    src: Union[str, List[str]] = ''
-    dst: str = ''
-    preset: str = ''
-    skip: bool = False
 
 
 class BulkExportDialog(QDialog):
 
     def __init__(self, parent):
         super(BulkExportDialog, self).__init__(parent)
-        self.parent = parent
 
         self.setWindowTitle('Bulk Export')
         self.setGeometry(750, 200, 500, 450)
@@ -58,6 +50,9 @@ class BulkExportDialog(QDialog):
         self.setLayout(main_layout)
 
     def create_form(self):
+        """
+        Initiate form layout
+        """
         layout = QFormLayout()
 
         source_btn: QPushButton = QPushButton('Pick')
@@ -83,12 +78,18 @@ class BulkExportDialog(QDialog):
         self.form_groupbox.setLayout(layout)
 
     def select_src_dir(self):
-        file = str(QFileDialog.getExistingDirectory(self.parent, 'Select source directory'))
+        """
+        Open a dialog to let the user choose source directory
+        """
+        file = str(QFileDialog.getExistingDirectory(self.parent(), 'Select source directory'))
         if file:
             self.src_dir.setText(file)
 
     def select_dst_dir(self):
-        path, _ = QFileDialog().getSaveFileName(self.parent, 'Select destination file', filter='*.xlsx')
+        """
+        Open dialog to let the user choose a filename and location
+        """
+        path, _ = QFileDialog().getSaveFileName(self.parent(), 'Select destination file', filter='*.xlsx')
         if path:
             self.dst_dir.setText(path)
 
@@ -99,8 +100,8 @@ class BulkExportDialog(QDialog):
         else:
             self.accept()
 
-    def get_info(self) -> BulkSettings:
-        return BulkSettings(
+    def get_info(self) -> Settings:
+        return Settings(
             src=self.src_dir.text(),
             dst=self.dst_dir.text(),
             preset=str(self.preset_box.currentText()),
@@ -109,6 +110,9 @@ class BulkExportDialog(QDialog):
 
 
 def get_available_presets() -> List[str]:
+    """
+    List all presets from assets folder in preset dropdown menu
+    """
     presets: List[str] = list()
     for root, dirs, files in os.walk(preset_path):
         for file in files:

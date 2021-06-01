@@ -2,21 +2,16 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QAbstractItemView, QTableView
 
 from src.models.dataframe_model import DataFrameModel
-from src.models.datatable_model import DataTableModel
+from src.models.dataframeview.datatable_model import DataTableModel
 
 
 class DataTableView(QTableView):
-    """
-    Displays the DataFrame data as a table
-    """
-
     def __init__(self, parent):
         super().__init__(parent)
         self.dfm: DataFrameModel = parent.dfm
 
-        # Create and set model
-        model = DataTableModel(parent)
-        self.setModel(model)
+        # model
+        self.setModel(DataTableModel(parent))
 
         # Hide the headers. The DataFrame headers (index & columns) will be displayed in the DataFrameHeaderViews
         self.horizontalHeader().hide()
@@ -33,8 +28,8 @@ class DataTableView(QTableView):
         Runs when cells are selected in the main table. This logic highlights the correct cells in the vertical and
         horizontal headers when a data cell is selected
         """
-        column_header = self.parent().columnHeader
-        index_header = self.parent().indexHeader
+        column_header = self.parent().column_header
+        index_header = self.parent().index_header
 
         # The two blocks below check what columns or rows are selected in the data table and highlights the
         # corresponding ones in the two headers. The if statements check for focus on headers, because if the user

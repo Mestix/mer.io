@@ -38,7 +38,6 @@ class ExportTask(TaskBase):
         self.exporters[exporter].export(self.data, self.dst)
 
         self.emit_busy('Export success')
-        self.task_finished.emit()
 
     def add_exporter(self, name: str, exporter: IExporter):
         self.exporters[name] = exporter
