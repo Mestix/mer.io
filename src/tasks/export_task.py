@@ -20,6 +20,7 @@ class ExportTask(TaskBase):
         self.data: MerData = data
         self.dst: str = dst
 
+        # add exporters
         self.exporters: Dict[str, IExporter] = dict()
         self.add_exporter('xlsx', ExcelExporter())
 
@@ -33,8 +34,10 @@ class ExportTask(TaskBase):
     def export(self) -> None:
         self.emit_busy('Exporting to {0}'.format(self.dst))
 
+        # determine filetype
         exporter: str = os.path.splitext(self.dst)[1][1:].lower()
 
+        # determine which exporter to use and run export
         self.exporters[exporter].export(self.data, self.dst)
 
         self.emit_busy('Export success')

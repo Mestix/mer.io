@@ -19,6 +19,8 @@ class ConvertTask(TaskBase):
         QThread.__init__(self)
         self.data: MerData = data
 
+        # add converters
+        # order does matter
         self.converters: List[IConverter] = list()
         self.add_converter(YardsToCoordinatesConverter())
         self.add_converter(DegreesToCoordinatesConverter())
@@ -34,10 +36,13 @@ class ConvertTask(TaskBase):
         self.emit_busy('Converting data')
 
         data = self.data.copy()
+        # hold tactical scenario
         tact_scenario: DataFrame = data['TACTICAL_SCENARIO'].original_df
 
         for converter in self.converters:
+            # apply all converters to each model of the MerData object
             for name, dfm in data.items():
+                # get scientific cols because only numeric cols will be converted
                 scientific_cols: List[str] = dfm.original_df.select_dtypes(include=np.number).columns.tolist()
 
                 converted_df: DataFrame = converter.convert(

@@ -107,7 +107,5 @@ class DataFrameModel(QObject):
 
         return columns
 
-
-
     def model_changed_emit(self) -> None:
         self.notify_change_signal.emit()

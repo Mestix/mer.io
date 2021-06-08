@@ -23,6 +23,11 @@ class ImportTask(TaskBase):
         QThread.__init__(self)
         self.paths: List[str] = paths
 
+        # add importers
+        # eventually this should only contain the binary types of the different systems
+        # in that way we can just select the Mer importer for the Mer from SkyFlight,
+        # the LFAPS importer for the LFAPS data etc.
+        # this is only a temporary solution
         self.importers: Dict[str, IImporter] = dict()
         self.add_importer('txt', TextImporter())
         self.add_importer('mer', BinaryImporter())
@@ -39,14 +44,17 @@ class ImportTask(TaskBase):
         dfs: list[DataFrame] = list()
 
         for path in all_paths:
+            # define which importer is needed according to filetype
             importer: str = os.path.splitext(path)[1][1:].lower()
 
             try:
                 self.emit_busy('Importing {0}'.format(os.path.basename(path)))
 
+                # pick the right importer for filetype
                 df: DataFrame = self.importers[importer].import_(path)
 
                 # TODO: ADD NEW REFERENCE
+                # add a reference to the df to trace back data to the right Mer
                 df['REFERENCE'] = os.path.basename(path)[0:8]
 
                 dfs.append(df)
@@ -54,8 +62,11 @@ class ImportTask(TaskBase):
                 self.logger.error(get_exception(e))
 
         try:
+            # concat all imported DataFrame
             df: DataFrame = pd.concat(dfs, sort=False, ignore_index=True)
+            # check how many different Mers we've imported
             unique_refs: List[str] = df['REFERENCE'].unique()
+            # create MerData (dict with models)
             mer_data: MerData = create_mer_data(df.copy())
 
             self.emit_busy('Import success')
