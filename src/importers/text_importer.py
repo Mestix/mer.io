@@ -66,11 +66,11 @@ def rename_duplicate_columns(df: DataFrame) -> DataFrame:
 
 def clean_datetime_columns(df: DataFrame) -> DataFrame:
     df = df.copy()
-    df.insert(0, 'DATE', (pd.to_datetime(
+    df.insert(0, 'DATE_', (pd.to_datetime(
         df['EVENT HEADER - TIME (YY)'] + '-' + df['EVENT HEADER - TIME (MM)'] + '-' +
         df['EVENT HEADER - TIME (DD)'], format='%y-%m-%d').dt.date))
 
-    df.insert(1, 'TIME', (pd.to_datetime(
+    df.insert(1, 'TIME_', (pd.to_datetime(
         df['EVENT HEADER - TIME (HH)'] + ':' + df['EVENT HEADER - TIME (MM).1'] + ':' +
         df['EVENT HEADER - TIME (SS)'], format='%H:%M:%S').dt.time))
 

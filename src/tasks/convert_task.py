@@ -3,6 +3,7 @@ from PyQt5.QtCore import QThread
 from pandas import DataFrame
 
 from src.converters.degrees2coordinates_converter import DegreesToCoordinatesConverter
+from src.converters.time_converter import TimeConverter
 from src.converters.yards2coordinates_converter import IConverter, YardsToCoordinatesConverter
 from src.tasks.TaskBase import TaskBase
 from src.types import MerData
@@ -24,6 +25,7 @@ class ConvertTask(TaskBase):
         self.converters: List[IConverter] = list()
         self.add_converter(YardsToCoordinatesConverter())
         self.add_converter(DegreesToCoordinatesConverter())
+        self.add_converter(TimeConverter())
 
     def run(self) -> None:
         try:
@@ -47,6 +49,7 @@ class ConvertTask(TaskBase):
 
                 converted_df: DataFrame = converter.convert(
                     dfm.original_df,
+                    name=dfm.name,
                     tact_scenario=tact_scenario,
                     scientific_cols=scientific_cols
                     )
