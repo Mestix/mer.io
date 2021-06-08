@@ -107,30 +107,40 @@ def pos_neg(num):
 
 
 def convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg):
+    # if data is missing, break function otherwise dividing by zero errors will occur
     if lat_yards == 0 or long_yards == 0:
         return lat_yards, long_yards
 
+    # degrees to radius
     tact_lat_rad = tact_lat_deg * math.pi / 180
 
-    x_heli_meters = lat_yards / 1.09361
-    y_heli_meters = long_yards / 1.09361
+    # yards to meters
+    x_heli_meters, y_heli_meters = lat_yards / 1.09361, long_yards / 1.09361
 
-    x = x_heli_meters
-    y = y_heli_meters
+    # Position (x and y) of the OwnHelo compared to the Tactical Scenario
+    x, y = x_heli_meters, y_heli_meters
+
+    # intersection
     x_y = x / y
 
+    # major semi-axis WGS-84
     a = 6378137.000
+    # squared major eccentricity WGS-84
     e = 0.08181919084262
 
     alpha = math.atan(x_y)
+    # Earth radius
     rho = a * math.sqrt(1 - ((e * e) * math.sin(tact_lat_rad) * math.sin(tact_lat_rad)))
     beta = pos_neg(y) * math.atan(math.sqrt(x * x + y * y) / rho)
 
+    # Latitude of the OwnHelo degrees
     lat_deg = (180 / math.pi) * math.asin((math.sin(tact_lat_rad)
                                            * math.cos(beta)) + (math.cos(tact_lat_rad)
                                                                 * math.sin(beta) * math.cos(alpha)))
+    # Latitude of the OwnHelo yards
     lat_rad = lat_deg * math.pi / 180
 
+    # Longitude of the OwnHelo
     long_deg = tact_long_deg + (180 / math.pi) * math.asin(math.sin(alpha) * math.sin(beta) / math.cos(lat_rad))
 
     return lat_deg, long_deg

@@ -44,8 +44,7 @@ class ImportTask(TaskBase):
         dfs: list[DataFrame] = list()
 
         for path in all_paths:
-            # define which importer is needed for the file type.
-            # eventually this should also change according to the different binary files
+            # define which importer is needed according to filetype
             importer: str = os.path.splitext(path)[1][1:].lower()
 
             try:

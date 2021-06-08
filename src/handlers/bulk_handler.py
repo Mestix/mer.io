@@ -44,8 +44,8 @@ class BulkHandler(HandlerBase):
     def start_convert(self, data: Dict):
         mer_data: MerData = data['mer_data']
 
+        # to do !!
         # if not self.settings.skip:
-        #     # to do
         #     mock_tact_scenario(mer_data, data['unique_refs'])
 
         # if 'TACTICAL_SCENARIO' not in list(df['VALUE'].unique()):
