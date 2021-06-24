@@ -9,12 +9,15 @@ from src.dataclasses.filterfield import Field
 from src.models.dataframe_model import DataFrameModel
 import pandas as pd
 
+from src.utility import get_exception
+
 
 class FilterTabView(QWidget):
     def __init__(self, dfm: DataFrameModel):
         super().__init__()
 
         # model
+        dfm.init_filters()
         self.dfm: DataFrameModel = dfm
         self.fields: List[Field] = list()
 
@@ -81,7 +84,7 @@ class FilterTabView(QWidget):
         """
         Create a Field object for every column
         """
-        for column in self.dfm.df.columns:
+        for column in self.dfm.original_df.columns:
             self.fields.append(Field(column, self))
 
     def reset_filters(self) -> None:
@@ -112,10 +115,13 @@ class FilterTabView(QWidget):
         """
         Toggle a column
         """
-        self.dfm.set_column(item.text(), item.checkState())
+        try:
+            self.dfm.set_column(item.text(), item.checkState())
 
-        self.dfm.apply_filters()
-        self.check_all_checked()
+            self.dfm.apply_filters()
+            self.check_all_checked()
+        except Exception as e:
+            print(get_exception(e))
 
     def check_all_checked(self) -> None:
         """

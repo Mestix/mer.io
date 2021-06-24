@@ -67,3 +67,15 @@ def find_txt_files(path: str) -> Generator:
     for root, dirs, files in os.walk(path):
         for file in fnmatch.filter(files, '*.txt'):
             yield os.path.join(root, file)
+
+
+def empty_folder(path: str):
+    import os
+    import shutil
+
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))
+

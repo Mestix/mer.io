@@ -11,21 +11,21 @@ class DegreesToCoordinatesTests(unittest.TestCase):
         Should correctly convert lat degrees to lat coordinates
         """
         lat_coordinate = format_degrees_to_coordinate_lat(11.111)
-        self.assertEqual("N 11° 06.66'", lat_coordinate)
+        self.assertEqual('N 11° 06\' 40"', lat_coordinate)
 
     def test_long(self):
         """
         Should correctly convert long degrees to long coordinates
         """
         long_coordinate = format_degrees_to_coordinate_long(-1.1111)
-        self.assertEqual("W 001° 06.67'", long_coordinate)
+        self.assertEqual('W 001° 06\' 40"', long_coordinate)
 
     def test_format_minute(self):
         """
         Should round minutes to 2 decimals
         """
         minutes = format_minutes(32.5689)
-        self.assertEqual("32.57", minutes)
+        self.assertEqual("33", minutes)
 
     def test_format_degrees_long(self):
         """

@@ -36,7 +36,7 @@ class ImportModuleTests(unittest.TestCase):
         df = rename_duplicate_columns(df.copy())
         df = clean_datetime_columns(df)
 
-        self.assertEqual(['DATE', 'TIME'], list(df.columns))
+        self.assertEqual(['DATE_', 'TIME_'], list(df.columns))
 
     def test_clean_scientific_columns(self):
         df = pd.DataFrame({

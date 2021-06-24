@@ -9,7 +9,7 @@ from src.importers.binary_importer import BinaryImporter
 from src.importers.text_importer import TextImporter
 from src.interfaces.importer_interface import IImporter
 from src.tasks.TaskBase import TaskBase
-from src.tasks.utility import get_valid_files, create_mer_data
+from src.tasks.utility import get_valid_files, create_mer_data, empty_folder
 from src.types import MerData
 from src.utility import get_exception
 
@@ -41,7 +41,8 @@ class ImportTask(TaskBase):
 
     def import_from_paths(self, paths) -> None:
         all_paths: List[str] = get_valid_files(paths)
-        dfs: list[DataFrame] = list()
+        dfs: List[DataFrame] = list()
+        references: List[str] = list()
 
         for path in all_paths:
             # define which importer is needed according to filetype
@@ -53,19 +54,24 @@ class ImportTask(TaskBase):
                 # pick the right importer for filetype
                 df: DataFrame = self.importers[importer].import_(path)
 
-                # TODO: ADD NEW REFERENCE
-                # add a reference to the df to trace back data to the right Mer
-                df['REFERENCE'] = os.path.basename(path)[0:8]
+                reference = df['REFERENCE'][0]
 
+                if reference in references:
+                    reference = '{0}_'.format(references.count(reference)) + reference
+                    df['REFERENCE'] = reference
+
+                references.append(reference)
                 dfs.append(df)
             except Exception as e:
                 self.logger.error(get_exception(e))
 
+        dfs = set_reference(dfs)
+
         try:
             # concat all imported DataFrame
             df: DataFrame = pd.concat(dfs, sort=False, ignore_index=True)
-            # check how many different Mers we've imported
-            unique_refs: List[str] = df['REFERENCE'].unique()
+            df: DataFrame = df.sort_values(by=['DATE_', 'TIME_'])
+
             # create MerData (dict with models)
             mer_data: MerData = create_mer_data(df.copy())
 
@@ -73,11 +79,39 @@ class ImportTask(TaskBase):
 
             self.task_finished.emit(dict({
                 'mer_data': mer_data,
-                'unique_refs': unique_refs
+                'unique_refs': references
             }))
+
         except Exception as e:
             self.logger.error(get_exception(e))
-            self.task_failed.emit('No valid data found')
+            self.task_failed.emit('This import does not contain any valid Mer data')
+
+        empty_folder('temp')
 
     def add_importer(self, name: str, importer: IImporter):
         self.importers[name] = importer
+
+
+def set_reference(dfs):
+    for i, df in enumerate(dfs):
+        if 'TACTICAL_SCENARIO' not in list(df['EVENT HEADER - IDENTIFIER']):
+            current_reference = df['REFERENCE'][0]
+            index_of_hour = current_reference.rfind('-') + 1
+            hour = current_reference[index_of_hour:]
+            previous_reference = current_reference[:index_of_hour] + str(int(hour) - 1)
+
+            matching_references = [df for df in dfs if df['REFERENCE'][0] == previous_reference]
+
+            if len(matching_references) > 0:
+                previous_df = matching_references[0]
+                if 'TACTICAL_SCENARIO' in list(previous_df['EVENT HEADER - IDENTIFIER']):
+
+                    tact_row = previous_df.loc[previous_df['EVENT HEADER - IDENTIFIER'] == 'TACTICAL_SCENARIO']
+                    tact_row['REFERENCE'] = current_reference
+                    dfs[i] = df.append(tact_row)
+                else:
+                    continue
+            else:
+                continue
+
+    return dfs

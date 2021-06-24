@@ -14,8 +14,9 @@ class TextImporter(IImporter):
         df: DataFrame = import_file(path)
 
         df = transpose_df(df)
-        df = clean_datetime_columns(df)
         df = clean_scientific_columns(df)
+        df = set_reference(df)
+        df = clean_datetime_columns(df)
 
         return df
 
@@ -84,4 +85,15 @@ def clean_scientific_columns(df: DataFrame) -> DataFrame:
     scientific_columns = df.columns[
         df.stack().str.contains(r'^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
     df[scientific_columns] = df[scientific_columns].apply(pd.to_numeric, errors='coerce')
+    return df
+
+
+def set_reference(df: DataFrame):
+    reference: str = '{0}-{1}-{2}-{3}'.format(
+        df['EVENT HEADER - TIME (YY)'][0],
+        df['EVENT HEADER - TIME (MM)'][0],
+        df['EVENT HEADER - TIME (DD)'][0],
+        df['EVENT HEADER - TIME (HH)'][0],)
+
+    df['REFERENCE'] = reference
     return df

@@ -28,6 +28,8 @@ class ExportTask(TaskBase):
         try:
             self.emit_busy('Start export')
             self.export()
+        except PermissionError:
+            self.emit_failed('Permission to {0} denied, please close file'.format(self.dst))
         except Exception as e:
             self.emit_failed(get_exception(e))
 

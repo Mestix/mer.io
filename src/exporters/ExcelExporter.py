@@ -21,6 +21,6 @@ def export(mer_data: MerData, dst: str) -> None:
 
     df: DataFrameModel
     for name, dfm in mer_data.items():
-        dfm.df.to_excel(writer, name)
+        dfm.df.to_excel(writer, name, index=False)
 
     writer.save()

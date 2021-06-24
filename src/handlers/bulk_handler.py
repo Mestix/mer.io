@@ -2,8 +2,9 @@ from json import JSONDecodeError
 from typing import Union, Dict, List
 
 from PyQt5.QtCore import pyqtSignal
+from pandas import DataFrame
 
-from src.exceptions import IdentifierNotFoundException, ColumnNotFoundException
+from src.exceptions import IdentifierNotFoundException, ColumnNotFoundException, NoTactScenarioFoundException
 from src.handlers.utility import mock_tact_scenario, get_valid_files_from_folder
 from src.handlers.handler_base import HandlerBase
 from src.models.dataframe_model import DataFrameModel
@@ -33,7 +34,7 @@ class BulkHandler(HandlerBase):
 
         # init task
         importer: ImportTask = ImportTask(paths)
-        importer.task_failed.connect(self.on_task_failed)
+        importer.task_failed.connect(lambda x: [self.on_task_failed(x), self.remove_task(importer)])
         importer.task_busy.connect(self.on_task_busy)
         importer.task_finished.connect(lambda x: [self.start_convert(x), self.remove_task(importer)])
         self.tasks.append(importer)
@@ -43,19 +44,13 @@ class BulkHandler(HandlerBase):
 
     def start_convert(self, data: Dict):
         mer_data: MerData = data['mer_data']
+        refs = data['unique_refs']
 
-        # to do !!
-        # if not self.settings.skip:
-        #     mock_tact_scenario(mer_data, data['unique_refs'])
-
-        # if 'TACTICAL_SCENARIO' not in list(df['VALUE'].unique()):
-        #     raise NoTactScenarioFoundException()
-        # to do: verify Tact Scenario !!!
+        mer_data = self.verify_tact_scenario(mer_data, refs)
 
         # init task
         converter: ConvertTask = ConvertTask(mer_data)
-        converter.task_finished.connect(self.start_export)
-        converter.task_failed.connect(self.on_task_failed)
+        converter.task_failed.connect(lambda x: [self.on_task_failed(x), self.remove_task(converter)])
         converter.task_busy.connect(self.on_task_busy)
         converter.task_finished.connect(lambda x: [self.start_export(x), self.remove_task(converter)])
         self.tasks.append(converter)
@@ -63,14 +58,37 @@ class BulkHandler(HandlerBase):
         # start task
         converter.start()
 
+    def verify_tact_scenario(self, mer_data, refs):
+        if 'TACTICAL_SCENARIO' not in mer_data \
+                or len(refs) > len(mer_data['TACTICAL_SCENARIO'].original_df):
+
+            if not self.settings.skip:
+                mer_data: MerData = mock_tact_scenario(mer_data, refs)
+            else:
+                if 'TACTICAL_SCENARIO' not in mer_data:
+                    self.logger.error('No tactical scenario found')
+                    raise NoTactScenarioFoundException()
+                else:
+                    self.logger.info('Skipping Mers without tactical scenario')
+
+                    try:
+                        # all references with tact scenario
+                        refs_with = list(mer_data['TACTICAL_SCENARIO'].original_df['REFERENCE'].unique())
+                        # references without tact scenario
+                        refs_without: List[str] = list(set(refs) - set(refs_with))
+
+                        mer_data = remove_missing_tacts(mer_data, refs_without)
+
+                    except Exception as e:
+                        self.logger.error(get_exception(e))
+        return mer_data
+
     def start_export(self, data: MerData):
         if bool(self.settings.preset):
             # if preset is selected by user
-            exporter: ExportTask
             try:
                 # get and apply preset on mer data
                 data: MerData = apply_preset(data, self.settings.preset)
-                exporter: ExportTask = ExportTask(data, self.settings.dst)
             except IdentifierNotFoundException as e:
                 # identifier in preset, not found in data
                 self.task_failed.emit('Identifier {0} not found!'.format(str(e)))
@@ -91,11 +109,11 @@ class BulkHandler(HandlerBase):
                 self.task_failed.emit('Something went wrong...')
                 self.logger.error(get_exception(e))
                 return
-        else:
-            exporter: ExportTask = ExportTask(data, self.settings.dst)
+
+        exporter: ExportTask = ExportTask(data, self.settings.dst)
 
         # init task
-        exporter.task_failed.connect(self.on_task_failed)
+        exporter.task_failed.connect(lambda x: [self.on_task_failed(x), self.remove_task(exporter)])
         exporter.task_busy.connect(self.on_task_busy)
         exporter.task_finished.connect(lambda x: [self.on_task_success(), self.remove_task(exporter)])
         self.tasks.append(exporter)
@@ -130,6 +148,19 @@ def apply_preset(mer_data: MerData, preset: str):
             else:
                 continue
 
-        data[identifier].original_df = data[identifier].original_df[columns]
+        data[identifier].original_df = data[identifier].original_df[columns].dropna()
     return data
+
+
+def remove_missing_tacts(mer_data, refs_without):
+    for key in list(mer_data.keys()):
+        df: DataFrame = mer_data[key].original_df
+        # remove rows not in refs without tact scenario
+        mer_data[key].original_df = df[~df['REFERENCE'].isin(refs_without)]
+
+        # if identifier is empty, remove from mer data
+        if mer_data[key].original_df.empty:
+            del mer_data[key]
+
+    return mer_data
 

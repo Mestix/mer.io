@@ -17,16 +17,12 @@ class DataFrameModel(QObject):
 
     def __init__(self, df: DataFrame, name='Untitled'):
         super().__init__()
-        self.df: DataFrame = df.copy()
         self.name: str = name
-
-        # this is the unfiltered DataFrame
-        self._original_df: DataFrame = df
-
         self.filters: dict[str, Filter] = dict()
 
+        # this is the unfiltered DataFrame
+        self.original_df: DataFrame = df.copy()
         self.rename_columns()
-        self.init_filters()
 
     @property
     def original_df(self):
@@ -48,6 +44,7 @@ class DataFrameModel(QObject):
                 col_new: str = col_old[i:]
                 self.original_df = self.original_df.rename(columns={col_old: col_new})
             except Exception:
+                # search not found
                 pass
 
     def init_filters(self) -> None:
@@ -61,6 +58,7 @@ class DataFrameModel(QObject):
         """
         Toggle a column
         """
+
         self.filters[name].column_active = (active == Qt.Checked)
 
     def set_filter(self, name: str, expr: str, enabled: bool = True) -> None:
