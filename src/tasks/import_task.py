@@ -62,6 +62,7 @@ class ImportTask(TaskBase):
 
                 references.append(reference)
                 dfs.append(df)
+
             except Exception as e:
                 self.logger.error(get_exception(e))
 

@@ -27,30 +27,21 @@ class SonicConverter(IConverter):
 
 def convert_sonic_cols(df: DataFrame, tact_scenario: DataFrame):
     sonic_df: DataFrame = df.copy()
-
-    sonic_df['START TIME (Z)'] = sonic_df['TIME_'].where((sonic_df['PING ON/OFF STAT'] == 'ON')
-                                                         & (sonic_df['EVENT TYPE'] == 'SONIC_PINGING'))
-
-    sonic_df['END TIME (Z)'] = sonic_df['TIME_'].where((sonic_df['PING ON/OFF STAT'] == 'OFF')
-                                                       & (sonic_df['EVENT TYPE'] == 'SONIC_PINGING'))
-
+    sonic_df[['START TIME (Z)', 'END TIME (Z)']] = np.nan
     i = 1
     pinging = False
     for index, row in sonic_df.iterrows():
-        if pd.notnull(row['START TIME (Z)']) and not pinging:
-            # Remember the first ping ON
+        if row['EVENT TYPE'] == 'SONIC_PINGING' and row['PING ON/OFF STAT'] == 'ON' and not pinging:
+            # Remember the first (ping = ON)
             i = index
             pinging = True
-        elif pd.notnull(row['END TIME (Z)']) and pinging:
+            sonic_df.loc[index, 'START TIME (Z)'] = row['TIME_']
+        elif row['EVENT TYPE'] == 'SONIC_PINGING' and row['PING ON/OFF STAT'] == 'OFF' and pinging:
             # if we find a ping OFF set the end time of the remembered ping ON to the time of this row
-            sonic_df.loc[i]['END TIME (Z)'] = row['END TIME (Z)']
-            row['END TIME (Z)'] = np.nan
+            sonic_df.loc[i, 'END TIME (Z)'] = row['TIME_']
+            sonic_df.loc[index, 'END TIME (Z)'] = np.nan
             pinging = False
-        else:
-            # Remove all duplicated ping OFF end times
-            row['END TIME (Z)'] = np.nan
 
-    sonic_df['START TIME (Z)'] = sonic_df['START TIME (Z)'].where(pd.notnull(sonic_df['END TIME (Z)']))
     sonic_df['START TIME (Z)'] = pd.to_timedelta(sonic_df['START TIME (Z)'].astype(str), errors='coerce')
     sonic_df['END TIME (Z)'] = pd.to_timedelta(sonic_df['END TIME (Z)'].astype(str), errors='coerce')
     sonic_df['DURATION'] = (sonic_df['END TIME (Z)'] - sonic_df['START TIME (Z)'])

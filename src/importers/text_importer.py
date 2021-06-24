@@ -68,12 +68,12 @@ def rename_duplicate_columns(df: DataFrame) -> DataFrame:
 def clean_datetime_columns(df: DataFrame) -> DataFrame:
     df = df.copy()
     df.insert(0, 'DATE_', (pd.to_datetime(
-        df['EVENT HEADER - TIME (YY)'] + '-' + df['EVENT HEADER - TIME (MM)'] + '-' +
-        df['EVENT HEADER - TIME (DD)'], format='%y-%m-%d').dt.date))
+        df['EVENT HEADER - TIME (YY)'].astype(str) + '-' + df['EVENT HEADER - TIME (MM)'].astype(str) + '-' +
+        df['EVENT HEADER - TIME (DD)'].astype(str), format='%y-%m-%d').dt.date))
 
     df.insert(1, 'TIME_', (pd.to_datetime(
-        df['EVENT HEADER - TIME (HH)'] + ':' + df['EVENT HEADER - TIME (MM).1'] + ':' +
-        df['EVENT HEADER - TIME (SS)'], format='%H:%M:%S').dt.time))
+        df['EVENT HEADER - TIME (HH)'].astype(str) + ':' + df['EVENT HEADER - TIME (MM).1'].astype(str) + ':' +
+        df['EVENT HEADER - TIME (SS)'].astype(str), format='%H:%M:%S').dt.time))
 
     df = df.loc[:, ~df.columns.str.startswith('EVENT HEADER - TIME')]
 
@@ -82,18 +82,24 @@ def clean_datetime_columns(df: DataFrame) -> DataFrame:
 
 def clean_scientific_columns(df: DataFrame) -> DataFrame:
     df = df.copy()
-    scientific_columns = df.columns[
-        df.stack().str.contains(r'^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)]
-    df[scientific_columns] = df[scientific_columns].apply(pd.to_numeric, errors='coerce')
+    scientific_columns = list(df.columns[
+        df.stack().str.contains(r'^(?:-?\d*)\.?\d+[eE][-\+]?\d+$').any(level=1)])
+
+    numeric_columns = list(df.columns[
+        df.stack().str.match(r'[0-9]+').any(level=1)])
+
+    cols = list(set(scientific_columns + numeric_columns))
+
+    df[cols] = df[cols].apply(pd.to_numeric, errors='coerce')
     return df
 
 
 def set_reference(df: DataFrame):
     reference: str = '{0}-{1}-{2}-{3}'.format(
-        df['EVENT HEADER - TIME (YY)'][0],
-        df['EVENT HEADER - TIME (MM)'][0],
-        df['EVENT HEADER - TIME (DD)'][0],
-        df['EVENT HEADER - TIME (HH)'][0],)
+        df['EVENT HEADER - TIME (YY)'][0].astype(str),
+        df['EVENT HEADER - TIME (MM)'][0].astype(str),
+        df['EVENT HEADER - TIME (DD)'][0].astype(str),
+        df['EVENT HEADER - TIME (HH)'][0].astype(str),)
 
     df['REFERENCE'] = reference
     return df
