@@ -1,3 +1,21 @@
+## 0.5 - 17-5-2021
+### Added
+- (class) DegreesConverter for formatting degree values
+- (class) ReferenceConverter for removing reference column
+- (class) SonicConverter for composing Sonic data and additional columns
+- (class) TimeConverter for converting Time and Duration columns
+- (class) YardsToNMConverter for converting yard columns to Nauthical Mile
+
+### Changed
+- Changed formatting for positions (it was not correct before)
+- Removed index while exporting to Excel
+- Changed the way a reference is set (use date/time cols instead of filename)
+- Changed the way Mers ae removed from bulk export when skipping option is on
+- Added some extra regex expressions for determining numeric columns while importing Mer
+
+### Removed
+- Themes, app has only one light and dark theme now
+
 ## 0.4 - 17-5-2021
 ### Added
 - /src/assets/presets folder for adding json presets

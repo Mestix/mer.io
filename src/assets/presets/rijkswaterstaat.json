@@ -1,17 +1,14 @@
 {
-  "ESM": [
-    "TIME",
-    "SECTOR REFERENCE",
-    "G/H BAND FREQ MIN"
-  ],
-  "FLIR": [
-    "OPERATING MODE",
-    "EVENT TYPE",
-    "REFERENCE"
-  ],
-  "RADAR": [
-    "RANGE ENVELOPE",
-    "RADIATION STATUS",
-    "REFERENCE"
+  "SONIC": [
+    "DATE_",
+    "START TIME (Z)",
+    "END TIME (Z)",
+    "DURATION",
+    "LATITUDE",
+    "LONGITUDE",
+    "RADIUS (NM)",
+    "SL",
+    "DEPTH",
+    "FREQUENCY"
   ]
 }

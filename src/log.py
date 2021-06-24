@@ -3,7 +3,7 @@ import logging
 import anticrlf
 
 logger_settings = {
-    'format': '%(asctime)s - %(name)-12s %(levelname)-8s %(message)s',
+    'format': '%(asctime)s - %(name)-12s:%(lineno)d %(levelname)-8s %(message)s',
     'datetime': '%d-%m-%y %H:%M:%S',
     'level': 10
 }

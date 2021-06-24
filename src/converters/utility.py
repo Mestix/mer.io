@@ -7,23 +7,33 @@ from pandas import DataFrame
 import pandas as pd
 
 from src.exceptions import ConversionFailedException
+from src.log import get_logger
 from src.utility import get_exception
 import numpy as np
 
 
 # --- STRING FORMATTERS ---
-def format_degrees_to_coordinate_lat(lat_deg: float) -> str:
-    ns = 'S' if lat_deg < 0 else 'N'
-    degrees = int(abs(lat_deg))
-    minutes = (abs(lat_deg) - degrees) * 60
-    return ns + ' ' + format_degrees_lat(degrees) + '° ' + format_minutes(minutes) + "'"
+def format_degrees_to_coordinate_lat(dd: float) -> str:
+    ns = 'S' if dd < 0 else 'N'
+    is_positive = dd >= 0
+    dd = abs(dd)
+    minutes, seconds = divmod(dd * 3600, 60)
+    degrees, minutes = divmod(minutes, 60)
+    degrees = degrees if is_positive else -degrees
+
+    return ns + ' ' + format_degrees_lat(degrees) + '° ' + format_minutes(minutes) + "' " + format_seconds(seconds) + "\""
 
 
-def format_degrees_to_coordinate_long(long_deg: float) -> str:
-    ew = 'W' if long_deg < 0 else 'E'
-    degrees = int(abs(long_deg))
-    minutes = (abs(long_deg) - degrees) * 60
-    return ew + ' ' + format_degrees_long(degrees) + '° ' + format_minutes(minutes) + "'"
+def format_degrees_to_coordinate_long(dd: float) -> str:
+    ew = 'W' if dd < 0 else 'E'
+
+    is_positive = dd >= 0
+    dd = abs(dd)
+    minutes, seconds = divmod(dd * 3600, 60)
+    degrees, minutes = divmod(minutes, 60)
+    degrees = degrees if is_positive else -degrees
+
+    return ew + ' ' + format_degrees_long(degrees) + '° ' + format_minutes(minutes) + "' " + format_seconds(seconds) + "\""
 
 
 def format_degrees_long(long: float) -> str:
@@ -37,32 +47,31 @@ def format_degrees_lat(lat: float) -> str:
     """
     formats a lat float to consist of 2 numbers and no decimals
     """
-    return str("%02i" % (round(abs(lat))))
+    return str("%02d" % (round(abs(lat))))
 
 
 def format_minutes(minutes: float) -> str:
     """
     formats a minute float to consist of 2 numbers and 2 decimals
     """
-    return str("%05.2f" % round(minutes, 2))
+    return str("%02d" % round(minutes))
+
+
+def format_seconds(seconds: float):
+    return str("%02.i" % round(seconds))
 
 
 # --- YARDS TO DEGREES CONVERSION ---
 def convert_x_y_cols(df: DataFrame, tact_scenario: DataFrame, scientific_cols: List[str]) -> DataFrame:
     df_to_convert: DataFrame = df.copy()
-
     # get all position cols
-    x_y_cols = get_x_y_cols(scientific_cols)
+    x_cols = get_x_cols(scientific_cols)
 
-    for index, pos in x_y_cols.iterrows():
-        x_pos: str = pos['X']
-        y_pos: str = pos['Y']
+    for x_col in x_cols:
+        x_pos: str = x_col
+        y_pos = re.sub(r'\bX\b', 'Y', x_pos)
 
-        if not pd.isnull(x_pos) and not pd.isnull(y_pos):
-            # if the X and Y col don't represent the opposite of each other, throw Exception
-            if x_pos.replace('X', 'Y') != y_pos and x_pos.replace(' X', ' Y') != y_pos:
-                raise ConversionFailedException('X and Y Columns do not match!')
-
+        if bool(x_pos) and bool(y_pos):
             # for every X and Y col, convert yards to coordinate
             df_to_convert[[x_pos, y_pos]] = df_to_convert[[x_pos, y_pos, 'REFERENCE']].apply(
                 lambda row, x=x_pos, y=y_pos:
@@ -77,17 +86,11 @@ def convert_x_y_cols(df: DataFrame, tact_scenario: DataFrame, scientific_cols: L
     return df_to_convert
 
 
-def get_x_y_cols(scientific_columns) -> DataFrame:
-    regex_x = re.compile(r'\b(X)')
-    regex_y = re.compile(r'\b(Y)')
-
+def get_x_cols(scientific_columns) -> List:
+    regex_x = re.compile(r'\bX')
     x_cols = list(filter(regex_x.search, scientific_columns))
-    y_cols = list(filter(regex_y.search, scientific_columns))
 
-    # create new dataframe with all X and Y cols
-    x_y_df: DataFrame = pd.DataFrame({'X': x_cols, 'Y': y_cols})
-
-    return x_y_df
+    return x_cols
 
 
 def convert_yards_to_coordinates(lat_yards, long_yards, tact_lat_deg, tact_long_deg):
@@ -95,7 +98,7 @@ def convert_yards_to_coordinates(lat_yards, long_yards, tact_lat_deg, tact_long_
         lat, long = convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
         return format_degrees_to_coordinate_lat(lat), format_degrees_to_coordinate_long(long)
     except Exception as e:
-        print('convert_yards_to_coordinates: ' + get_exception(e) + '{0},    {1}'.format(tact_lat_deg, tact_long_deg))
+        get_logger('convert_yards_to_coordinates:').error(get_exception(e))
         return np.nan, np.nan
 
 
@@ -146,45 +149,10 @@ def convert_yards_to_degrees(lat_yards, long_yards, tact_lat_deg, tact_long_deg)
     return lat_deg, long_deg
 
 
-# --- LAT LONG CONVERSION ---
-def convert_lat_long_cols(df: DataFrame, scientific_cols: List[str]) -> DataFrame:
-    df_to_convert: DataFrame = df.copy()
-
-    pos_cols = get_lat_long_cols(scientific_cols)
-
-    for index, pos in pos_cols.iterrows():
-        lat_pos: str = pos['LAT']
-        long_pos: str = pos['LONG']
-
-        if not pd.isnull(lat_pos) and not pd.isnull(long_pos):
-            if lat_pos.replace('LAT', 'LONG') != long_pos:
-                raise ConversionFailedException('LAT and LONG Columns do not match!')
-
-            df_to_convert[[lat_pos, long_pos]] = df_to_convert[[lat_pos, long_pos]].apply(
-                lambda row, lat=lat_pos, long=long_pos:
-                convert_degrees_to_coordinates(
-                    row[lat],
-                    row[long])
-                if pd.notnull(row).any() else row, axis=1).apply(pd.Series)
-
-    return df_to_convert
-
-
-def get_lat_long_cols(scientific_columns: List[str]) -> DataFrame:
-    regex_lat = re.compile(r'\b(LAT)')
-    regex_long = re.compile(r'\b(LONG)')
-
-    lat_cols = list(filter(regex_lat.search, scientific_columns))
-    long_cols = list(filter(regex_long.search, scientific_columns))
-
-    lat_long: DataFrame = pd.DataFrame({'LAT': lat_cols, 'LONG': long_cols})
-
-    return lat_long
-
-
 def convert_degrees_to_coordinates(lat: float, long: float):
     try:
         return format_degrees_to_coordinate_lat(float(lat)), format_degrees_to_coordinate_long(float(long))
     except Exception as e:
-        print('convert_degrees_to_coordinates: ' + get_exception(e))
+        logger = get_logger('convert_degrees_to_coordinates')
+        logger.error(get_exception(e))
         return np.nan, np.nan

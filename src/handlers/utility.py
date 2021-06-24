@@ -1,6 +1,5 @@
 import os
-from typing import Dict, List, Generator
-from pandas import DataFrame
+from typing import List, Generator
 
 from src.models.dataframe_model import DataFrameModel
 import pandas as pd
@@ -8,15 +7,15 @@ import pandas as pd
 from src.types import MerData
 
 
-def mock_tact_scenario(mer_data: MerData, unique_refs: List[str]) -> MerData:
+def mock_tact_scenario(mer_data: MerData, refs: List[str]) -> MerData:
     """
     Mock all tactical scenario's to zero (equator)
     """
     if 'TACTICAL_SCENARIO' not in mer_data:
-        mer_data['TACTICAL_SCENARIO'] = DataFrameModel(DataFrame({'REFERENCE': []}), 'TACTICAL_SCENARIO')
-    for ref in unique_refs:
-        tact_scenario: DataFrame = mer_data['TACTICAL_SCENARIO'].original_df
-        if ref not in list(tact_scenario['REFERENCE'].unique()):
+        mer_data['TACTICAL_SCENARIO'] = DataFrameModel(pd.DataFrame(columns=['REFERENCE']), 'TACTICAL_SCENARIO')
+
+    for ref in refs:
+        if ref not in list(mer_data['TACTICAL_SCENARIO'].original_df['REFERENCE']):
             mer_data['TACTICAL_SCENARIO'].original_df = \
                 mer_data['TACTICAL_SCENARIO'].original_df.append(
                     pd.DataFrame({
@@ -24,7 +23,6 @@ def mock_tact_scenario(mer_data: MerData, unique_refs: List[str]) -> MerData:
                         'GRID CENTER LONG': [0],
                         'REFERENCE': [ref]
                     }), ignore_index=True)
-
     return mer_data
 
 

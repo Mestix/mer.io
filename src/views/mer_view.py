@@ -12,25 +12,8 @@ from src.views.bulk_export_dlg import BulkExportDialog
 from src.views.explorer_view import ExplorerView
 from src.views.identifier_view import IdentifierListView
 
-themes = ['dark_amber.xml',
-          'dark_blue.xml',
-          'dark_cyan.xml',
-          'dark_lightgreen.xml',
-          'dark_pink.xml',
-          'dark_purple.xml',
-          'dark_red.xml',
-          'dark_teal.xml',
-          'dark_yellow.xml',
-          'light_amber.xml',
-          'light_blue.xml',
-          'light_cyan.xml',
-          'light_cyan_500.xml',
-          'light_lightgreen.xml',
-          'light_pink.xml',
-          'light_purple.xml',
-          'light_red.xml',
-          'light_teal.xml',
-          'light_yellow.xml']
+themes = ['dark_teal.xml',
+          'light_teal.xml']
 
 
 class MerView(QMainWindow):
@@ -106,7 +89,9 @@ class MerView(QMainWindow):
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
 
-        self.toggle_menus(False)
+        self.toggle_export_func(False)
+        self.toggle_copy_func(False)
+        self.toggle_import_menu(True)
 
     def create_menu_bar(self):
         menu_bar: QMenuBar = self.menuBar()
@@ -142,8 +127,7 @@ class MerView(QMainWindow):
                                    func=None,
                                    shortcut='',
                                    items=list(map(lambda x: MenuItem(name=x
-                                                                     .replace('.xml', '')
-                                                                     .replace('_', ' '),
+                                                                     .replace('_teal.xml', ''),
                                                                      func=lambda y: self.set_theme(x),
                                                                      shortcut='',
                                                                      items=[]), themes))),
@@ -173,7 +157,8 @@ class MerView(QMainWindow):
                         action.triggered.connect(sub_item.func)
                         sub_menu.addAction(action)
 
-        self.toggle_menus(False)
+        self.toggle_export_func(False)
+        self.toggle_copy_func(False)
 
     def create_progress_window(self):
         self.progress_window.setWindowModality(Qt.ApplicationModal)
@@ -198,17 +183,17 @@ class MerView(QMainWindow):
         else:
             self.progress_window.hide()
 
-    def add_widget(self, df):
+    def add_widget(self, dfm):
         """
         For every dataframe model, add a explorer view to the stacked widget
         """
         from src.views.explorer_view import ExplorerView
-        explorer = ExplorerView(df)
+        explorer = ExplorerView(dfm)
 
-        self.explorers[df.name] = explorer
+        self.explorers[dfm.name] = explorer
         self.stacked_dfs.addWidget(explorer)
 
-        self.identifiers.add_tree_item(df.name)
+        self.identifiers.add_tree_item(dfm.name)
 
     def task_busy(self, txt: str):
         """
@@ -221,7 +206,9 @@ class MerView(QMainWindow):
     def import_success(self, tact: str):
         self.status_bar_tactical_scenario.setText(tact)
 
-        self.toggle_menus(True)
+        self.toggle_export_func(True)
+        self.toggle_copy_func(True)
+
         self.toggle_progress(False)
         self.identifiers.show()
 
@@ -252,6 +239,15 @@ class MerView(QMainWindow):
             self.export_signal.emit(path)
 
     def start_bulk_export(self):
+        if bool(self.explorers):
+            confirm = QMessageBox.warning(self, 'Warning', 'Imported Mer will be removed, continue?',
+                                          QMessageBox.No | QMessageBox.Yes)
+
+            if confirm != QMessageBox.Yes:
+                return
+            else:
+                self.reset_ui()
+
         bulk_export_dialog: BulkExportDialog = BulkExportDialog(self)
 
         if bulk_export_dialog.exec() == QDialog.Accepted:
@@ -259,18 +255,19 @@ class MerView(QMainWindow):
 
     def toggle_import_menu(self, enable: bool):
         """
-        Some menu's are disabled when running a long task
+        Import menu is disabled while executing a bulk task
         """
         # file > import
         self.menuBar().children()[1].actions()[0].setEnabled(enable)
 
-    def toggle_menus(self, enable: bool):
+    def toggle_export_func(self, enable: bool):
         """
-        Some menu's are disabled when running a long task
+        Export func is disabled when no Mer is imported
         """
         # file > export
         self.menuBar().children()[1].actions()[1].setEnabled(enable)
 
+    def toggle_copy_func(self, enable: bool):
         # edit > copy
         self.menuBar().children()[2].actions()[0].setEnabled(enable)
 

@@ -5,11 +5,9 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QApplication
 from qt_material import apply_stylesheet, QtStyleTools
 
-from src.controllers.utility import remove_tempdir_contents
 from src.handlers.bulk_handler import BulkHandler
 from src.handlers.file_handler import FileHandler
 from src.types import MerData
-from src.utility import get_exception
 from src.views.bulk_export_dlg import Settings
 from src.views.mer_view import MerView
 
@@ -18,7 +16,7 @@ class MerController(QObject, QtStyleTools):
     def __init__(self):
         super().__init__()
         self.app: QApplication = QApplication(sys.argv)
-        apply_stylesheet(self.app, theme='light_amber.xml', invert_secondary=True)
+        apply_stylesheet(self.app, theme='light_teal.xml', invert_secondary=True)
 
         # model
         self.mer_data: MerData = dict()
@@ -94,10 +92,6 @@ class MerController(QObject, QtStyleTools):
         self.view.task_busy('Task success')
 
     def on_file_success(self, converted_data: MerData) -> None:
-        # enable menu's when all tasks are finished
-        if self.file_handler.all_tasks_finished():
-            self.view.toggle_import_menu(True)
-
         # set model
         self.mer_data = converted_data
 
@@ -119,8 +113,7 @@ class MerController(QObject, QtStyleTools):
         # get all tactical scenario's from importer mers, for showing in view
         for index, row in converted_data['TACTICAL_SCENARIO'].original_df.iterrows():
             tact_scenario_txt += \
-                ' {0}: Lat {1}, Long {2}'.format(
-                    row['REFERENCE'],
+                'Lat {0}, Long {1}'.format(
                     row['GRID CENTER LAT'],
                     row['GRID CENTER LONG']
                 )
@@ -139,12 +132,6 @@ class MerController(QObject, QtStyleTools):
         apply_stylesheet(self.app, theme=theme, invert_secondary=invert)
 
     def exit_program(self) -> None:
-        # empty temporary files on clean exit
-        try:
-            remove_tempdir_contents()
-        except Exception as E:
-            print(get_exception(E))
-
         self.app.exit()
 
     def run(self) -> int:
