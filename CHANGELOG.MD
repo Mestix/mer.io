@@ -1,4 +1,4 @@
-## 0.5 - 17-5-2021
+## 0.5 - 24-6-2021
 ### Added
 - (class) DegreesConverter for formatting degree values
 - (class) ReferenceConverter for removing reference column
