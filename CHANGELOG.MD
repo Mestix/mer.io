@@ -1,10 +1,23 @@
+## 0.6 - 27-6-2021
+## Added
+- Help dialog with instruction manual
+- Save theme settings locally
+
+## Changed
+- Fixed the bug where the import menu stayed disabled when all tasks finished
+- Save environment settings in json
+
+## Removed
+- Removed column-rename functions from converters because this causes error sensitivities in the presets
+- Removed MWC preset (this was only for test purposes)
+
 ## 0.5 - 24-6-2021
 ### Added
 - (class) DegreesConverter for formatting degree values
 - (class) ReferenceConverter for removing reference column
 - (class) SonicConverter for composing Sonic data and additional columns
 - (class) TimeConverter for converting Time and Duration columns
-- (class) YardsToNMConverter for converting yard columns to Nauthical Mile
+- (class) YardsToNMConverter for converting yard columns to Nautical Mile
 
 ### Changed
 - Changed formatting for positions (it was not correct before)

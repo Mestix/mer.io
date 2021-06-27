@@ -31,7 +31,7 @@ def convert_degrees_cols(df: DataFrame, scientific_cols):
     for col in degree_cols:
         df_to_convert[col] = df_to_convert[col].apply(convert_degrees)
 
-    return rename_columns(df_to_convert, degree_cols)
+    return df_to_convert
 
 
 def get_degrees_cols(scientific_cols) -> List:
@@ -50,11 +50,3 @@ def convert_degrees(number: float):
         logger.error(get_exception(e))
         return np.nan
 
-
-def rename_columns(df: DataFrame, cols):
-    df_to_rename = df.copy()
-    for col_old in cols:
-        col_new: str = col_old + ' (°)'
-        df_to_rename = df_to_rename.rename(columns={col_old: col_new})
-
-    return df_to_rename

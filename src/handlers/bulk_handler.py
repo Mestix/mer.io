@@ -34,9 +34,9 @@ class BulkHandler(HandlerBase):
 
         # init task
         importer: ImportTask = ImportTask(paths)
-        importer.task_failed.connect(lambda x: [self.on_task_failed(x), self.remove_task(importer)])
+        importer.task_failed.connect(lambda x: [self.remove_task(importer), self.on_task_failed(x)])
         importer.task_busy.connect(self.on_task_busy)
-        importer.task_finished.connect(lambda x: [self.start_convert(x), self.remove_task(importer)])
+        importer.task_finished.connect(lambda x: [self.remove_task(importer), self.start_convert(x)])
         self.tasks.append(importer)
 
         # start task
@@ -113,9 +113,9 @@ class BulkHandler(HandlerBase):
         exporter: ExportTask = ExportTask(data, self.settings.dst)
 
         # init task
-        exporter.task_failed.connect(lambda x: [self.on_task_failed(x), self.remove_task(exporter)])
+        exporter.task_failed.connect(lambda x: [self.remove_task(exporter), self.on_task_failed(x)])
         exporter.task_busy.connect(self.on_task_busy)
-        exporter.task_finished.connect(lambda x: [self.on_task_success(), self.remove_task(exporter)])
+        exporter.task_finished.connect(lambda x: [self.remove_task(exporter), self.on_task_success()])
         self.tasks.append(exporter)
 
         # start task

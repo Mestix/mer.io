@@ -30,7 +30,7 @@ def convert_yards_to_nm(df, scientific_cols):
     for col in cols:
         df_to_convert[col] = df_to_convert[col].apply(yards_to_nm)
 
-    return rename_columns(df_to_convert, cols)
+    return df_to_convert
 
 
 def yards_to_nm(yards):
@@ -66,12 +66,3 @@ def get_yard_cols(scientific_cols):
     cols = list(filter(regex_negative.search, cols))
 
     return cols
-
-
-def rename_columns(df: DataFrame, cols):
-    df_to_rename = df.copy()
-    for col_old in cols:
-        col_new: str = col_old + ' (NM)'
-        df_to_rename = df_to_rename.rename(columns={col_old: col_new})
-
-    return df_to_rename

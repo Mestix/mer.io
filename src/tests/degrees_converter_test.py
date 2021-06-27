@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from src.converters.degrees_converter import get_degrees_cols, rename_columns, convert_degrees, convert_degrees_cols
+from src.converters.degrees_converter import get_degrees_cols, convert_degrees, convert_degrees_cols
 
 
 class DegreesToCoordinatesConverterTests(unittest.TestCase):
@@ -26,24 +26,6 @@ class DegreesToCoordinatesConverterTests(unittest.TestCase):
             'HEADING', 'BRG', 'BEARING', 'DIR', 'DIRECTION', 'ANGLE', ' ANG EAST']
 
         actual = get_degrees_cols(expect + ['ORIEN', 'CRORS', 'ANG', 'BGR', 'DAO', 'HEAD'])
-
-        self.assertEqual(expect, actual)
-
-    def xtest_rename_columns(self):
-        """
-        Should correctly mark column names with ° symbol
-        """
-        cols = ['ORIENTATION', 'ORIENT', 'DOA', 'COURSE', 'CRS']
-
-        df = pd.DataFrame(columns=cols)
-
-        expect = list(map(lambda x: x+' (°)', cols))
-        df = rename_columns(df, expect)
-
-        actual = list(df.columns)
-
-        print(actual)
-        print(expect)
 
         self.assertEqual(expect, actual)
 
