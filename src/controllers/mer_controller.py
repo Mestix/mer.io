@@ -5,9 +5,11 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QApplication
 from qt_material import apply_stylesheet, QtStyleTools
 
+from src.environment import environment
 from src.handlers.bulk_handler import BulkHandler
 from src.handlers.file_handler import FileHandler
 from src.types import MerData
+from src.utility import modify_environment
 from src.views.bulk_export_dlg import Settings
 from src.views.mer_view import MerView
 
@@ -16,7 +18,7 @@ class MerController(QObject, QtStyleTools):
     def __init__(self):
         super().__init__()
         self.app: QApplication = QApplication(sys.argv)
-        apply_stylesheet(self.app, theme='light_teal.xml', invert_secondary=True)
+        self.set_theme(environment['theme'])
 
         # model
         self.mer_data: MerData = dict()
@@ -128,8 +130,8 @@ class MerController(QObject, QtStyleTools):
 
     def set_theme(self, theme: str):
         # set theme. When setting a light theme, the colors should be inverted
-        invert: bool = theme.startswith('light')
-        apply_stylesheet(self.app, theme=theme, invert_secondary=invert)
+        apply_stylesheet(self.app, theme=theme, invert_secondary=theme.startswith('light'))
+        save_theme_settings(theme)
 
     def exit_program(self) -> None:
         self.app.exit()
@@ -137,3 +139,7 @@ class MerController(QObject, QtStyleTools):
     def run(self) -> int:
         self.view.show()
         return self.app.exec_()
+
+
+def save_theme_settings(theme):
+    modify_environment('theme', theme)

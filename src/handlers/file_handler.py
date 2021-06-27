@@ -26,9 +26,9 @@ class FileHandler(HandlerBase):
     def start_import(self, settings: Settings):
         # init task
         importer: ImportTask = ImportTask(settings.src)
-        importer.task_failed.connect(lambda x: [self.on_task_failed(x), self.remove_task(importer)])
+        importer.task_failed.connect(lambda x: [self.remove_task(importer), self.on_task_failed(x)])
         importer.task_busy.connect(self.on_task_busy)
-        importer.task_finished.connect(lambda x:  [self.start_convert(x), self.remove_task(importer)])
+        importer.task_finished.connect(lambda x:  [self.remove_task(importer), self.start_convert(x)])
         self.add_task(importer)
 
         # start task
@@ -53,9 +53,9 @@ class FileHandler(HandlerBase):
 
         # init task
         converter: ConvertTask = ConvertTask(mer_data)
-        converter.task_failed.connect(lambda x: [self.on_task_failed(x), self.remove_task(converter)])
+        converter.task_failed.connect(lambda x: [self.remove_task(converter), self.on_task_failed(x)])
         converter.task_busy.connect(self.on_task_busy)
-        converter.task_finished.connect(lambda x: [self.on_task_finished(x), self.remove_task(converter)])
+        converter.task_finished.connect(lambda x: [self.remove_task(converter), self.on_task_finished(x)])
         self.add_task(converter)
 
         # start task
@@ -64,7 +64,7 @@ class FileHandler(HandlerBase):
     def start_export(self, data: MerData):
         # init task
         exporter: ExportTask = ExportTask(data, self.settings.dst)
-        exporter.task_failed.connect(lambda x: [self.on_task_failed(x), self.remove_task(exporter)])
+        exporter.task_failed.connect(lambda x: [self.remove_task(exporter), self.on_task_failed(x)])
         exporter.task_busy.connect(self.on_task_busy)
         exporter.task_finished.connect(lambda x: self.remove_task(exporter))
         self.add_task(exporter)

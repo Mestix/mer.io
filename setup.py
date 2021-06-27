@@ -1,7 +1,10 @@
 from cx_Freeze import setup, Executable
 
-from src.environment import environment
 import sys
+
+from src.utility import get_environment
+
+environment = get_environment('src\\assets\\environment.json')
 
 base = 'Win32GUI' if sys.platform == 'win32' else None
 

@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import Union, List, Dict
+from typing import List, Dict
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon
@@ -10,6 +9,7 @@ from src.dataclasses.menuitem import MenuItem
 from src.environment import environment
 from src.views.bulk_export_dlg import BulkExportDialog
 from src.views.explorer_view import ExplorerView
+from src.views.help_dlg import HelpDialog
 from src.views.identifier_view import IdentifierListView
 
 themes = ['dark_teal.xml',
@@ -44,6 +44,8 @@ class MerView(QMainWindow):
         self.progress_bar: QProgressBar = QProgressBar(self.progress_window)
 
         self.explorers: Dict[str, ExplorerView] = dict()
+
+        self.help_dlg: HelpDialog = HelpDialog(self)
 
         self.init_ui()
 
@@ -132,7 +134,7 @@ class MerView(QMainWindow):
                                                                      shortcut='',
                                                                      items=[]), themes))),
                           MenuItem(name='Help',
-                                   func=callable,
+                                   func=self.show_help_dlg,
                                    shortcut='',
                                    items=[])
                           ]}
@@ -252,6 +254,9 @@ class MerView(QMainWindow):
 
         if bulk_export_dialog.exec() == QDialog.Accepted:
             self.bulk_import_signal.emit(bulk_export_dialog.get_info())
+
+    def show_help_dlg(self):
+        self.help_dlg.show()
 
     def toggle_import_menu(self, enable: bool):
         """

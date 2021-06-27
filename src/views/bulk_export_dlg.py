@@ -30,10 +30,10 @@ class BulkExportDialog(QDialog):
         self.format_box.addItems(['.xlsx'])
 
         self.src_dir: QLineEdit = QLineEdit()
-        self.src_dir.setDisabled(True)
+        self.src_dir.setReadOnly(True)
 
         self.dst_dir = QLineEdit()
-        self.dst_dir.setDisabled(True)
+        self.dst_dir.setReadOnly(True)
 
         self.skip_checkbox: QCheckBox = QCheckBox('Skip Mers without tactical scenario')
         self.skip_checkbox.setCheckState(Qt.Checked)
