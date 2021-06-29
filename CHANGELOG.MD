@@ -1,3 +1,7 @@
+## 1.0 - 29-6-2021
+### Added
+- (class) SonarPlanConverter for converting sonar plan 44
+
 ## 0.6 - 27-6-2021
 ## Added
 - Help dialog with instruction manual

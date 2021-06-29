@@ -5,6 +5,7 @@ from pandas import DataFrame
 from src.converters.degrees2coordinates_converter import DegreesToCoordinatesConverter
 from src.converters.degrees_converter import DegreesConverter
 from src.converters.reference_converter import ReferenceConverter
+from src.converters.sonarplan_converter import SonarPlanConverter
 from src.converters.sonic_converter import SonicConverter
 from src.converters.time_converter import TimeConverter
 from src.converters.yards2coordinates_converter import IConverter, YardsToCoordinatesConverter
@@ -31,6 +32,7 @@ class ConvertTask(TaskBase):
         self.add_converter(SonicConverter())
         self.add_converter(DegreesConverter())
         self.add_converter(YardsToNM())
+        self.add_converter(SonarPlanConverter())
         self.add_converter(YardsToCoordinatesConverter())
         self.add_converter(DegreesToCoordinatesConverter())
         # This should be as last!!

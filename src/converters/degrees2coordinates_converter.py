@@ -34,9 +34,10 @@ def convert_lat_long_cols(df: DataFrame, scientific_cols: List[str]) -> DataFram
     for lat_col in lat_cols:
         lat_pos: str = lat_col
         long_pos: str = lat_col.replace('LAT', 'LONG')
+        if 'DIP' in lat_col:
+            long_pos = lat_col.replace('X', 'Y')
 
         if bool(lat_pos) and bool(long_pos):
-
             df_to_convert[[lat_pos, long_pos]] = df_to_convert[[lat_pos, long_pos]].apply(
                 lambda row, lat=lat_pos, long=long_pos:
                 convert_degrees_to_coordinates(
@@ -48,7 +49,7 @@ def convert_lat_long_cols(df: DataFrame, scientific_cols: List[str]) -> DataFram
 
 
 def get_lat_cols(scientific_columns: List[str]) -> List:
-    regex_lat = re.compile(r'\bLAT')
+    regex_lat = re.compile(r'(\bLAT)|(DIP *[A-Z0-9 ]* *X)')
     lat_cols = list(filter(regex_lat.search, scientific_columns))
 
     return lat_cols

@@ -88,7 +88,10 @@ def convert_x_y_cols(df: DataFrame, tact_scenario: DataFrame, scientific_cols: L
 
 def get_x_cols(scientific_columns) -> List:
     regex_x = re.compile(r'\bX')
+    regex_negative = re.compile('^(?!.*DIP).*$')
+
     x_cols = list(filter(regex_x.search, scientific_columns))
+    x_cols = list(filter(regex_negative.search, x_cols))
 
     return x_cols
 
@@ -156,3 +159,20 @@ def convert_degrees_to_coordinates(lat: float, long: float):
         logger = get_logger('convert_degrees_to_coordinates')
         logger.error(get_exception(e))
         return np.nan, np.nan
+
+
+def convert_dist(length, unit_in, unit_out):
+    # supported units metric: mm, cm, m, km
+    # supported units imperial: in, feet, yard, mi, nm, ly
+    meter = {"mm": 1000,
+             "cm": 100,
+             "m": 1,
+             "km": 0.001,
+             "in": 39.3701,
+             "ft": 3.28084,
+             "yd": 1.09361,
+             "sm": 0.000621371,
+             "nm": 0.000539957,
+             "ly": 0.0000000000000001057}
+
+    return (length / meter[unit_in]) * meter[unit_out]
