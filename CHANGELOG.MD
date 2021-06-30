@@ -1,3 +1,7 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+For change types see https://github.com/olivierlacan/keep-a-changelog/issues/54
+
 ## 0.6 - 27-6-2021
 ## Added
 - Help dialog with instruction manual
