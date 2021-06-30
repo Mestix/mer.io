@@ -1,4 +1,4 @@
-# Setup the project
+# Setting up the project
 ## Necessities
 - PyCharm (https://www.jetbrains.com/pycharm/download/)
 - Python > 3.6 (https://www.python.org/downloads/)
