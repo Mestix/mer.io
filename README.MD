@@ -3,7 +3,7 @@
 ### Necessities
 - PyCharm Community (https://www.jetbrains.com/pycharm/download/)
 - Python > 3.6 (https://www.python.org/downloads/)
-- Pip (https://phoenixnap.com/kb/install-pip-windows)
+- Pip, comes with python (https://phoenixnap.com/kb/install-pip-windows)
 - Git (https://git-scm.com/book/nl/v2/Aan-de-slag-Git-installeren)
 
 ### Clone repository
