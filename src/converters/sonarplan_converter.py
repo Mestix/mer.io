@@ -76,15 +76,18 @@ def convert_sonar_plan_44(df: DataFrame, scientific_cols):
     scheme = dip_schemes[heli_count]
     degrees_scheme = dip_degrees_schemes[heli_count]
 
+    # For every row do:
     for i, row in df_to_convert.iterrows():
         ref_lat, ref_long = row['REF POINT LAT'], row['REF POINT LONG']
 
         current_dip = 1
 
+        # For every heli do:
         for index, heli in enumerate(helis):
             dip_lat, dip_long = heli, re.sub(r'\bX\b', 'Y', heli)
             dip_degrees_scheme = degrees_scheme[index]
 
+            # For every dip do:
             while dip_lat in list(df_to_convert.columns):
                 dip_scheme = scheme[current_dip - 1]
                 degrees, nm = dip_scheme[0], dip_scheme[1]
@@ -118,11 +121,12 @@ def get_dip_points(cols):
     return list(filter(regex_positive.search, cols))
 
 
-def move_geo_point(lat, lon, b, nm):
-    # given: lat1, lon1, b = bearing in degrees, d = distance in kilometers
+def move_geo_point(lat1, lon2, b, nm):
+    # given: lat1, lon1, b = bearing in degrees, nm = distance in nautical miles
+    # calculates the next geo point in latitude and longitude
 
     km = convert_dist(nm, 'nm', 'km')
-    origin = geopy.Point(lat, lon)
+    origin = geopy.Point(lat1, lon2)
     destination = geodesic(kilometers=km).destination(origin, b)
 
     lat2, lon2 = destination.latitude, destination.longitude

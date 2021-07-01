@@ -9,7 +9,7 @@ from src.utility import get_exception
 import numpy as np
 
 
-class YardsToNM(IConverter):
+class YardsToNMConverter(IConverter):
     logger = get_logger(__name__)
 
     def __init__(self):
@@ -43,7 +43,7 @@ def yards_to_nm(yards):
 
 
 def get_yard_cols(scientific_cols):
-    regex_positive = re.compile('LENGTH|RANGE|SECT RADIUS|DIST|STATION|JUMP|TSR|LENTH|SIDE|AREA WIDTH|SPACE|MDR|PSR|SPACING')
+    regex_positive = re.compile('LENGTH|RANGE|SECT RADIUS|DIST|STATION|JUMP|TSR|SIDE|AREA WIDTH|SPACE|MDR|PSR|SPACING')
     regex_negative = re.compile('^(?!.*MAST|MST|NS SIDE|EW SIDE).*$')
 
     cols = list(filter(regex_positive.search, scientific_cols))

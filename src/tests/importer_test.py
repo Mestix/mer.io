@@ -3,7 +3,7 @@ from io import StringIO
 
 import pandas as pd
 
-from src.importers.text_importer import rename_duplicate_columns, transpose_df, import_file
+from src.importers.text_importer import rename_duplicate_columns, transpose_df, import_file, set_reference
 
 import numpy as np
 
@@ -74,5 +74,32 @@ class TextImporterTests(unittest.TestCase):
                   ['EVENT NUMBER', '2', 2],
                   ['2_COL1', 'VALUE1', 2],
                   ['2_COL2', 'VALUE2', 2]]
+
+        self.assertEqual(expect, actual)
+
+    def test_set_reference_single(self):
+        cols = ['EVENT HEADER - TIME (YY)', 'EVENT HEADER - TIME (MM)',
+                'EVENT HEADER - TIME (DD)', 'EVENT HEADER - TIME (HH)']
+        df = pd.DataFrame(data=[[19, 10, 10, 10]],  columns=cols)
+
+        df = set_reference(df)
+
+        expect = '19-10-10-10'
+        actual = df['REFERENCE'].values
+
+        self.assertEqual(expect, actual)
+
+    def test_set_reference_multiple(self):
+        """
+        Should only pick the first datetime to reference
+        """
+        cols = ['EVENT HEADER - TIME (YY)', 'EVENT HEADER - TIME (MM)',
+                'EVENT HEADER - TIME (DD)', 'EVENT HEADER - TIME (HH)']
+        df = pd.DataFrame(data=[[19, 10, 10, 10], [20, 10, 2, 15], [19, 11, 10, 12]],  columns=cols)
+
+        df = set_reference(df)
+
+        expect = ['19-10-10-10', '19-10-10-10', '19-10-10-10']
+        actual = df['REFERENCE'].values.tolist()
 
         self.assertEqual(expect, actual)
