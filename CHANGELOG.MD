@@ -1,17 +1,21 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+For change types see https://github.com/olivierlacan/keep-a-changelog/issues/54
+
 ## 1.0 - 29-6-2021
 ### Added
 - (class) SonarPlanConverter for converting sonar plan 44
 
 ## 0.6 - 27-6-2021
-## Added
+### Added
 - Help dialog with instruction manual
 - Save theme settings locally
 
-## Changed
+### Changed
 - Fixed the bug where the import menu stayed disabled when all tasks finished
 - Save environment settings in json
 
-## Removed
+### Removed
 - Removed column-rename functions from converters because this causes error sensitivities in the presets
 - Removed MWC preset (this was only for test purposes)
 
