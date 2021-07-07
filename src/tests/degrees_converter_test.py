@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from src.converters.degrees_converter import get_degrees_cols, convert_degrees, convert_degrees_cols
+from src.converters.degrees_converter import get_degrees_cols, convert_degrees, convert_degrees_cols, DegreesConverter
 
 
 class DegreesToCoordinatesConverterTests(unittest.TestCase):
@@ -46,6 +46,20 @@ class DegreesToCoordinatesConverterTests(unittest.TestCase):
         cols = ['ORIENTATION', 'ORIENT', 'DOA', 'COURSE', 'CRS']
         df = pd.DataFrame(columns=cols, data=[[0, 11, 100, 1, 10]])
         df = convert_degrees_cols(df, cols)
+
+        actual = df.values.tolist()
+        expect = [['000', '011', '100', '001', '010']]
+
+        self.assertEqual(expect, actual)
+
+    def test_converter(self):
+        """
+        Should correctly convert df with converter module
+        """
+        cols = ['ORIENTATION', 'ORIENT', 'DOA', 'COURSE', 'CRS']
+        df = pd.DataFrame(columns=cols, data=[[0, 11, 100, 1, 10]])
+        converter = DegreesConverter()
+        df = converter.convert(df, scientific_cols=df.columns)
 
         actual = df.values.tolist()
         expect = [['000', '011', '100', '001', '010']]

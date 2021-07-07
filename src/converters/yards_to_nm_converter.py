@@ -1,6 +1,7 @@
 from pandas import DataFrame
 import re
 
+from src.converters.utility import convert_dist
 from src.interfaces.converter_interface import IConverter
 from src.log import get_logger
 from src.utility import get_exception
@@ -8,7 +9,7 @@ from src.utility import get_exception
 import numpy as np
 
 
-class YardsToNM(IConverter):
+class YardsToNMConverter(IConverter):
     logger = get_logger(__name__)
 
     def __init__(self):
@@ -41,25 +42,8 @@ def yards_to_nm(yards):
         return np.nan
 
 
-def convert_dist(length, unit_in, unit_out):
-    # supported units metric: mm, cm, m, km
-    # supported units imperial: in, feet, yard, mi, nm, ly
-    meter = {"mm": 1000,
-             "cm": 100,
-             "m": 1,
-             "km": 0.001,
-             "in": 39.3701,
-             "ft": 3.28084,
-             "yd": 1.09361,
-             "sm": 0.000621371,
-             "nm": 0.000539957,
-             "ly": 0.0000000000000001057}
-
-    return (length / meter[unit_in]) * meter[unit_out]
-
-
 def get_yard_cols(scientific_cols):
-    regex_positive = re.compile('LENGTH|RANGE|SECT RADIUS|DIST|STATION|JUMP|TSR|LENTH|SIDE|AREA WIDTH|SPACE|MDR|PSR|SPACING')
+    regex_positive = re.compile('LENGTH|RANGE|SECT RADIUS|DIST|STATION|JUMP|TSR|SIDE|AREA WIDTH|SPACE|MDR|PSR|SPACING')
     regex_negative = re.compile('^(?!.*MAST|MST|NS SIDE|EW SIDE).*$')
 
     cols = list(filter(regex_positive.search, scientific_cols))

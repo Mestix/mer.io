@@ -5,16 +5,28 @@ from pandas import DataFrame
 from src.converters.degrees2coordinates_converter import DegreesToCoordinatesConverter
 from src.converters.degrees_converter import DegreesConverter
 from src.converters.reference_converter import ReferenceConverter
+from src.converters.sonarplan_converter import SonarPlanConverter
 from src.converters.sonic_converter import SonicConverter
 from src.converters.time_converter import TimeConverter
 from src.converters.yards2coordinates_converter import IConverter, YardsToCoordinatesConverter
-from src.converters.yards_to_nm_converter import YardsToNM
+from src.converters.yards_to_nm_converter import YardsToNMConverter
 from src.tasks.TaskBase import TaskBase
 from src.types import MerData
 from src.utility import get_exception
 import numpy as np
 
 from src.log import get_logger
+
+converters = [
+    TimeConverter(),
+    SonicConverter(),
+    DegreesConverter(),
+    YardsToNMConverter(),
+    SonarPlanConverter(),
+    YardsToCoordinatesConverter(),
+    DegreesToCoordinatesConverter(),
+    ReferenceConverter()
+]
 
 
 class ConvertTask(TaskBase):
@@ -27,14 +39,7 @@ class ConvertTask(TaskBase):
         # add converters
         # order does matter
         self.converters: List[IConverter] = list()
-        self.add_converter(TimeConverter())
-        self.add_converter(SonicConverter())
-        self.add_converter(DegreesConverter())
-        self.add_converter(YardsToNM())
-        self.add_converter(YardsToCoordinatesConverter())
-        self.add_converter(DegreesToCoordinatesConverter())
-        # This should be as last!!
-        self.add_converter(ReferenceConverter())
+        self.init_converters()
 
     def run(self) -> None:
         try:
@@ -61,7 +66,7 @@ class ConvertTask(TaskBase):
                     name=dfm.name,
                     tact_scenario=tact_scenario,
                     scientific_cols=scientific_cols
-                    )
+                )
                 data[name].original_df = converted_df
                 data[name].rename_columns()
 
@@ -70,3 +75,7 @@ class ConvertTask(TaskBase):
 
     def add_converter(self, c: IConverter) -> None:
         self.converters.append(c)
+
+    def init_converters(self):
+        for c in converters:
+            self.add_converter(c)
