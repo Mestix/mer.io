@@ -16,3 +16,4 @@ numpy
 seaborn
 logging-formatter-anticrlf
 pytest-cov
+geopy
